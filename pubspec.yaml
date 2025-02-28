@@ -38,6 +38,8 @@ dependencies:
   google_fonts: ^6.2.1
   get: ^4.7.2
   font_awesome_flutter: ^10.8.0
+  lottie: ^3.3.1
+  animated_toggle_switch: ^0.8.4
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +64,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/lotties/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

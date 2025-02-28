@@ -3,9 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medical_app/core/navigation_with_transition.dart';
+import 'package:medical_app/screens/signup_screen.dart';
 
 import '../core/app_colors.dart';
 import '../core/widgets/reusable_text_field_widget.dart';
+import '../widgets/reusable_text_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,15 +46,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Center(
-                    child: Text(
-                      "sign_in".tr, // Translated title
-                      style: GoogleFonts.raleway(
-                        fontSize: 100.sp,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primaryColor,
-                      ),
+                    child: ReusableTextWidget(
+                      text: "sign_in".tr, // Translated title
+                      textSize: 100,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryColor,
                     ),
                   ),
+
                   SizedBox(height: 40.h),
                   Image.asset(
                     'assets/images/Login.png',
@@ -95,13 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        "forgot_password".tr, // Translated text
-                        style: GoogleFonts.raleway(
-                          fontSize: 40.sp,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primaryColor,
-                        ),
+                      ReusableTextWidget(
+                        text: "forgot_password".tr, // Translated text
+                        textSize: 40,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryColor,
                       ),
                     ],
                   ),
@@ -120,14 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Add login logic here, then navigate
                         Get.toNamed('/home'); // Changed from /sign_in to /home
                       },
-                      child: Text(
-                        "connect_button_text".tr, // Translated button text
-                        style: GoogleFonts.raleway(
-                          fontSize: 55.sp,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.whiteColor,
-                        ),
+                      child: ReusableTextWidget(
+                        text: "connect_button_text",
+                        textSize: 55,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.whiteColor,
                       ),
                     ),
                   ),
@@ -135,18 +132,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "no_account".tr, // Translated text
-                        style: GoogleFonts.raleway(
-                          fontSize: 45.sp,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.grey,
-                        ),
+                      ReusableTextWidget(
+                        text: "no_account".tr,
+                        textSize: 45,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.grey,
                       ),
+
                       SizedBox(width: 15.w),
                       GestureDetector(
                         onTap: () {
-                          Get.toNamed('/sign_up'); // Navigate to sign-up
+                          navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
+                            // pour faire la transition entre les pages avec animation
+                            context,
+                            SignupScreen(),
+                          );
                         },
                         child: Text(
                           "sign_up".tr, // Translated text
