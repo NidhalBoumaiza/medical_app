@@ -67,13 +67,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 20.h),
                   ReusableTextFieldWidget(
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
                     onPressedSuffixIcon: () {
                       setState(() {
                         _isObsecureText = !_isObsecureText;
                       });
                     },
                     obsecureText: _isObsecureText,
-                    borderSide: BorderSide(color: Colors.blueGrey),
+                   
                     hintText: "password".tr,
                     // Translated hint
                     controller: passwordController,
