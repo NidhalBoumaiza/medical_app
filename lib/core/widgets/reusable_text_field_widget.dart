@@ -100,13 +100,13 @@ class ReusableTextFieldWidget extends StatelessWidget {
                         ),
                   )
                   : null,
-          border: UnderlineInputBorder(
+          border: OutlineInputBorder(borderSide: borderSide ?? BorderSide.none),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30.0.sp),
             borderSide: borderSide ?? BorderSide.none,
           ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: borderSide ?? BorderSide.none,
-          ),
-          focusedBorder: UnderlineInputBorder(
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30.0.sp),
             borderSide: borderSide ?? BorderSide.none,
           ),
           hintText: hintText,

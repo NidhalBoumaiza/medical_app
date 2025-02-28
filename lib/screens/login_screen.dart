@@ -31,11 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
-        body: SingleChildScrollView(
-          child: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
+        body: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.fromLTRB(50.w, 20.h, 50.w, 0),
               child: Column(
@@ -60,8 +60,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 100.h),
                   ReusableTextFieldWidget(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                    hintText: "email".tr, // Translated hint
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
+
+                    hintText: "email".tr,
+                    // Translated hint
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -79,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     obsecureText: _isObsecureText,
-                   
                     hintText: "password".tr,
                     // Translated hint
                     controller: passwordController,
