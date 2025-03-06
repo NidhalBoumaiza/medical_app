@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:medical_app/screens/login_screen.dart';
 import 'package:medical_app/screens/signup_screen.dart';
 
+import 'cubit/toggle cubit/toggle_cubit.dart';
 import 'i18n/app_translation.dart';
 
 void main() {
@@ -21,16 +23,27 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, child) {
-        return GetMaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
-          translations: AppTranslation(),
-          locale: const Locale('fr', 'FR'),
-          fallbackLocale: const Locale('fr', 'FR'),
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+
+        //enregistrement du cubit dans la page main "racine"
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => ToggleCubit(),
+            ),
+          ],
+
+
+          child: GetMaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Flutter Demo',
+            translations: AppTranslation(),
+            locale: const Locale('fr', 'FR'),
+            fallbackLocale: const Locale('fr', 'FR'),
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            ),
+            home: SignupScreen(),
           ),
-          home: SignupScreen(),
         );
       },
     );

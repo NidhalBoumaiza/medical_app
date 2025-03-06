@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
+import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
 import 'package:medical_app/screens/patient/SignupPatientScreen.dart';
 
 import '../core/app_colors.dart';
@@ -20,7 +22,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   bool _isPatient = true; // Par défaut, l'utilisateur est un patient
-
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
@@ -66,40 +68,45 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   // Toggle Switch pour choisir entre Patient et Médecin
                   Center(
-                    child: AnimatedToggleSwitch<bool>.dual(
-                      current: _isPatient,
-                      first: true, // Patient
-                      second: false, // Médecin
-                      spacing: 45.0,
-                      animationDuration: const Duration(milliseconds: 600),
-                      style: ToggleStyle(
-                        borderColor: Colors.transparent,
-                        indicatorColor: AppColors.primaryColor,
-                        backgroundColor: AppColors.primaryColor.withOpacity(0.2),
-                      ),
-                      customIconBuilder: (context, local, global) {
-                        return Center(
-                          child: Text(
-                            _isPatient ? 'Patient' : 'Médecin',
-                            style: TextStyle(
-                              color: _isPatient ? Colors.white : AppColors.primaryColor,
-                              fontSize: 45.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: BlocBuilder <ToggleCubit,ToggleState>(
+                        builder: (context,state) {
+                        return AnimatedToggleSwitch<bool>.dual(
+                          current: context.read<ToggleCubit>().state is PatientState, // Etat actuel
+                          first: true, // Patient
+                          second: false, // Médecin
+                          spacing: 45.0,
+                          animationDuration: const Duration(milliseconds: 600),
+                          style: ToggleStyle(
+                            borderColor: Colors.transparent,
+                            indicatorColor: AppColors.primaryColor,
+                            backgroundColor: AppColors.primaryColor.withOpacity(0.2),
                           ),
+                          customIconBuilder: (context, local, global) {
+                            return Center(
+                              child: Text(
+                                state is PatientState ? "Patient" : "Médecin",
+                                //context.read() is PatientState ? "Patient" : "Médecin",
+
+                                style: TextStyle(
+                                  color: state is PatientState ? Colors.white : AppColors.primaryColor,
+                                  fontSize: 45.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
+                          onChanged: (bool value) {
+                            context.read<ToggleCubit>().toggle(); // Changer l'état
+                          }
                         );
-                      },
-                      onChanged: (bool value) {
-                        setState(() {
-                          _isPatient = value; // Mettre à jour l'état
-                        });
-                      },
+                      }
                     ),
                   ),
                   SizedBox(height: 60.h),
 
                   // Formulaire d'inscription
                   Form(
+                    key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -120,6 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           hintText: "Nom".tr,
                           keyboardType: TextInputType.text,
+                          errorMessage: "Nom est obligatoire".tr,
                         ),
                         SizedBox(height: 30.h),
                         Text(
@@ -139,6 +147,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           hintText: "Prénom".tr,
                           keyboardType: TextInputType.text,
+                          errorMessage: "Prénom est obligatoire".tr,
                         ),
                         SizedBox(height: 30.h),
                         Text(
@@ -158,6 +167,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           hintText: "Email".tr,
                           keyboardType: TextInputType.emailAddress,
+                          errorMessage: "email est obligatoire".tr,
                         ),
                         SizedBox(height: 30.h),
                         Text(
@@ -177,6 +187,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           hintText: "Date de naissance".tr,
                           keyboardType: TextInputType.datetime,
+                          errorMessage: "date de naissance est obligatoire".tr,
                         ),
                         SizedBox(height: 30.h),
                         Text(
@@ -236,12 +247,15 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                             ),
                             onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                // Si le formulaire est valide
+                                _formKey.currentState!.save();
                               if (_isPatient) {
                                 Get.to(() => SignupPatientScreen()); // Naviguer vers la page Patient
                               } else {
                                 Get.to(() => SignupMedecinScreen()); // Naviguer vers la page Médecin
                               }
-                            },
+                            }},
                             child: Text(
                               "Suivant".tr,
                               style: GoogleFonts.raleway(
