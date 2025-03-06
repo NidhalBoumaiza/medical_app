@@ -18,12 +18,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Déclaration des contrôleurs pour les champs d'entrée
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  bool _isObsecureText = true;
+  bool _isObsecureText = true; // Variable pour cacher/afficher le mot de passe
 
   @override
   void dispose() {
+    // Libérer la mémoire quand la page se ferme
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -36,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.whiteColor,
         body: GestureDetector(
           onTap: () {
-            FocusScope.of(context).unfocus();
+            FocusScope.of(context).unfocus(); // Fermer le clavier en cliquant hors du champ
           },
           child: SingleChildScrollView(
             child: Padding(
@@ -45,9 +47,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Titre de la page
                   Center(
                     child: ReusableTextWidget(
-                      text: "sign_in".tr, // Translated title
+                      text: "sign_in".tr, // Texte traduit (connexion)
                       textSize: 100,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primaryColor,
@@ -55,12 +58,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: 40.h),
+                  // Image de connexion
                   Image.asset(
                     'assets/images/Login.png',
                     height: 1000.h,
                     width: 900.w,
                   ),
                   SizedBox(height: 100.h),
+
+                  // Champ de texte pour l'email
                   ReusableTextFieldWidget(
                     fillColor: const Color(0xfffafcfc),
                     borderSide: const BorderSide(
@@ -68,13 +74,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 3,
                       style: BorderStyle.solid,
                     ),
-
-                    hintText: "email".tr,
-                    // Translated hint
+                    hintText: "email".tr, // Texte traduit (email)
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                   ),
+
                   SizedBox(height: 20.h),
+
+                  // Champ de texte pour le mot de passe
                   ReusableTextFieldWidget(
                     fillColor: const Color(0xfffafcfc),
                     borderSide: const BorderSide(
@@ -84,28 +91,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     onPressedSuffixIcon: () {
                       setState(() {
-                        _isObsecureText = !_isObsecureText;
+                        _isObsecureText = !_isObsecureText; // Afficher/Cacher le mot de passe
                       });
                     },
                     obsecureText: _isObsecureText,
-                    hintText: "password".tr,
-                    // Translated hint
+                    hintText: "password".tr, // Texte traduit (mot de passe)
                     controller: passwordController,
-                    keyboardType: TextInputType.text, // Changed for password
+                    keyboardType: TextInputType.text,
                   ),
+
                   SizedBox(height: 20.h),
+
+                  // Texte "Mot de passe oublié"
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       ReusableTextWidget(
-                        text: "forgot_password".tr, // Translated text
+                        text: "forgot_password".tr,
                         textSize: 40,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primaryColor,
                       ),
                     ],
                   ),
+
                   SizedBox(height: 70.h),
+
+                  // Bouton de connexion
                   SizedBox(
                     width: double.infinity,
                     height: 200.h,
@@ -117,8 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // Add login logic here, then navigate
-                        Get.toNamed('/home'); // Changed from /sign_in to /home
+                        Get.toNamed('/home'); // Naviguer vers la page d'accueil après connexion
                       },
                       child: ReusableTextWidget(
                         text: "connect_button_text",
@@ -128,7 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+
                   SizedBox(height: 60.h),
+
+                  // Texte "Pas encore de compte ?"
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -138,18 +152,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.w800,
                         color: Colors.grey,
                       ),
-
                       SizedBox(width: 15.w),
                       GestureDetector(
                         onTap: () {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-                            // pour faire la transition entre les pages avec animation
                             context,
-                            SignupScreen(),
+                            SignupScreen(), // Aller vers l'inscription
                           );
                         },
                         child: Text(
-                          "sign_up".tr, // Translated text
+                          "sign_up".tr,
                           style: TextStyle(
                             color: AppColors.primaryColor,
                             fontWeight: FontWeight.bold,
@@ -159,7 +171,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+
                   SizedBox(height: 80.h),
+
+                  // Ou se connecter avec Google
                   Row(
                     children: [
                       Expanded(
@@ -168,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          "Or".tr, // Translated text
+                          "Or".tr,
                           style: GoogleFonts.raleway(
                             color: Colors.grey,
                             fontSize: 45.sp,
@@ -181,7 +196,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+
                   SizedBox(height: 60.h),
+
+                  // Bouton de connexion avec Google
                   SizedBox(
                     width: double.infinity,
                     height: 200.h,
@@ -193,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       onPressed: () {
-                        Get.updateLocale(Locale('fr', 'FR'));
+                        Get.updateLocale(Locale('fr', 'FR')); // Changer la langue en français
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -204,10 +222,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(width: 40.w),
                           Text(
-                            "continue_with_google".tr, // Translated text
+                            "continue_with_google".tr,
                             style: GoogleFonts.raleway(
                               fontSize: 55.sp,
-                              letterSpacing: 1,
                               fontWeight: FontWeight.w900,
                               color: AppColors.whiteColor,
                             ),

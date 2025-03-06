@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:medical_app/screens/login_screen.dart';
+import 'package:medical_app/screens/signup_screen.dart';
 
 import 'i18n/app_translation.dart';
 
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
+
       designSize: const Size(1344, 2992),
       minTextAdapt: true,
       splitScreenMode: true,
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           ),
-          home: LoginScreen(),
+          home: SignupScreen(),
         );
       },
     );

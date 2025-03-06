@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
+import 'package:medical_app/screens/patient/SignupPatientScreen.dart';
 
 import '../core/app_colors.dart';
 import '../core/widgets/reusable_text_field_widget.dart';
+import 'medecin/SignupMedecinScreen.dart';
+import 'patient/SignupPatientScreen.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,7 +19,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  bool _isPatient = true;
+  bool _isPatient = true; // Par défaut, l'utilisateur est un patient
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController nomController = TextEditingController();
@@ -34,7 +39,7 @@ class _SignupScreenState extends State<SignupScreen> {
             backgroundColor: Colors.transparent,
             centerTitle: true,
             title: Text(
-              'Sign Up',
+              'Inscription',
               style: TextStyle(
                 fontSize: 80.sp,
                 fontWeight: FontWeight.w800,
@@ -51,19 +56,49 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         body: GestureDetector(
           onTap: () {
-            FocusScope.of(
-              context,
-            ).unfocus(); // on l'utilise pour enlever le clavier
+            FocusScope.of(context).unfocus(); // Fermer le clavier
           },
-          child: SingleChildScrollView(
-            // pour scroller la page
+          child: SingleChildScrollView( //tnahi barre jaune
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 50.h, vertical: 40.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(height: 40.h),
+                  // Toggle Switch pour choisir entre Patient et Médecin
+                  Center(
+                    child: AnimatedToggleSwitch<bool>.dual(
+                      current: _isPatient,
+                      first: true, // Patient
+                      second: false, // Médecin
+                      spacing: 45.0,
+                      animationDuration: const Duration(milliseconds: 600),
+                      style: ToggleStyle(
+                        borderColor: Colors.transparent,
+                        indicatorColor: AppColors.primaryColor,
+                        backgroundColor: AppColors.primaryColor.withOpacity(0.2),
+                      ),
+                      customIconBuilder: (context, local, global) {
+                        return Center(
+                          child: Text(
+                            _isPatient ? 'Patient' : 'Médecin',
+                            style: TextStyle(
+                              color: _isPatient ? Colors.white : AppColors.primaryColor,
+                              fontSize: 45.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
+                      onChanged: (bool value) {
+                        setState(() {
+                          _isPatient = value; // Mettre à jour l'état
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 60.h),
+
+                  // Formulaire d'inscription
                   Form(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,31 +118,27 @@ class _SignupScreenState extends State<SignupScreen> {
                             width: 3,
                             style: BorderStyle.solid,
                           ),
-
                           hintText: "Nom".tr,
-
-                          keyboardType: TextInputType.emailAddress,
+                          keyboardType: TextInputType.text,
                         ),
                         SizedBox(height: 30.h),
                         Text(
-                          "prenom :",
+                          "Prénom :",
                           style: TextStyle(
                             fontSize: 50.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         ReusableTextFieldWidget(
-                          controller: nomController,
+                          controller: prenomController,
                           fillColor: const Color(0xfffafcfc),
                           borderSide: const BorderSide(
                             color: Color(0xfff3f6f9),
                             width: 3,
                             style: BorderStyle.solid,
                           ),
-
-                          hintText: "prenom".tr,
-
-                          keyboardType: TextInputType.emailAddress,
+                          hintText: "Prénom".tr,
+                          keyboardType: TextInputType.text,
                         ),
                         SizedBox(height: 30.h),
                         Text(
@@ -118,16 +149,14 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                         ReusableTextFieldWidget(
-                          controller: nomController,
+                          controller: emailController,
                           fillColor: const Color(0xfffafcfc),
                           borderSide: const BorderSide(
                             color: Color(0xfff3f6f9),
                             width: 3,
                             style: BorderStyle.solid,
                           ),
-
                           hintText: "Email".tr,
-
                           keyboardType: TextInputType.emailAddress,
                         ),
                         SizedBox(height: 30.h),
@@ -139,41 +168,37 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                         ReusableTextFieldWidget(
-                          controller: nomController,
+                          controller: birthdayController,
                           fillColor: const Color(0xfffafcfc),
                           borderSide: const BorderSide(
                             color: Color(0xfff3f6f9),
                             width: 3,
                             style: BorderStyle.solid,
                           ),
-
                           hintText: "Date de naissance".tr,
-
-                          keyboardType: TextInputType.emailAddress,
+                          keyboardType: TextInputType.datetime,
                         ),
                         SizedBox(height: 30.h),
                         Text(
-                          "gender :",
+                          "Genre :",
                           style: TextStyle(
                             fontSize: 50.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         DropdownMenu<String>(
-                          initialSelection: gender ?? 'Homme',
-                          // Set initial value
+                          initialSelection: gender,
                           onSelected: (String? value) {
                             setState(() {
-                              gender =
-                                  value!; // Update state when a value is selected
+                              gender = value!;
                             });
                           },
-                          dropdownMenuEntries: [
-                            const DropdownMenuEntry<String>(
+                          dropdownMenuEntries: const [
+                            DropdownMenuEntry<String>(
                               value: 'Homme',
                               label: 'Homme',
                             ),
-                            const DropdownMenuEntry<String>(
+                            DropdownMenuEntry<String>(
                               value: 'Femme',
                               label: 'Femme',
                             ),
@@ -181,26 +206,25 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         SizedBox(height: 30.h),
                         Text(
-                          "Numéro de telephone :",
+                          "Numéro de téléphone :",
                           style: TextStyle(
                             fontSize: 50.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         ReusableTextFieldWidget(
-                          controller: nomController,
+                          controller: numTel,
                           fillColor: const Color(0xfffafcfc),
                           borderSide: const BorderSide(
                             color: Color(0xfff3f6f9),
                             width: 3,
                             style: BorderStyle.solid,
                           ),
-
-                          hintText: "Numéro de telephone".tr,
-
-                          keyboardType: TextInputType.emailAddress,
+                          hintText: "Numéro de téléphone".tr,
+                          keyboardType: TextInputType.phone,
                         ),
                         SizedBox(height: 100.h),
+                        // Bouton "Suivant"
                         SizedBox(
                           width: double.infinity,
                           height: 200.h,
@@ -212,20 +236,19 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                             ),
                             onPressed: () {
-                              // Get.updateLocale(Locale('fr', 'FR'));
+                              if (_isPatient) {
+                                Get.to(() => SignupPatientScreen()); // Naviguer vers la page Patient
+                              } else {
+                                Get.to(() => SignupMedecinScreen()); // Naviguer vers la page Médecin
+                              }
                             },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Suivant".tr, // Translated text
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 60.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.whiteColor,
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              "Suivant".tr,
+                              style: GoogleFonts.raleway(
+                                fontSize: 60.sp,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.whiteColor,
+                              ),
                             ),
                           ),
                         ),
@@ -241,43 +264,3 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
-
-// Center(
-// child: AnimatedToggleSwitch<bool>.dual(
-// current: _isPatient,
-// // Initial value: true for "patient"
-// first: true,
-// // Represents "patient"
-// second: false,
-// // Represents "médecin"
-// spacing: 45.0,
-// // Space between the labels
-// animationDuration: const Duration(milliseconds: 600),
-// // Smooth animation
-// style: ToggleStyle(
-// borderColor: Colors.transparent, // No border
-// indicatorColor: Colors.blue, // Blue color for the indicator
-// backgroundColor:
-// Colors.blue.shade100, // Light blue background
-// ),
-// customIconBuilder: (context, local, global) {
-// return Center(
-// child: Text(
-// _isPatient ? 'Patient' : 'Médecin',
-// // Display labels based on state
-// style: TextStyle(
-// color: _isPatient ? Colors.white : Colors.blue,
-// // White for patient, blue for médecin
-// fontSize: 16.0,
-// fontWeight: FontWeight.bold,
-// ),
-// ),
-// );
-// },
-// onChanged: (bool value) {
-// setState(() {
-// _isPatient = value; // Update state when toggled
-// });
-// },
-// ),
-// ),
