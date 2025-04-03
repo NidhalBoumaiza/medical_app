@@ -3,12 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medical_app/core/navigation_with_transition.dart';
-import 'package:medical_app/screens/signup_screen.dart';
+import 'package:medical_app/core/utils/navigation_with_transition.dart';
+import 'package:medical_app/features/authentication/domain/usecases/signup_screen.dart';
 
-import '../core/app_colors.dart';
-import '../core/widgets/reusable_text_field_widget.dart';
-import '../widgets/reusable_text_widget.dart';
+import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/reusable_text_field_widget.dart';
+import '../../../../widgets/reusable_text_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

@@ -12,5 +12,4 @@ final class PatientState extends ToggleState {
 }
 
 final class MedecinState extends ToggleState {
-
 }

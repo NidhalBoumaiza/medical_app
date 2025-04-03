@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:medical_app/screens/login_screen.dart';
-import 'package:medical_app/screens/signup_screen.dart';
+import 'package:medical_app/cubit/Confirm%20Password/confirm_password_cubit.dart';
+import 'package:medical_app/features/authentication/presentation/pages/forgot_password_screen.dart';
+import 'package:medical_app/features/authentication/domain/usecases/login_screen.dart';
+import 'package:medical_app/features/home/presentation/pages/HomeMedecin.dart';
+import 'package:medical_app/features/authentication/presentation/pages/SignupMedecinScreen.dart';
+import 'package:medical_app/features/home/presentation/pages/HomePatient.dart';
+import 'package:medical_app/features/authentication/presentation/pages/SignupPatientScreen.dart';
+import 'package:medical_app/features/authentication/domain/usecases/signup_screen.dart';
 
+import 'cubit/password cubit/password_visibility_cubit.dart';
 import 'cubit/toggle cubit/toggle_cubit.dart';
 import 'i18n/app_translation.dart';
 
@@ -27,11 +34,10 @@ class MyApp extends StatelessWidget {
         //enregistrement du cubit dans la page main "racine"
         return MultiBlocProvider(
           providers: [
-            BlocProvider(
-              create: (context) => ToggleCubit(),
-            ),
+            BlocProvider(create: (context) => ToggleCubit(),),
+            BlocProvider(create: (context) => PasswordVisibilityCubit(),),
+            BlocProvider(create: (context) => ConfirmPasswordCubit(),),
           ],
-
 
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
@@ -42,7 +48,8 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             ),
-            home: SignupScreen(),
+           // home: LoginScreen(),
+             home: HomeMedecin(),
           ),
         );
       },

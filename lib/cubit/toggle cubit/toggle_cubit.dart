@@ -5,13 +5,15 @@ import 'package:meta/meta.dart';
 part 'toggle_state.dart';
 
 class ToggleCubit extends Cubit<ToggleState> {
-  ToggleCubit() : super(PatientState());
+  ToggleCubit() : super(MedecinState());
 
   void toggle() {
-    if (state is PatientState) {
-      emit(MedecinState());
-    } else {
+    if (state is MedecinState) {
       emit(PatientState());
+    } else {
+      emit(MedecinState());
     }
   }
+
+
 }

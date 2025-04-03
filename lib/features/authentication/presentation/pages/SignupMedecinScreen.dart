@@ -3,26 +3,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/app_colors.dart';
-import '../../core/widgets/reusable_text_field_widget.dart';
+import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/reusable_text_field_widget.dart';
 
-
-class SignupPatientScreen extends StatefulWidget {
-  const SignupPatientScreen({super.key});
+class SignupMedecinScreen extends StatefulWidget {
+  const SignupMedecinScreen({super.key});
 
   @override
-  State<SignupPatientScreen> createState() => _SignupPatientScreenState();
+  State<SignupMedecinScreen> createState() => _SignupMedecinScreenState();
 }
 
-class _SignupPatientScreenState extends State<SignupPatientScreen> {
+class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
+  // Contrôleurs pour les champs de texte
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController birthdayController = TextEditingController();
+  final TextEditingController specialiteController = TextEditingController();
+  final TextEditingController numLicenceController = TextEditingController();
   final TextEditingController numTelController = TextEditingController();
-  final TextEditingController adresseController = TextEditingController();
-  final TextEditingController antecedentsController = TextEditingController();
-  late String gender = "Homme";
+  late String gender = "Homme"; // Variable pour stocker le genre sélectionné
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +34,7 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
             backgroundColor: Colors.transparent,
             centerTitle: true,
             title: Text(
-              'Inscription Patient',
+              'Inscription Médecin',
               style: TextStyle(
                 fontSize: 80.sp,
                 fontWeight: FontWeight.w800,
@@ -52,7 +51,7 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
         ),
         body: GestureDetector(
           onTap: () {
-            FocusScope.of(context).unfocus(); // Fermer le clavier
+            FocusScope.of(context).unfocus(); // Fermer le clavier lorsqu'on clique hors des champs
           },
           child: SingleChildScrollView(
             child: Padding(
@@ -60,7 +59,7 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Formulaire d'inscription pour les patients
+                  // Champ pour le nom
                   Text(
                     "Nom :",
                     style: TextStyle(
@@ -70,9 +69,19 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                   ),
                   ReusableTextFieldWidget(
                     controller: nomController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
                     hintText: "Nom".tr,
+                    keyboardType: TextInputType.text,
+                    errorMessage: "Nom est obligatoire".tr,
                   ),
-                  SizedBox(height: 30.h),
+                  SizedBox(height: 30.h), // Espacement entre les champs
+
+                  // Champ pour le prénom
                   Text(
                     "Prénom :",
                     style: TextStyle(
@@ -82,9 +91,19 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                   ),
                   ReusableTextFieldWidget(
                     controller: prenomController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
                     hintText: "Prénom".tr,
+                    keyboardType: TextInputType.text,
+                    errorMessage: "Prénom est obligatoire".tr,
                   ),
                   SizedBox(height: 30.h),
+
+                  // Champ pour l'email
                   Text(
                     "Email :",
                     style: TextStyle(
@@ -94,49 +113,63 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                   ),
                   ReusableTextFieldWidget(
                     controller: emailController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
                     hintText: "Email".tr,
                     keyboardType: TextInputType.emailAddress,
+                    errorMessage: "Email est obligatoire".tr,
                   ),
                   SizedBox(height: 30.h),
+
+                  // Champ pour la spécialité
                   Text(
-                    "Date de naissance :",
+                    "Spécialité :",
                     style: TextStyle(
                       fontSize: 50.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   ReusableTextFieldWidget(
-                    controller: birthdayController,
-                    hintText: "Date de naissance".tr,
-                    keyboardType: TextInputType.datetime,
+                    controller: specialiteController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
+                    hintText: "Spécialité".tr,
+                    keyboardType: TextInputType.text,
+                    errorMessage: "Spécialité est obligatoire".tr,
                   ),
                   SizedBox(height: 30.h),
+
+                  // Champ pour le numéro de licence
                   Text(
-                    "Genre :",
+                    "Numéro de licence :",
                     style: TextStyle(
                       fontSize: 50.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  DropdownMenu<String>(
-                    initialSelection: gender,
-                    onSelected: (String? value) {
-                      setState(() {
-                        gender = value!;
-                      });
-                    },
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry<String>(
-                        value: 'Homme',
-                        label: 'Homme',
-                      ),
-                      DropdownMenuEntry<String>(
-                        value: 'Femme',
-                        label: 'Femme',
-                      ),
-                    ],
+                  ReusableTextFieldWidget(
+                    controller: numLicenceController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
+                    hintText: "Numéro de licence".tr,
+                    keyboardType: TextInputType.text,
+                    errorMessage: "Numéro de licence est obligatoire".tr,
                   ),
                   SizedBox(height: 30.h),
+
+                  // Champ pour le numéro de téléphone
                   Text(
                     "Numéro de téléphone :",
                     style: TextStyle(
@@ -146,55 +179,38 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
                   ),
                   ReusableTextFieldWidget(
                     controller: numTelController,
+                    fillColor: const Color(0xfffafcfc),
+                    borderSide: const BorderSide(
+                      color: Color(0xfff3f6f9),
+                      width: 3,
+                      style: BorderStyle.solid,
+                    ),
                     hintText: "Numéro de téléphone".tr,
                     keyboardType: TextInputType.phone,
-                  ),
-                  SizedBox(height: 30.h),
-                  Text(
-                    "Adresse :",
-                    style: TextStyle(
-                      fontSize: 50.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  ReusableTextFieldWidget(
-                    controller: adresseController,
-                    hintText: "Adresse".tr,
-                  ),
-                  SizedBox(height: 30.h),
-                  Text(
-                    "Antécédents médicaux :",
-                    style: TextStyle(
-                      fontSize: 50.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  ReusableTextFieldWidget(
-                    controller: antecedentsController,
-                    hintText: "Antécédents médicaux".tr,
-                    maxLines: 3,
+                    errorMessage: "Numéro de téléphone est obligatoire".tr,
                   ),
                   SizedBox(height: 100.h),
+
                   // Bouton "S'inscrire"
                   SizedBox(
-                    width: double.infinity,
-                    height: 200.h,
+                    width: double.infinity, // Largeur maximale
+                    height: 200.h, // Hauteur du bouton
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
+                        backgroundColor: AppColors.primaryColor, // Couleur de fond du bouton
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.r),
+                          borderRadius: BorderRadius.circular(30.r), // Bordure arrondie
                         ),
                       ),
                       onPressed: () {
-                        // Logique d'inscription pour les patients
+                        // Logique d'inscription
                       },
                       child: Text(
                         "S'inscrire".tr,
                         style: GoogleFonts.raleway(
                           fontSize: 60.sp,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.whiteColor,
+                          color: AppColors.whiteColor, // Couleur du texte
                         ),
                       ),
                     ),
