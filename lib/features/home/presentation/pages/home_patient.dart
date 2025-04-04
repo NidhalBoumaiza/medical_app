@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medical_app/features/dashboard/presentation/pages/DashboardPatient.dart';
-import 'package:medical_app/features/messagerie/presentation/pages/MessageriePatient.dart';
-import 'package:medical_app/features/notifications/presentation/pages/NotificationsPage.dart';
+import 'package:medical_app/features/dashboard/presentation/pages/dashboard_patient.dart';
+import 'package:medical_app/features/messagerie/presentation/pages/messagerie_patient.dart';
+import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 

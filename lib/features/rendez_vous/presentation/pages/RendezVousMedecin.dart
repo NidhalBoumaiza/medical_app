@@ -10,12 +10,14 @@ class RendezVousMedecin extends StatefulWidget {
 class _RendezVousMedecinState extends State<RendezVousMedecin> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Rendez-vous'),
-      ),
-      body: Center(
-        child: Text('Rendez-vous'),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Liste des Rendez-vous"),
+        ),
+        body: Center(
+          //child: Text("Rendez-vous Medecin"),
+        ),
       ),
     );
   }

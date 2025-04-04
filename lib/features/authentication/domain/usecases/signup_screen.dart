@@ -5,11 +5,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
-import 'package:medical_app/features/authentication/presentation/pages/SignupPatientScreen.dart';
+import 'package:medical_app/features/authentication/presentation/pages/signup_patient_screen.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
-import '../../presentation/pages/SignupMedecinScreen.dart';
-import '../../presentation/pages/SignupPatientScreen.dart';
+import '../../presentation/pages/signup_medecin_screen.dart';
+import '../../presentation/pages/signup_patient_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -99,8 +99,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               child: Text(
                                 state is PatientState ? "Patient" : "Médecin",
                                 style: TextStyle(
-                                  color: state is PatientState ? Colors.white : AppColors.primaryColor,
-                                  fontSize: 45.sp,
+                                  color: state is PatientState ? Colors.white : AppColors.whiteColor,
+                                  fontSize: 35.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

@@ -9,6 +9,7 @@ import 'package:medical_app/features/authentication/domain/usecases/signup_scree
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
 import '../../../../widgets/reusable_text_widget.dart';
+import '../../presentation/pages/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -106,11 +107,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      ReusableTextWidget(
-                        text: "forgot_password".tr,
-                        textSize: 40,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primaryColor,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+                          );
+                        },
+                        child: ReusableTextWidget(
+                          text: "forgot_password".tr,
+                          textSize: 40,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primaryColor,
+                        ),
                       ),
                     ],
                   ),

@@ -4,9 +4,16 @@ class RendezVous {
   final String heure;
   final String patientName;
   final String medecin;
-  final String status;
+  String status;
 
-  RendezVous({required this.id, required this.date, required this.heure, required this.patientName, required this.medecin, required this.status});
+  RendezVous({
+    required this.id,
+    required this.date,
+    required this.heure,
+    required this.patientName,
+    required this.medecin,
+    this.status = "pending",
+  });
 
   factory RendezVous.fromJson(Map<String, dynamic> json) {
     return RendezVous(

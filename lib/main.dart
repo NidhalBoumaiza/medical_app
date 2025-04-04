@@ -5,10 +5,10 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:medical_app/cubit/Confirm%20Password/confirm_password_cubit.dart';
 import 'package:medical_app/features/authentication/presentation/pages/forgot_password_screen.dart';
 import 'package:medical_app/features/authentication/domain/usecases/login_screen.dart';
-import 'package:medical_app/features/home/presentation/pages/HomeMedecin.dart';
-import 'package:medical_app/features/authentication/presentation/pages/SignupMedecinScreen.dart';
-import 'package:medical_app/features/home/presentation/pages/HomePatient.dart';
-import 'package:medical_app/features/authentication/presentation/pages/SignupPatientScreen.dart';
+import 'package:medical_app/features/home/presentation/pages/home_medecin.dart';
+import 'package:medical_app/features/authentication/presentation/pages/signup_medecin_screen.dart';
+import 'package:medical_app/features/home/presentation/pages/home_patient.dart';
+import 'package:medical_app/features/authentication/presentation/pages/signup_patient_screen.dart';
 import 'package:medical_app/features/authentication/domain/usecases/signup_screen.dart';
 
 import 'cubit/password cubit/password_visibility_cubit.dart';
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             ),
            // home: LoginScreen(),
-             home: HomeMedecin(),
+             home: Homepatient(),
           ),
         );
       },

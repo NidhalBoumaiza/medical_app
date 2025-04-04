@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medical_app/features/dashboard/presentation/pages/DashboardMedecin.dart';
-import 'package:medical_app/features/messagerie/presentation/pages/MessagerieMedecin.dart';
+import 'package:medical_app/features/dashboard/presentation/pages/dashboard_medecin.dart';
+import 'package:medical_app/features/messagerie/presentation/pages/messagerie_medecin.dart';
+import 'package:medical_app/features/notifications/presentation/pages/notifications_medecin.dart';
 import 'package:medical_app/features/ordonnance/presentation/pages/OrdonnancesPage.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousMedecin.dart';
@@ -29,7 +30,15 @@ class _HomeMedecinState extends State<HomeMedecin> {
     MessagerieMedecin(),
     ProfilMedecin(),
   ];
+
   int selectedItem = 0;
+
+  void _onNotificationTapped() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => NotificationsMedecin()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +52,12 @@ class _HomeMedecinState extends State<HomeMedecin> {
           letterSpacing: 1.5,
         ),
         backgroundColor: Color(0xFF2FA7BB),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications, color: Colors.white),
+            onPressed: _onNotificationTapped,
+          ),
+        ],
       ),
 
       body: pages[selectedItem],
@@ -66,7 +81,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
           children: [
             DrawerHeader(
               child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 35)),
-              decoration: BoxDecoration(color: Color(0xFF2FA7BB)),
+              decoration: BoxDecoration(color: Color(0xFF2FA7BB),),
             ),
 
             ListTile(
