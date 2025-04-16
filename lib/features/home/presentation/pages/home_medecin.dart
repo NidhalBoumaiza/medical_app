@@ -21,7 +21,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
     BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Rendez-vous"),
-    BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messagerie"),
+    BottomNavigationBarItem(icon: Icon(Icons.generating_tokens), label: "AI"),
     BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: "Profil"),
   ];
   List<Widget> pages = [
@@ -74,7 +74,24 @@ class _HomeMedecinState extends State<HomeMedecin> {
           });
         },
       ),
-
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.tealAccent,Color(0xFF2FA7BB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MessagerieMedecin()));
+          },
+          child: Icon(Icons.message_outlined),
+          backgroundColor: Colors.transparent, // Transparent background
+          elevation: 0,
+        ),
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -108,5 +125,6 @@ class _HomeMedecinState extends State<HomeMedecin> {
         ),
       ),
     );
+
   }
 }

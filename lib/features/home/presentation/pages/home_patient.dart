@@ -6,6 +6,10 @@ import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.da
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 
 import '../../../../widgets/reusable_text_widget.dart';
+import '../../../ordonnance/presentation/pages/OrdonnancesPage.dart';
+import '../../../secours/presentation/pages/secours_screen.dart';
+import '../../../settings/presentation/pages/SettingsPage.dart';
+import '../../../settings/presentation/pages/settings_patient.dart';
 
 class Homepatient extends StatefulWidget {
   const Homepatient({super.key});
@@ -19,14 +23,16 @@ class _HomepatientState extends State<Homepatient> {
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
     BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Rendez-vous"),
-    BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messagerie"),
+    BottomNavigationBarItem(icon: Icon(Icons.generating_tokens_sharp), label: "AI"),
     BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: "Profil"),
+
   ];
   List<Widget> pages = [
     Dashboardpatient(),
     RendezVousPatient(),
-    MessageriePatient(),
-    ProfilPatient(),
+    SettingsPatient(),
+    ProfilePatient(),
+
   ];
   int selectedItem = 0;
 
@@ -70,7 +76,67 @@ class _HomepatientState extends State<Homepatient> {
           });
         },
       ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.tealAccent,Color(0xFF2FA7BB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MessageriePatient()));
+          },
+          child: Icon(Icons.message_outlined),
+          backgroundColor: Colors.transparent, // Transparent background
+          elevation: 0,
+        ),
+      ),
+      //menu
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 35)),
+              decoration: BoxDecoration(color: Color(0xFF2FA7BB),),
+            ),
 
+            ListTile(
+              leading: Icon(Icons.description),
+              title: Text("Ordonnances"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrdonnancesPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.medical_services_outlined),
+              title: Text("Premier Secours"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SecoursScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Paramètres"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

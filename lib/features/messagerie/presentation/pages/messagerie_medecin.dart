@@ -13,9 +13,21 @@ class _MessagerieMedecinState extends State<MessagerieMedecin> {
     return Scaffold (
       appBar: AppBar(
         title: Text("Messagerie"),
+        backgroundColor: Color(0xFF2FA7BB),
+        leading: IconButton(
+          icon: Icon(
+            Icons.chevron_left, // iOS icon for back navigation
+            size: 30,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Center(
         child: Text("Messagerie"),
+
+
       ),
     );
   }
