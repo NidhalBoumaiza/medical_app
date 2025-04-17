@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../../../core/utils/app_colors.dart';
-import '../../../authentication/data/models/User.dart';
 
 class ProfilMedecin extends StatefulWidget {
   const ProfilMedecin ({Key? key}) : super(key: key);

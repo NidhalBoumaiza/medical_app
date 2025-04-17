@@ -11,14 +11,14 @@ import '../../../secours/presentation/pages/secours_screen.dart';
 import '../../../settings/presentation/pages/SettingsPage.dart';
 import '../../../settings/presentation/pages/settings_patient.dart';
 
-class Homepatient extends StatefulWidget {
-  const Homepatient({super.key});
+class HomePatient extends StatefulWidget {
+  const HomePatient({super.key});
 
   @override
-  State<Homepatient> createState() => _HomepatientState();
+  State<HomePatient> createState() => _HomePatientState();
 }
 
-class _HomepatientState extends State<Homepatient> {
+class _HomePatientState extends State<HomePatient> {
 
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),

@@ -5,11 +5,12 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
+import 'package:medical_app/features/authentication/presentation/pages/signup_medecin_screen.dart';
 import 'package:medical_app/features/authentication/presentation/pages/signup_patient_screen.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
-import '../../presentation/pages/signup_medecin_screen.dart';
-import '../../presentation/pages/signup_patient_screen.dart';
+import '../../domain/entities/medecin_entity.dart';
+import '../../domain/entities/patient_entity.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -19,8 +20,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  bool _isPatient = true; // Par défaut, l'utilisateur est un patient
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Clé pour valider le formulaire
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
@@ -28,7 +28,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController numTel = TextEditingController();
   late String gender = "Homme";
 
-  // Méthode pour afficher le sélecteur de date
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -36,10 +35,23 @@ class _SignupScreenState extends State<SignupScreen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    if (picked != null && picked != DateTime.now()) {
+    if (picked != null) {
       setState(() {
         birthdayController.text = "${picked.day}/${picked.month}/${picked.year}";
       });
+    }
+  }
+
+  DateTime? _parseDate(String date) {
+    try {
+      final parts = date.split('/');
+      if (parts.length != 3) return null;
+      final day = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
+      final year = int.parse(parts[2]);
+      return DateTime(year, month, day);
+    } catch (e) {
+      return null;
     }
   }
 
@@ -71,7 +83,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         body: GestureDetector(
           onTap: () {
-            FocusScope.of(context).unfocus(); // Fermer le clavier
+            FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
             child: Padding(
@@ -79,14 +91,13 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Toggle Switch pour choisir entre Patient et Médecin
                   Center(
                     child: BlocBuilder<ToggleCubit, ToggleState>(
                       builder: (context, state) {
                         return AnimatedToggleSwitch<bool>.dual(
-                          current: context.read<ToggleCubit>().state is PatientState, // Etat actuel
-                          first: true, // Patient
-                          second: false, // Médecin
+                          current: state is PatientState,
+                          first: true,
+                          second: false,
                           spacing: 45.0,
                           animationDuration: const Duration(milliseconds: 600),
                           style: ToggleStyle(
@@ -107,15 +118,13 @@ class _SignupScreenState extends State<SignupScreen> {
                             );
                           },
                           onChanged: (bool value) {
-                            context.read<ToggleCubit>().toggle(); // Changer l'état
+                            context.read<ToggleCubit>().toggle();
                           },
                         );
                       },
                     ),
                   ),
                   SizedBox(height: 60.h),
-
-                  // Formulaire d'inscription
                   Form(
                     key: _formKey,
                     child: Column(
@@ -188,11 +197,8 @@ class _SignupScreenState extends State<SignupScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-
-                        // Champ de texte interactif pour la date de naissance
                         GestureDetector(
-                          onTap: () => _selectDate(context), // Ouvrir le sélecteur de date
-
+                          onTap: () => _selectDate(context),
                           child: AbsorbPointer(
                             child: ReusableTextFieldWidget(
                               controller: birthdayController,
@@ -252,9 +258,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           hintText: "Numéro de téléphone".tr,
                           keyboardType: TextInputType.phone,
+                          errorMessage: "Numéro de téléphone est obligatoire".tr,
                         ),
                         SizedBox(height: 100.h),
-                        // Bouton "Suivant"
                         SizedBox(
                           width: double.infinity,
                           height: 200.h,
@@ -267,12 +273,38 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                // Si le formulaire est valide
-                                _formKey.currentState!.save();
+                                final dateOfBirth = _parseDate(birthdayController.text);
+                                if (dateOfBirth == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Date de naissance invalide".tr)),
+                                  );
+                                  return;
+                                }
                                 if (context.read<ToggleCubit>().state is PatientState) {
-                                  Get.to(() => SignupPatientScreen()); // Naviguer vers la page Patient
+                                  final patientEntity = PatientEntity(
+                                    name: nomController.text,
+                                    lastName: prenomController.text,
+                                    email: emailController.text,
+                                    role: 'patient',
+                                    gender: gender,
+                                    phoneNumber: numTel.text,
+                                    dateOfBirth: dateOfBirth,
+                                    antecedent: '',
+                                  );
+                                  Get.to(() => SignupPatientScreen(patientEntity: patientEntity));
                                 } else {
-                                  Get.to(() => SignupMedecinScreen()); // Naviguer vers la page Médecin
+                                  final medecinEntity = MedecinEntity(
+                                    name: nomController.text,
+                                    lastName: prenomController.text,
+                                    email: emailController.text,
+                                    role: 'medecin',
+                                    gender: gender,
+                                    phoneNumber: numTel.text,
+                                    dateOfBirth: dateOfBirth,
+                                    speciality: '',
+                                    numLicence: '',
+                                  );
+                                  Get.to(() => SignupMedecinScreen(medecinEntity: medecinEntity));
                                 }
                               }
                             },

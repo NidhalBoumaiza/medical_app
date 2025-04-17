@@ -7,7 +7,6 @@ import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.da
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousMedecin.dart';
 
 import '../../../../widgets/reusable_text_widget.dart';
-import '../../../authentication/domain/usecases/login_screen.dart';
 import '../../../settings/presentation/pages/SettingsPage.dart';
 
 class HomeMedecin extends StatefulWidget {

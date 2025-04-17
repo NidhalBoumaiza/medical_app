@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../authentication/domain/usecases/login_screen.dart';
+import '../../../authentication/presentation/pages/login_screen.dart';
+
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
