@@ -8,7 +8,7 @@ class RendezVousEntity extends Equatable {
   final String? doctorName; // Optional doctor name
   final String? speciality; // Optional speciality
   final DateTime startTime; // Required start time
-  final String status; // Required status: 'En attente', 'Accepté', 'Refusé'
+  final String status; // Required status: 'pending', 'accepted', 'refused'
 
   const RendezVousEntity({
     this.id,

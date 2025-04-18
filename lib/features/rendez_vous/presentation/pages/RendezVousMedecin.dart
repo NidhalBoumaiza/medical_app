@@ -4,9 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
+import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
-
+import 'package:medical_app/injection_container.dart';
 import 'package:medical_app/widgets/reusable_text_widget.dart';
 
 class RendezVousMedecin extends StatefulWidget {
@@ -17,15 +18,66 @@ class RendezVousMedecin extends StatefulWidget {
 }
 
 class _RendezVousMedecinState extends State<RendezVousMedecin> {
+  String? doctorId;
+
   @override
   void initState() {
     super.initState();
-    // Dispatch FetchRendezVous event when the page loads
-    context.read<RendezVousBloc>().add(const FetchRendezVous());
+    _loadDoctorId();
   }
 
-  void _updateConsultationStatus(String id, String newStatus) {
-    context.read<RendezVousBloc>().add(UpdateRendezVousStatus(id, newStatus));
+  Future<void> _loadDoctorId() async {
+    final authLocalDataSource = sl<AuthLocalDataSource>();
+    final user = await authLocalDataSource.getUser();
+    setState(() {
+      doctorId = user.id;
+    });
+    if (doctorId != null) {
+      context.read<RendezVousBloc>().add(FetchRendezVous(doctorId: doctorId));
+    }
+  }
+
+  Future<bool?> _showConfirmationDialog(String action, String patientName) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$action la consultation'),
+        content: Text(
+          'Voulez-vous vraiment $action la consultation pour ${patientName}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirmer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateConsultationStatus(String id, String newStatus, String patientName) async {
+    final action = newStatus == 'accepted' ? 'accepter' : 'refuser';
+    final confirmed = await _showConfirmationDialog(action, patientName);
+    if (confirmed == true) {
+      context.read<RendezVousBloc>().add(UpdateRendezVousStatus(id, newStatus));
+    }
+  }
+
+  String _translateStatus(String status) {
+    switch (status) {
+      case 'pending':
+        return 'En attente';
+      case 'accepted':
+        return 'Accepté';
+      case 'refused':
+        return 'Refusé';
+      default:
+        return status;
+    }
   }
 
   @override
@@ -34,36 +86,24 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
         appBar: AppBar(
-          title: const Text("Gérer les consultations"),
+          title: const Text('Mes Consultations'),
           backgroundColor: const Color(0xFF2FA7BB),
           leading: IconButton(
-            icon: const Icon(
-              Icons.chevron_left,
-              size: 30,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            icon: const Icon(Icons.chevron_left, size: 30),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         body: BlocListener<RendezVousBloc, RendezVousState>(
           listener: (context, state) {
             if (state is RendezVousError) {
               showErrorSnackBar(context, state.message);
-            } else if (state is RendezVousLoaded) {
-              // Show snackbar only after status update (not initial fetch)
-              if (state.rendezVous.any((r) =>
-              r.status == 'Accepté' || r.status == 'Refusé')) {
-                final lastUpdated = state.rendezVous.lastWhere(
-                      (r) => r.status == 'Accepté' || r.status == 'Refusé',
-                  orElse: () => state.rendezVous.first,
-                );
-                showSuccessSnackBar(
-                  context,
-                  lastUpdated.status == 'Accepté'
-                      ? 'Consultation acceptée'
-                      : 'Consultation refusée',
-                );
+            } else if (state is RendezVousStatusUpdated) {
+              showSuccessSnackBar(
+                context,
+                'Consultation mise à jour avec succès',
+              );
+              if (doctorId != null) {
+                context.read<RendezVousBloc>().add(FetchRendezVous(doctorId: doctorId));
               }
             }
           },
@@ -74,30 +114,23 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Center(
-                    child: ReusableTextWidget(
-                      text: "Gérer les consultations",
-                      textSize: 100,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 40.h),
                   Image.asset(
                     'assets/images/DoctorConsultations.png',
                     height: 1000.h,
                     width: 900.w,
                   ),
                   SizedBox(height: 100.h),
-                  // Consultation List
                   BlocBuilder<RendezVousBloc, RendezVousState>(
                     builder: (context, state) {
-                      if (state is RendezVousLoading) {
+                      if (state is RendezVousLoading || doctorId == null) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is RendezVousLoaded) {
-                        if (state.rendezVous.isEmpty) {
+                        final pendingRendezVous = state.rendezVous
+                            .where((rv) => rv.status == 'pending')
+                            .toList();
+                        if (pendingRendezVous.isEmpty) {
                           return ReusableTextWidget(
-                            text: "Aucune consultation",
+                            text: "Aucune consultation en attente",
                             textSize: 55,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey,
@@ -106,9 +139,9 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                         return ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: state.rendezVous.length,
+                          itemCount: pendingRendezVous.length,
                           itemBuilder: (context, index) {
-                            final consultation = state.rendezVous[index];
+                            final consultation = pendingRendezVous[index];
                             return Card(
                               elevation: 2,
                               margin: EdgeInsets.symmetric(vertical: 20.h),
@@ -121,7 +154,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ReusableTextWidget(
-                                      text: "Patient: ${consultation.patientName}",
+                                      text: "Patient: ${consultation.patientName ?? 'Inconnu'}",
                                       textSize: 50,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
@@ -129,23 +162,23 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                     SizedBox(height: 20.h),
                                     ReusableTextWidget(
                                       text:
-                                      "Heure de début: ${consultation.startTime.toLocal().toString().substring(0, 16)}",
+                                      "Heure de début: ${consultation.startTime?.toLocal().toString().substring(0, 16) ?? 'Non défini'}",
                                       textSize: 50,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey[700],
                                     ),
                                     SizedBox(height: 20.h),
                                     ReusableTextWidget(
-                                      text: "Statut: ${consultation.status}",
+                                      text: "Statut: ${_translateStatus(consultation.status ?? 'pending')}",
                                       textSize: 50,
                                       fontWeight: FontWeight.w600,
-                                      color: consultation.status == 'En attente'
+                                      color: consultation.status == 'pending'
                                           ? Colors.orange
-                                          : consultation.status == 'Accepté'
+                                          : consultation.status == 'accepted'
                                           ? Colors.green
                                           : Colors.red,
                                     ),
-                                    if (consultation.status == 'En attente') ...[
+                                    if (consultation.status == 'pending') ...[
                                       SizedBox(height: 20.h),
                                       Row(
                                         mainAxisAlignment:
@@ -165,7 +198,10 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                             ),
                                             onPressed: () {
                                               _updateConsultationStatus(
-                                                  consultation.id!, 'Accepté');
+                                                consultation.id ?? '',
+                                                'accepted',
+                                                consultation.patientName ?? 'Inconnu',
+                                              );
                                             },
                                             child: Text(
                                               'Accepter',
@@ -190,7 +226,10 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                             ),
                                             onPressed: () {
                                               _updateConsultationStatus(
-                                                  consultation.id!, 'Refusé');
+                                                consultation.id ?? '',
+                                                'refused',
+                                                consultation.patientName ?? 'Inconnu',
+                                              );
                                             },
                                             child: Text(
                                               'Refuser',
