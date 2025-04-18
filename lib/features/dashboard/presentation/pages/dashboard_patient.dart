@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
-import '../../../../core/utils/app_colors.dart';
+
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
+import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
-import '../../../specialite/presentation/pages/dentiste_screen.dart';
-import '../../../specialite/presentation/pages/neurologue_screen.dart';
 
 class Dashboardpatient extends StatefulWidget {
   const Dashboardpatient({super.key});
@@ -177,34 +177,41 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                   scrollDirection: Axis.horizontal,
                   itemCount: specialties.length,
                   itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        child: Container(
-                          width: 100,
-                          padding: EdgeInsets.all(8),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                specialties[index]['image']!,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(Icons.error, size: 40, color: Colors.red);
-                                },
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                specialties[index]['text']!,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                    return GestureDetector(
+                      onTap: () {
+                        navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
+                          context,
+                          RendezVousPatient(selectedSpecialty: specialties[index]['text']),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          child: Container(
+                            width: 100,
+                            padding: EdgeInsets.all(8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  specialties[index]['image']!,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(Icons.error, size: 40, color: Colors.red);
+                                  },
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  specialties[index]['text']!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

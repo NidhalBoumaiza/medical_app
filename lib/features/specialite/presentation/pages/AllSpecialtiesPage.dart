@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/navigation_with_transition.dart';
+import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
+
 class AllSpecialtiesPage extends StatelessWidget {
   final List<Map<String, dynamic>> specialties;
 
@@ -33,34 +36,43 @@ class AllSpecialtiesPage extends StatelessWidget {
           ),
           itemCount: specialties.length,
           itemBuilder: (context, index) {
-            return Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    specialties[index]['image']!,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.error,
-                        size: 60,
-                        color: Colors.red,
-                      );
-                    },
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    specialties[index]['text']!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
+            return GestureDetector(
+              onTap: () {
+                // Handle tap on specialty
+                navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
+                  context,
+                  RendezVousPatient(selectedSpecialty: specialties[index]['text']),
+                );
+              },
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      specialties[index]['image']!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.error,
+                          size: 60,
+                          color: Colors.red,
+                        );
+                      },
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      specialties[index]['text']!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
             );
           },

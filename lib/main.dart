@@ -4,23 +4,42 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
-
+import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'features/authentication/presentation/blocs/Signup BLoC/signup_bloc.dart';
-import 'features/authentication/presentation/blocs/login BLoC/login_bloc.dart';
+import 'package:medical_app/features/home/presentation/pages/home_medecin.dart';
+import 'package:medical_app/features/home/presentation/pages/home_patient.dart';
+import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
+import 'package:medical_app/injection_container.dart' as di;
+
 import 'i18n/app_translation.dart';
-import 'injection_container.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Initialize Firebase
   await di.init();
 
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Get AuthLocalDataSource to check authentication status
+  final authLocalDataSource = di.sl<AuthLocalDataSource>();
+  Widget initialScreen;
 
+  try {
+    final token = await authLocalDataSource.getToken();
+    final user = await authLocalDataSource.getUser();
+    if (token != null && user.id!.isNotEmpty) {
+      // User is authenticated; redirect based on role
+      initialScreen = user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
+    } else {
+      // No valid token or user; redirect to LoginScreen
+      initialScreen = const LoginScreen();
+    }
+  } catch (e) {
+    // Error retrieving user or token; redirect to LoginScreen
+    initialScreen = const LoginScreen();
+  }
 
-  runApp(MyApp(initialScreen: LoginScreen()));
+  runApp(MyApp(initialScreen: initialScreen));
 }
 
 class MyApp extends StatelessWidget {
@@ -35,6 +54,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => di.sl<LoginBloc>()),
         BlocProvider(create: (context) => di.sl<SignupBloc>()),
         BlocProvider(create: (context) => di.sl<ToggleCubit>()),
+        BlocProvider(create: (context) => di.sl<RendezVousBloc>()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(1344, 2992),
@@ -57,4 +77,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

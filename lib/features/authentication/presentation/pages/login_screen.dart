@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }
                       } else if (state is LoginError) {
-                        showErrorSnackBar(context, "invalid_credentials".tr);
+                        showErrorSnackBar(context, state.message);
 
                       }
                     },

@@ -5,18 +5,25 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:medical_app/core/network/network_info.dart';
 import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
-
+import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:medical_app/features/authentication/data/data%20sources/auth_remote_data_source.dart';
 import 'package:medical_app/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:medical_app/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:medical_app/features/authentication/domain/usecases/create_account_use_case.dart';
+import 'package:medical_app/features/authentication/domain/usecases/login_usecase.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
+import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
 
+import 'package:medical_app/features/rendez_vous/data/repositories/rendez_vous_repository_impl.dart';
+import 'package:medical_app/features/rendez_vous/domain/repositories/rendez_vous_repository.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/create_rendez_vous_use_case.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_rendez_vous_use_case.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/update_rendez_vous_status_use_case.dart';
+import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'features/authentication/data/data sources/auth_local_data_source.dart';
-import 'features/authentication/data/data sources/auth_remote_data_source.dart';
-import 'features/authentication/domain/usecases/login_usecase.dart';
-import 'features/authentication/presentation/blocs/Signup BLoC/signup_bloc.dart';
-import 'features/authentication/presentation/blocs/login BLoC/login_bloc.dart';
+import 'features/rendez_vous/data/data sources/rdv_local_data_source.dart';
+import 'features/rendez_vous/data/data sources/rdv_remote_data_source.dart';
 
 final sl = GetIt.instance;
 
@@ -25,15 +32,30 @@ Future<void> init() async {
   sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
   sl.registerFactory(() => SignupBloc(createAccountUseCase: sl()));
   sl.registerFactory(() => ToggleCubit());
+  sl.registerFactory(() => RendezVousBloc(
+    fetchRendezVousUseCase: sl(),
+    updateRendezVousStatusUseCase: sl(),
+    createRendezVousUseCase: sl(),
+  ));
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => CreateAccountUseCase(sl()));
+  sl.registerLazySingleton(() => FetchRendezVousUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateRendezVousStatusUseCase(sl()));
+  sl.registerLazySingleton(() => CreateRendezVousUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
         () => AuthRepositoryImpl(
       remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  sl.registerLazySingleton<RendezVousRepository>(
+        () => RendezVousRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
       networkInfo: sl(),
     ),
   );
@@ -49,6 +71,15 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
         () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+  sl.registerLazySingleton<RendezVousRemoteDataSource>(
+        () => RendezVousRemoteDataSourceImpl(
+      firestore: sl(),
+      localDataSource: sl(),
+    ),
+  );
+  sl.registerLazySingleton<RendezVousLocalDataSource>(
+        () => RendezVousLocalDataSourceImpl(sharedPreferences: sl()),
   );
 
   // Core

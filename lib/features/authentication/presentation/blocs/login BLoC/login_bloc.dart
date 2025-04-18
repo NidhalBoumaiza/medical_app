@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 
+import '../../../../../core/utils/map_failure_to_message.dart';
 import '../../../domain/usecases/login_usecase.dart';
 
 part 'login_event.dart';
@@ -26,7 +27,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       password: event.password,
     );
     failureOrUser.fold(
-          (failure) => emit(LoginError(message: _mapFailureToMessage(failure))),
+          (failure) => emit(LoginError(message: mapFailureToMessage(failure))),
           (user) => emit(LoginSuccess(user: user)),
     );
   }
@@ -53,20 +54,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     }
   }
 
-  String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
-        return 'Server error occurred. Please try again later.';
-      case OfflineFailure:
-        return 'No internet connection. Please check your network.';
-      case UnauthorizedFailure:
-        return 'Invalid email or password.';
-      case AuthFailure:
-        return (failure as AuthFailure).message;
-      case ServerMessageFailure:
-        return (failure as ServerMessageFailure).message;
-      default:
-        return 'Unexpected error occurred.';
-    }
-  }
+
 }
+
