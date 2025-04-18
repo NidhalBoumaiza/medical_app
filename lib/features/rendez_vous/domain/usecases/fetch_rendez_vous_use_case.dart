@@ -8,7 +8,13 @@ class FetchRendezVousUseCase {
 
   FetchRendezVousUseCase(this.rendezVousRepository);
 
-  Future<Either<Failure, List<RendezVousEntity>>> call() async {
-    return await rendezVousRepository.getRendezVous();
+  Future<Either<Failure, List<RendezVousEntity>>> call({
+    String? patientId,
+    String? doctorId,
+  }) async {
+    return await rendezVousRepository.getRendezVous(
+      patientId: patientId,
+      doctorId: doctorId,
+    );
   }
 }

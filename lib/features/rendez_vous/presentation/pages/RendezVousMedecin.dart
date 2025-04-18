@@ -6,8 +6,7 @@ import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
-import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_event.dart';
-import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_state.dart';
+
 import 'package:medical_app/widgets/reusable_text_widget.dart';
 
 class RendezVousMedecin extends StatefulWidget {

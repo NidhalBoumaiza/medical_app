@@ -1,5 +1,4 @@
-import 'package:equatable/equatable.dart';
-import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
+part of 'rendez_vous_bloc.dart';
 
 abstract class RendezVousState extends Equatable {
   const RendezVousState();
@@ -18,16 +17,40 @@ class RendezVousLoaded extends RendezVousState {
   const RendezVousLoaded(this.rendezVous);
 
   @override
-  List<Object?> get props => [rendezVous];
+  List<Object> get props => [rendezVous];
 }
 
-class RendezVousCreated extends RendezVousState {}
+class DoctorsLoaded extends RendezVousState {
+  final List<MedecinEntity> doctors;
+
+  const DoctorsLoaded(this.doctors);
+
+  @override
+  List<Object> get props => [doctors];
+}
 
 class RendezVousError extends RendezVousState {
   final String message;
 
-  const RendezVousError({required this.message});
+  const RendezVousError(this.message);
 
   @override
-  List<Object?> get props => [message];
+  List<Object> get props => [message];
 }
+
+class RendezVousStatusUpdated extends RendezVousState {}
+
+class RendezVousCreated extends RendezVousState {
+  final String rendezVousId;
+  final String patientName;
+
+  const RendezVousCreated({
+    required this.rendezVousId,
+    required this.patientName,
+  });
+
+  @override
+  List<Object> get props => [rendezVousId, patientName];
+}
+
+class RendezVousDoctorAssigned extends RendezVousState {}

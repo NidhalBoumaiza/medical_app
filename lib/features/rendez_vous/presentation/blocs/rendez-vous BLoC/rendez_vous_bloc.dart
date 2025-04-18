@@ -1,72 +1,127 @@
 import 'package:bloc/bloc.dart';
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:medical_app/core/error/failures.dart';
-import 'package:medical_app/core/utils/map_failure_to_message.dart';
+import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/create_rendez_vous_use_case.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_doctors_by_specialty_use_case.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_rendez_vous_use_case.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/update_rendez_vous_status_use_case.dart';
-import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_event.dart';
-import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_state.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/assign_doctor_to_rendez_vous_use_case.dart';
 
+part 'rendez_vous_event.dart';
+part 'rendez_vous_state.dart';
 
 class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
   final FetchRendezVousUseCase fetchRendezVousUseCase;
   final UpdateRendezVousStatusUseCase updateRendezVousStatusUseCase;
   final CreateRendezVousUseCase createRendezVousUseCase;
+  final FetchDoctorsBySpecialtyUseCase fetchDoctorsBySpecialtyUseCase;
+  final AssignDoctorToRendezVousUseCase assignDoctorToRendezVousUseCase;
 
   RendezVousBloc({
     required this.fetchRendezVousUseCase,
     required this.updateRendezVousStatusUseCase,
     required this.createRendezVousUseCase,
+    required this.fetchDoctorsBySpecialtyUseCase,
+    required this.assignDoctorToRendezVousUseCase,
   }) : super(RendezVousInitial()) {
     on<FetchRendezVous>(_onFetchRendezVous);
     on<UpdateRendezVousStatus>(_onUpdateRendezVousStatus);
     on<CreateRendezVous>(_onCreateRendezVous);
+    on<FetchDoctorsBySpecialty>(_onFetchDoctorsBySpecialty);
+    on<AssignDoctorToRendezVous>(_onAssignDoctorToRendezVous);
   }
 
-  void _onFetchRendezVous(
+  Future<void> _onFetchRendezVous(
       FetchRendezVous event,
       Emitter<RendezVousState> emit,
       ) async {
     emit(RendezVousLoading());
-    final failureOrRendezVous = await fetchRendezVousUseCase();
-    failureOrRendezVous.fold(
-          (failure) => emit(RendezVousError(message: mapFailureToMessage(failure))),
-          (rendezVous) => emit(RendezVousLoaded(rendezVous)),
+    final failureOrRendezVous = await fetchRendezVousUseCase(
+      patientId: event.patientId,
+      doctorId: event.doctorId,
     );
+    emit(failureOrRendezVous.fold(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (rendezVous) => RendezVousLoaded(rendezVous),
+    ));
   }
 
-  void _onUpdateRendezVousStatus(
+  Future<void> _onUpdateRendezVousStatus(
       UpdateRendezVousStatus event,
       Emitter<RendezVousState> emit,
       ) async {
     emit(RendezVousLoading());
-    final failureOrUnit =
-    await updateRendezVousStatusUseCase(event.rendezVousId, event.status);
-    failureOrUnit.fold(
-          (failure) => emit(RendezVousError(message: mapFailureToMessage(failure))),
-          (_) async {
-        // Refetch the updated list after status change
-        final failureOrRendezVous = await fetchRendezVousUseCase();
-        failureOrRendezVous.fold(
-              (failure) =>
-              emit(RendezVousError(message: mapFailureToMessage(failure))),
-              (rendezVous) => emit(RendezVousLoaded(rendezVous)),
-        );
-      },
+    final failureOrUnit = await updateRendezVousStatusUseCase(
+      event.rendezVousId,
+      event.status,
     );
+    emit(failureOrUnit.fold(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (_) => RendezVousStatusUpdated(),
+    ));
   }
 
-  void _onCreateRendezVous(
+  Future<void> _onCreateRendezVous(
       CreateRendezVous event,
       Emitter<RendezVousState> emit,
       ) async {
     emit(RendezVousLoading());
     final failureOrUnit = await createRendezVousUseCase(event.rendezVous);
-    failureOrUnit.fold(
-          (failure) => emit(RendezVousError(message: mapFailureToMessage(failure))),
-          (_) => emit(RendezVousCreated()),
+    emit(failureOrUnit.fold(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (_) => RendezVousCreated(
+        rendezVousId: event.rendezVous.id ?? '',
+        patientName: event.rendezVous.patientName ?? '',
+      ),
+    ));
+  }
+
+  Future<void> _onFetchDoctorsBySpecialty(
+      FetchDoctorsBySpecialty event,
+      Emitter<RendezVousState> emit,
+      ) async {
+    emit(RendezVousLoading());
+    final failureOrDoctors = await fetchDoctorsBySpecialtyUseCase(
+      event.specialty,
+      event.startTime,
     );
+    emit(failureOrDoctors.fold(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (doctors) => DoctorsLoaded(doctors),
+    ));
+  }
+
+  Future<void> _onAssignDoctorToRendezVous(
+      AssignDoctorToRendezVous event,
+      Emitter<RendezVousState> emit,
+      ) async {
+    emit(RendezVousLoading());
+    final failureOrUnit = await assignDoctorToRendezVousUseCase(
+      event.rendezVousId,
+      event.doctorId,
+      event.doctorName,
+    );
+    emit(failureOrUnit.fold(
+          (failure) => RendezVousError(_mapFailureToMessage(failure)),
+          (_) => RendezVousDoctorAssigned(),
+    ));
+  }
+
+  String _mapFailureToMessage(Failure failure) {
+    switch (failure.runtimeType) {
+      case ServerFailure:
+        return 'Une erreur serveur s\'est produite';
+      case ServerMessageFailure:
+        return (failure as ServerMessageFailure).message;
+      case OfflineFailure:
+        return 'Pas de connexion internet';
+      case EmptyCacheFailure:
+        return 'Aucune donnée en cache disponible';
+      default:
+        return 'Une erreur inattendue s\'est produite';
+    }
   }
 }

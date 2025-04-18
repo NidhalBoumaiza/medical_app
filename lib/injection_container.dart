@@ -13,17 +13,17 @@ import 'package:medical_app/features/authentication/domain/usecases/create_accou
 import 'package:medical_app/features/authentication/domain/usecases/login_usecase.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
-
+import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_local_data_source.dart';
+import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_remote_data_source.dart';
 import 'package:medical_app/features/rendez_vous/data/repositories/rendez_vous_repository_impl.dart';
 import 'package:medical_app/features/rendez_vous/domain/repositories/rendez_vous_repository.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/assign_doctor_to_rendez_vous_use_case.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/create_rendez_vous_use_case.dart';
+import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_doctors_by_specialty_use_case.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_rendez_vous_use_case.dart';
 import 'package:medical_app/features/rendez_vous/domain/usecases/update_rendez_vous_status_use_case.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'features/rendez_vous/data/data sources/rdv_local_data_source.dart';
-import 'features/rendez_vous/data/data sources/rdv_remote_data_source.dart';
 
 final sl = GetIt.instance;
 
@@ -36,6 +36,8 @@ Future<void> init() async {
     fetchRendezVousUseCase: sl(),
     updateRendezVousStatusUseCase: sl(),
     createRendezVousUseCase: sl(),
+    fetchDoctorsBySpecialtyUseCase: sl(),
+    assignDoctorToRendezVousUseCase: sl(),
   ));
 
   // Use Cases
@@ -44,6 +46,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FetchRendezVousUseCase(sl()));
   sl.registerLazySingleton(() => UpdateRendezVousStatusUseCase(sl()));
   sl.registerLazySingleton(() => CreateRendezVousUseCase(sl()));
+  sl.registerLazySingleton(() => FetchDoctorsBySpecialtyUseCase(sl()));
+  sl.registerLazySingleton(() => AssignDoctorToRendezVousUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(

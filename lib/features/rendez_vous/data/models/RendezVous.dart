@@ -34,17 +34,17 @@ class RendezVousModel extends RendezVousEntity {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {
+    return {
+      if (id != null) 'id': id,
+      if (patientId != null) 'patientId': patientId,
+      if (doctorId != null) 'doctorId': doctorId,
+      if (patientName != null) 'patientName': patientName,
+      if (doctorName != null) 'doctorName': doctorName,
+      if (speciality != null) 'speciality': speciality,
       'startTime': startTime.toIso8601String(),
       'status': status,
     };
-    if (id != null) data['id'] = id;
-    if (patientId != null) data['patientId'] = patientId;
-    if (doctorId != null) data['doctorId'] = doctorId;
-    if (patientName != null) data['patientName'] = patientName;
-    if (doctorName != null) data['doctorName'] = doctorName;
-    if (speciality != null) data['speciality'] = speciality;
-    return data;
   }
 }
