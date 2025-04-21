@@ -1,4 +1,6 @@
+import 'dart:async'; // Import for Timer
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
@@ -17,10 +19,9 @@ class Dashboardpatient extends StatefulWidget {
 class _DashboardpatientState extends State<Dashboardpatient> {
   // Data for "Que cherchez-vous ?" section (using Icons)
   final List<Map<String, dynamic>> searchItems = [
-    {'icon': Icons.person, 'text': 'Médecins'},
-    {'icon': Icons.local_pharmacy, 'text': 'Pharmacies'},
-    {'icon': Icons.local_hospital, 'text': 'Hopitaux'},
-    {'icon': Icons.settings, 'text': 'Parametres'},
+    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins'},
+    {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies'},
+    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux'},
   ];
 
   // Data for "Spécialités" section (using asset images)
@@ -50,6 +51,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   // Contrôleur pour le PageView
   final PageController _pageController = PageController();
   int _currentPage = 0; // Variable pour suivre la page actuelle
+  late Timer _timer; // Timer for auto-scrolling
 
   @override
   void initState() {
@@ -60,10 +62,25 @@ class _DashboardpatientState extends State<Dashboardpatient> {
         _currentPage = _pageController.page?.round() ?? 0;
       });
     });
+
+    // Set up the timer for auto-scrolling every 3 seconds
+    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+      if (_currentPage < firstAidVideos.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0; // Loop back to the first page
+      }
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _timer.cancel(); // Cancel the timer to avoid memory leaks
     _pageController.dispose();
     super.dispose();
   }
@@ -78,11 +95,11 @@ class _DashboardpatientState extends State<Dashboardpatient> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // "Que cherchez-vous ?" Section
-              Text(
+              const Text(
                 'Que cherchez-vous ?',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 height: 100,
                 child: ListView.builder(
@@ -117,26 +134,24 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                   MaterialPageRoute(builder: (context) => const PharmaciePage()),
                                 );
                                 break;
-                              case 'Parametres':
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const SettingsPatient()),
-                                );
-                                break;
                             }
                           },
                           child: Container(
                             width: 100,
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(searchItems[index]['icon'], size: 40, color: Colors.black45),
-                                SizedBox(height: 8),
+                                FaIcon(
+                                  searchItems[index]['icon'],
+                                  size: 25,
+                                  color: Colors.black45,
+                                ),
+                                const SizedBox(height: 8),
                                 Text(
                                   searchItems[index]['text'],
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 14),
+                                  style: const TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
@@ -147,13 +162,13 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                   },
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // "Spécialités" Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Spécialités',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
@@ -166,11 +181,11 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                         ),
                       );
                     },
-                    child: Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
+                    child: const Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 height: 100,
                 child: ListView.builder(
@@ -191,7 +206,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           child: Container(
                             width: 100,
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -201,14 +216,14 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                   height: 40,
                                   fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Icon(Icons.error, size: 40, color: Colors.red);
+                                    return const Icon(Icons.error, size: 40, color: Colors.red);
                                   },
                                 ),
-                                SizedBox(height: 8),
+                                const SizedBox(height: 8),
                                 Text(
                                   specialties[index]['text']!,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -219,13 +234,13 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                   },
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // "Premiers Secours" Section (Pleine largeur avec slider)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Premiers Secours',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
@@ -236,11 +251,11 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                         MaterialPageRoute(builder: (context) => SecoursScreen()),
                       );
                     },
-                    child: Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
+                    child: const Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 height: 200,
                 width: double.infinity,
@@ -260,13 +275,13 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.error, size: 60, color: Colors.red);
+                              return const Icon(Icons.error, size: 60, color: Colors.red);
                             },
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
                             firstAidVideos[index]['text']!,
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -274,14 +289,14 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                   },
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               // Indicateur de page synchronisé
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   firstAidVideos.length,
                       (index) => Container(
-                    margin: EdgeInsets.symmetric(horizontal: 4.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
                     width: 8.0,
                     height: 8.0,
                     decoration: BoxDecoration(

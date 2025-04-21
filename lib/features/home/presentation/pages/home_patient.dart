@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/features/dashboard/presentation/pages/dashboard_patient.dart';
+import 'package:medical_app/features/localisation/presentation/pages/pharmacie_page.dart';
 import 'package:medical_app/features/messagerie/presentation/pages/messagerie_patient.dart';
 import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 
+import '../../../../core/utils/app_colors.dart';
 import '../../../../widgets/reusable_text_widget.dart';
 import '../../../ordonnance/presentation/pages/OrdonnancesPage.dart';
 import '../../../secours/presentation/pages/secours_screen.dart';
@@ -21,16 +24,19 @@ class HomePatient extends StatefulWidget {
 class _HomePatientState extends State<HomePatient> {
 
   List<BottomNavigationBarItem> items = [
-    BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
-    BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Rendez-vous"),
-    BottomNavigationBarItem(icon: Icon(Icons.generating_tokens_sharp), label: "AI"),
-    BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: "Profil"),
-
+    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.home), label: "Accueil"),
+    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.calendar), label: "Rendez-vous"),
+    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.message), label: "Messagerie"),
+    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.user), label: "Profil"),
   ];
+
+
+
+
   List<Widget> pages = [
     Dashboardpatient(),
     RendezVousPatient(),
-    SettingsPatient(),
+    MessageriePatient(),
     ProfilePatient(),
 
   ];
@@ -76,47 +82,94 @@ class _HomePatientState extends State<HomePatient> {
           });
         },
       ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.tealAccent,Color(0xFF2FA7BB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MessageriePatient()));
-          },
-          child: Icon(Icons.message_outlined),
-          backgroundColor: Colors.transparent, // Transparent background
-          elevation: 0,
-        ),
-      ),
+      //chatbotbutton
+
+
+
       //menu
       drawer: Drawer(
         child: ListView(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.only(top: 20),
           children: [
-            DrawerHeader(
-              child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 35)),
-              decoration: BoxDecoration(color: Color(0xFF2FA7BB),),
+            // Compact header using Container instead of DrawerHeader
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "MediLink",
+                    style: TextStyle(
+                      color:AppColors.primaryColor,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4), // Reduced spacing
+                  Text(
+                    "Votre santé, notre priorité ",
+                    style: TextStyle(
+                      color:AppColors.primaryColor,
+                      fontSize: 14, // Slightly smaller font size
+
+                    ),
+                  ),
+                ],
+              ),
             ),
 
+
             ListTile(
-              leading: Icon(Icons.description),
-              title: Text("Ordonnances"),
+              leading: const FaIcon(
+                FontAwesomeIcons.filePrescription,
+                color: Color(0xFF2FA7BB),
+              ),
+              title: const Text(
+                "Ordonnances",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => OrdonnancesPage()),
+                  MaterialPageRoute(builder: (context) => const OrdonnancesPage()),
                 );
               },
             ),
             ListTile(
-              leading: Icon(Icons.medical_services_outlined),
-              title: Text("Premier Secours"),
+              leading: const FaIcon(
+                //FontAwesomeIcons.prescriptionBottle,
+                FontAwesomeIcons.houseChimneyMedical,
+                color: Color(0xFF3DC481),
+              ),
+              title: const Text(
+                "Hopitaux",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PharmaciePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const FaIcon(
+                FontAwesomeIcons.kitMedical,
+                color: Color(0xFFDA0606),
+              ),
+              title: const Text(
+                "Premiers Secours",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -125,19 +178,27 @@ class _HomePatientState extends State<HomePatient> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Paramètres"),
+              leading: const FaIcon(
+                FontAwesomeIcons.gear,
+                color: Color(0xFF171818),
+              ),
+              title: const Text(
+                "Paramètres",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
               },
             ),
           ],
         ),
-      ),
-    );
+      ),    );
   }
 }
 

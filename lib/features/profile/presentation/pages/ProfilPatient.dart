@@ -1,292 +1,248 @@
 import 'package:flutter/material.dart';
-
-
-import '../../../../core/utils/app_colors.dart'; // Importation de la classe AppColors
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/theme_provider.dart';
 
 class ProfilePatient extends StatefulWidget {
-  const ProfilePatient({super.key});
+  const ProfilePatient({Key? key}) : super(key: key);
 
   @override
   State<ProfilePatient> createState() => _ProfilePatientState();
 }
 
 class _ProfilePatientState extends State<ProfilePatient> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _addressController;
+
+  bool _notificationsEnabled = true;
+  String _selectedLanguage = 'Français';
+  final List<String> _languages = ['Français', 'English', 'العربية'];
+  final Map<String, String> _languageCodes = {
+    'Français': 'fr',
+    'English': 'en',
+    'العربية': 'ar'
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLanguage = _getLanguageFromLocale(Get.locale?.languageCode ?? 'fr');
+
+    _nameController = TextEditingController(text: 'John Doe');
+    _emailController = TextEditingController(text: 'john.doe@example.com');
+    _phoneController = TextEditingController(text: '+1234567890');
+    _addressController = TextEditingController(text: '123 Main St, City');
+  }
+
+  String _getLanguageFromLocale(String localeCode) {
+    switch (localeCode) {
+      case 'fr': return 'Français';
+      case 'en': return 'English';
+      case 'ar': return 'العربية';
+      default: return 'Français';
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  void _saveProfile() {
+    if (_formKey.currentState!.validate()) {
+      Get.snackbar(
+        'success'.tr,
+        'profile_saved_successfully'.tr,
+        backgroundColor: Colors.green,
+        colorText: AppColors.whiteColor,
+      );
+    }
+  }
+
+  void _showLogoutDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: Text('logout'.tr),
+        content: Text('confirm_logout'.tr),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text('cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              Get.offAllNamed('/login');
+            },
+            child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _changeLanguage(String? newValue) {
+    if (newValue != null) {
+      setState(() => _selectedLanguage = newValue);
+      final localeCode = _languageCodes[newValue];
+      if (localeCode != null) Get.updateLocale(Locale(localeCode));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      body: Container(
-        child: Padding(
-          padding: const EdgeInsets.all(35.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Cercle pour la photo de profil
-                CircleAvatar(
-                  radius: 70,
-                  backgroundColor: AppColors.whiteColor,
-                  backgroundImage: const AssetImage('assets/images/img.png'),
-                  onBackgroundImageError: (exception, stackTrace) {
-                    Icon(Icons.person, size: 70, color: AppColors.primaryColor);
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Carte avec les informations du profil
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Champ pour le nom
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Nom',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.person, color: AppColors.primaryColor),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Champ pour le prénom
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Prénom',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.person, color: AppColors.primaryColor),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Champ pour l’email
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Email',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.email, color: AppColors.primaryColor),
-                                ),
-                                keyboardType: TextInputType.emailAddress,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Champ pour le téléphone
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Téléphone',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.phone, color: AppColors.primaryColor),
-                                ),
-                                keyboardType: TextInputType.phone,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Champ pour le genre
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Genre',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.person, color: AppColors.primaryColor),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Champ pour la date de naissance
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Date de naissance (JJ/MM/AAAA)',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(color: AppColors.primaryColor),
-                                  ),
-                                  prefixIcon: Icon(Icons.calendar_today, color: AppColors.primaryColor),
-                                ),
-                                keyboardType: TextInputType.datetime,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: AppColors.primaryColor,
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: AppColors.whiteColor,
-                                  size: 24,
-                                ),
-                                onPressed: () {},
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Bouton pour sauvegarder les modifications
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                    ),
-                    child: Text(
-                      'Sauvegarder les modifications',
-                      style: TextStyle(fontSize: 16, color: AppColors.whiteColor),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Bouton pour se déconnecter
-                Container(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                    ),
-                    onPressed: () {},
-                    child: Text(
-                      "Se déconnecter",
-                      style: TextStyle(color: AppColors.whiteColor, fontSize: 16),
-                    ),
-                  ),
-                ),
-              ],
+      appBar: AppBar(
+        title: Text('profile'.tr),
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.whiteColor,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveProfile,
+            tooltip: 'save'.tr,
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          Center(
+          child: Stack(
+          children: [
+            CircleAvatar(
+            radius: 50,
+            backgroundColor: AppColors.primaryColor.withOpacity(0.2),
+            child: Icon(
+              Icons.person,
+              size: 50,
+              color: AppColors.primaryColor,
             ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit, color: AppColors.whiteColor, size: 20),
+                onPressed: () => _changeProfilePicture(),
+              ),
+            ),
+          ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+      TextFormField(
+        controller: _nameController,
+        decoration: InputDecoration(
+          labelText: 'first_name_label'.tr,
+          prefixIcon: const Icon(Icons.person),
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) => value?.isEmpty ?? true ? 'name_required'.tr : null,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _emailController,
+        decoration: InputDecoration(
+          labelText: 'email'.tr,
+          prefixIcon: const Icon(Icons.email),
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) {
+          if (value?.isEmpty ?? true) return 'email_required'.tr;
+          if (!value!.contains('@')) return 'invalid_email_message'.tr;
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _phoneController,
+        decoration: InputDecoration(
+          labelText: 'phone_number_label'.tr,
+          prefixIcon: const Icon(Icons.phone),
+          border: const OutlineInputBorder(),
+        ),
+        keyboardType: TextInputType.phone,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        validator: (value) => value?.isEmpty ?? true ? 'phone_number_required'.tr : null,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _addressController,
+        decoration: InputDecoration(
+          labelText: 'address'.tr,
+          prefixIcon: const Icon(Icons.location_on),
+          border: const OutlineInputBorder(),
+        ),
+        maxLines: 2,
+      ),
+      const SizedBox(height: 24),
+      Divider(color: Theme.of(context).dividerColor),
+      SwitchListTile(
+        title: Text('notifications'.tr),
+        value: _notificationsEnabled,
+        onChanged: (value) => setState(() => _notificationsEnabled = value),
+        secondary: const Icon(Icons.notifications),
+        activeColor: AppColors.primaryColor,
+      ),
+      ListTile(
+        leading: const Icon(Icons.language),
+        title: Text('language'.tr),
+        trailing: DropdownButton<String>(
+          value: _selectedLanguage,
+          onChanged: _changeLanguage,
+          items: _languages.map((value) => DropdownMenuItem(
+            value: value,
+            child: Text(value),
+          )).toList(),
+        ),
+      ),
+      SwitchListTile(
+        title: Text('dark_mode'.tr),
+        value: themeProvider.isDarkMode,
+        onChanged: (_) => themeProvider.toggleTheme(),
+        secondary: const Icon(Icons.brightness_6),
+        activeColor: AppColors.primaryColor,
+      ),
+      const SizedBox(height: 24),
+      Center(
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.logout),
+          label: Text('logout'.tr),
+          onPressed: _showLogoutDialog,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          ),
+        ), ),]
           ),
         ),
       ),
-    );
+    );}
+
+  void _changeProfilePicture() {
+    // Implémentez la logique de changement de photo ici
+    Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
   }
 }

@@ -12,15 +12,15 @@ import 'package:medical_app/features/home/presentation/pages/home_medecin.dart';
 import 'package:medical_app/features/home/presentation/pages/home_patient.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:medical_app/injection_container.dart' as di;
-
+import 'package:provider/provider.dart';
+import 'package:medical_app/core/utils/theme_provider.dart';
 import 'i18n/app_translation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+  await Firebase.initializeApp();
   await di.init();
 
-  // Get AuthLocalDataSource to check authentication status
   final authLocalDataSource = di.sl<AuthLocalDataSource>();
   Widget initialScreen;
 
@@ -28,14 +28,11 @@ void main() async {
     final token = await authLocalDataSource.getToken();
     final user = await authLocalDataSource.getUser();
     if (token != null && user.id!.isNotEmpty) {
-      // User is authenticated; redirect based on role
       initialScreen = user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
     } else {
-      // No valid token or user; redirect to LoginScreen
       initialScreen = const LoginScreen();
     }
   } catch (e) {
-    // Error retrieving user or token; redirect to LoginScreen
     initialScreen = const LoginScreen();
   }
 
@@ -49,28 +46,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => di.sl<LoginBloc>()),
-        BlocProvider(create: (context) => di.sl<SignupBloc>()),
-        BlocProvider(create: (context) => di.sl<ToggleCubit>()),
-        BlocProvider(create: (context) => di.sl<RendezVousBloc>()),
-      ],
-      child: ScreenUtilInit(
-        designSize: const Size(1344, 2992),
-        minTextAdapt: true,
-        splitScreenMode: true,
-        builder: (context, child) {
-          return GetMaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Medical App',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => di.sl<LoginBloc>()),
+              BlocProvider(create: (context) => di.sl<SignupBloc>()),
+              BlocProvider(create: (context) => di.sl<ToggleCubit>()),
+              BlocProvider(create: (context) => di.sl<RendezVousBloc>()),
+            ],
+            child: ScreenUtilInit(
+              designSize: const Size(1344, 2992),
+              minTextAdapt: true,
+              splitScreenMode: true,
+              builder: (context, child) {
+                return GetMaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: 'Medical App',
+                  theme: themeProvider.getTheme(),
+                  home: initialScreen,
+                  translations: AppTranslations(),
+                  locale: Get.deviceLocale,
+                  fallbackLocale: const Locale('fr', 'FR'),
+                );
+              },
             ),
-            home: initialScreen,
-            translations: AppTranslations(),
-            locale: Get.deviceLocale,
-            fallbackLocale: const Locale('fr', 'FR'),
           );
         },
       ),

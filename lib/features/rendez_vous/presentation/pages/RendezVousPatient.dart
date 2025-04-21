@@ -110,6 +110,19 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
+        appBar: AppBar(
+          title: const Text("Rechercher une consultation"),
+          backgroundColor: const Color(0xFF2FA7BB),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.chevron_left,
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -121,14 +134,6 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Center(
-                    child: ReusableTextWidget(
-                      text: "Rechercher une consultation",
-                      textSize: 75,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primaryColor,
-                    ),
-                  ),
                   SizedBox(height: 40.h),
                   Image.asset(
                     'assets/images/Consultation.png',
