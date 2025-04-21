@@ -115,7 +115,10 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       case ServerFailure:
         return 'Une erreur serveur s\'est produite';
       case ServerMessageFailure:
-        return (failure as ServerMessageFailure).message;
+        final message = (failure as ServerMessageFailure).message;
+        return message == 'Rendezvous not found'
+            ? 'Consultation non trouvée'
+            : message;
       case OfflineFailure:
         return 'Pas de connexion internet';
       case EmptyCacheFailure:

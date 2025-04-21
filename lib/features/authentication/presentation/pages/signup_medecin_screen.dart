@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/reusable_text_field_widget.dart';
 import '../../domain/entities/medecin_entity.dart';
+import '../../../../core/specialties.dart';
 import 'password_screen.dart';
 
 class SignupMedecinScreen extends StatefulWidget {
@@ -18,8 +19,8 @@ class SignupMedecinScreen extends StatefulWidget {
 
 class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController specialiteController = TextEditingController();
   final TextEditingController numLicenceController = TextEditingController();
+  String? selectedSpecialty;
 
   @override
   Widget build(BuildContext context) {
@@ -66,17 +67,65 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    ReusableTextFieldWidget(
-                      controller: specialiteController,
-                      fillColor: const Color(0xfffafcfc),
-                      borderSide: const BorderSide(
-                        color: Color(0xfff3f6f9),
-                        width: 3,
-                        style: BorderStyle.solid,
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xfffafcfc),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xfff3f6f9),
+                            width: 3,
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xfff3f6f9),
+                            width: 3,
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                          borderSide: BorderSide(
+                            color: AppColors.primaryColor,
+                            width: 3,
+                          ),
+                        ),
+                        hintText: "Sélectionner une spécialité".tr,
+                        hintStyle: GoogleFonts.raleway(
+                          color: Colors.grey,
+                          fontSize: 45.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      hintText: "Spécialité".tr,
-                      keyboardType: TextInputType.text,
-                      errorMessage: "Spécialité est obligatoire".tr,
+                      value: selectedSpecialty,
+                      items: specialties
+                          .map((specialty) => DropdownMenuItem(
+                        value: specialty,
+                        child: Text(
+                          specialty,
+                          style: GoogleFonts.raleway(
+                            fontSize: 45.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedSpecialty = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Spécialité est obligatoire".tr;
+                        }
+                        return null;
+                      },
                     ),
                     SizedBox(height: 30.h),
                     Text(
@@ -119,7 +168,7 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
                               gender: widget.medecinEntity.gender,
                               phoneNumber: widget.medecinEntity.phoneNumber,
                               dateOfBirth: widget.medecinEntity.dateOfBirth,
-                              speciality: specialiteController.text,
+                              speciality: selectedSpecialty!,
                               numLicence: numLicenceController.text,
                             );
                             Get.to(() => PasswordScreen(entity: updatedMedecinEntity));
@@ -143,5 +192,11 @@ class _SignupMedecinScreenState extends State<SignupMedecinScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    numLicenceController.dispose();
+    super.dispose();
   }
 }

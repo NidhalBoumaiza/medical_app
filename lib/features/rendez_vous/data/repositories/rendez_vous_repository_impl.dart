@@ -32,7 +32,19 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           patientId: patientId,
           doctorId: doctorId,
         );
-        return Right(rendezVousModels);
+        final rendezVousEntities = rendezVousModels
+            .map((model) => RendezVousEntity(
+          id: model.id,
+          patientId: model.patientId,
+          doctorId: model.doctorId,
+          patientName: model.patientName,
+          doctorName: model.doctorName,
+          speciality: model.speciality,
+          startTime: model.startTime,
+          status: model.status,
+        ))
+            .toList();
+        return Right(rendezVousEntities);
       } on ServerException {
         return Left(ServerFailure());
       } on ServerMessageException catch (e) {
@@ -43,7 +55,19 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
     } else {
       try {
         final cachedRendezVous = await localDataSource.getCachedRendezVous();
-        return Right(cachedRendezVous);
+        final rendezVousEntities = cachedRendezVous
+            .map((model) => RendezVousEntity(
+          id: model.id,
+          patientId: model.patientId,
+          doctorId: model.doctorId,
+          patientName: model.patientName,
+          doctorName: model.doctorName,
+          speciality: model.speciality,
+          startTime: model.startTime,
+          status: model.status,
+        ))
+            .toList();
+        return Right(rendezVousEntities);
       } on EmptyCacheException {
         return Left(EmptyCacheFailure());
       }
@@ -52,7 +76,9 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> updateRendezVousStatus(
-      String rendezVousId, String status) async {
+      String rendezVousId,
+      String status,
+      ) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.updateRendezVousStatus(rendezVousId, status);
@@ -71,12 +97,11 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> createRendezVous(
-      RendezVousEntity rendezVous) async {
+      RendezVousEntity rendezVous,
+      ) async {
     if (await networkInfo.isConnected) {
       try {
-        final rendezVousModel = rendezVous is RendezVousModel
-            ? rendezVous
-            : RendezVousModel(
+        final rendezVousModel = RendezVousModel(
           id: rendezVous.id,
           patientId: rendezVous.patientId,
           doctorId: rendezVous.doctorId,

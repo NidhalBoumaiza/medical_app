@@ -45,13 +45,13 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       throw ServerException('Either patientId or doctorId must be provided');
     }
     try {
-      Query<Map<String, dynamic>> query =
-      firestore.collection('rendez_vous');
+      Query<Map<String, dynamic>> query = firestore.collection('rendez_vous');
       if (patientId != null) {
         query = query.where('patientId', isEqualTo: patientId);
       }
       if (doctorId != null) {
         query = query.where('doctorId', isEqualTo: doctorId);
+        query = query.where('status', isEqualTo: 'pending');
       }
       final snapshot = await query.get();
       final rendezVous = snapshot.docs
@@ -111,7 +111,6 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       DateTime startTime,
       ) async {
     try {
-      // Get doctors with the specified specialty
       final doctorSnapshot = await firestore
           .collection('medecins')
           .where('speciality', isEqualTo: specialty)
@@ -120,14 +119,13 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
           .map((doc) => MedecinModel.fromJson(doc.data()).toEntity())
           .toList();
 
-      // Filter out doctors with conflicting rendezvous
       final availableDoctors = <MedecinEntity>[];
       for (final doctor in doctors) {
         final rendezVousSnapshot = await firestore
             .collection('rendez_vous')
             .where('doctorId', isEqualTo: doctor.id)
             .where('startTime', isEqualTo: startTime.toIso8601String())
-            .where('status', isEqualTo: 'Accepté')
+            .where('status', isEqualTo: 'accepted')
             .get();
         if (rendezVousSnapshot.docs.isEmpty) {
           availableDoctors.add(doctor);
@@ -148,13 +146,10 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       String doctorName,
       ) async {
     try {
-      await firestore
-          .collection('rendez_vous')
-          .doc(rendezVousId)
-          .update({
+      await firestore.collection('rendez_vous').doc(rendezVousId).update({
         'doctorId': doctorId,
         'doctorName': doctorName,
-        'status': 'En attente',
+        'status': 'pending',
       });
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {
