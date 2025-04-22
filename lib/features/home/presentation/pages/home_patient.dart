@@ -6,14 +6,12 @@ import 'package:medical_app/features/messagerie/presentation/pages/messagerie_pa
 import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.dart';
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
-
 import '../../../../core/utils/app_colors.dart';
 import '../../../../widgets/reusable_text_widget.dart';
 import '../../../ordonnance/presentation/pages/OrdonnancesPage.dart';
 import '../../../secours/presentation/pages/secours_screen.dart';
 import '../../../settings/presentation/pages/SettingsPage.dart';
-import '../../../settings/presentation/pages/settings_patient.dart';
-
+import '../../../payement/presentation/pages/payement.dart';
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
 
@@ -22,183 +20,265 @@ class HomePatient extends StatefulWidget {
 }
 
 class _HomePatientState extends State<HomePatient> {
+  int _selectedIndex = 0;
 
-  List<BottomNavigationBarItem> items = [
-    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.home), label: "Accueil"),
-    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.calendar), label: "Rendez-vous"),
-    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.message), label: "Messagerie"),
-    BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.user), label: "Profil"),
+  static const List<BottomNavigationBarItem> _navItems = [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home_outlined),
+      activeIcon: Icon(Icons.home_filled),
+      label: 'Accueil',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.calendar_today_outlined),
+      activeIcon: Icon(Icons.calendar_today),
+      label: 'Rendez-vous',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chat_bubble_outline),
+      activeIcon: Icon(Icons.chat_bubble),
+      label: 'Messages',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person_outline),
+      activeIcon: Icon(Icons.person),
+      label: 'Profil',
+    ),
   ];
 
-
-
-
-  List<Widget> pages = [
-    Dashboardpatient(),
-    RendezVousPatient(),
-    MessageriePatient(),
-    ProfilePatient(),
-
+  final List<Widget> _pages = [
+    const Dashboardpatient(),
+    const RendezVousPatient(),
+    const MessageriePatient(),
+    const ProfilePatient(),
   ];
-  int selectedItem = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   void _onNotificationTapped() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => NotificationsPage()),
+      MaterialPageRoute(builder: (context) => const NotificationsPage()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: ReusableTextWidget(
-          text: "MediLink",
-          textSize: 85,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          letterSpacing: 1.5,
+        title: const Text(
+          'MediLink',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
         ),
-        backgroundColor: Color(0xFF2FA7BB),
+        centerTitle: true,
+        backgroundColor: AppColors.primaryColor,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications, color: Colors.white),
+            icon: const Badge(
+              child: Icon(Icons.notifications_none, color: Colors.white),
+            ),
             onPressed: _onNotificationTapped,
           ),
         ],
       ),
-      body: pages[selectedItem],
-      bottomNavigationBar: BottomNavigationBar(
-        items: items,
-        selectedItemColor:Color.fromRGBO(20, 90, 110, 1), // Teal vif
-        unselectedItemColor:  Color(0xFF2FA7BB),
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        currentIndex: selectedItem,
-        onTap: (index) {
-          setState(() {
-            selectedItem = index;
-          });
-        },
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          child: BottomNavigationBar(
+            items: _navItems,
+            currentIndex: _selectedIndex,
+            selectedItemColor: AppColors.primaryColor,
+            unselectedItemColor: Colors.grey,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            elevation: 10,
+            selectedLabelStyle: const TextStyle(fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontSize: 12),
+            onTap: _onItemTapped,
+          ),
+        ),
       ),
-      //chatbotbutton
-
-
-
-      //menu
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.only(top: 20),
+        width: MediaQuery.of(context).size.width * 0.8,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.horizontal(right: Radius.circular(16)),
+        ),
+        backgroundColor: const Color(0xFF3F51B5),
+        child: Column(
           children: [
-            // Compact header using Container instead of DrawerHeader
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
+              child: Row(
                 children: [
-                  const Text(
-                    "MediLink",
-                    style: TextStyle(
-                      color:AppColors.primaryColor,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 30, color: Color(0xFF3F51B5)),
                   ),
-                  const SizedBox(height: 4), // Reduced spacing
-                  Text(
-                    "Votre santé, notre priorité ",
-                    style: TextStyle(
-                      color:AppColors.primaryColor,
-                      fontSize: 14, // Slightly smaller font size
-
-                    ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'John Doe',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'johndoe@example.com',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-
-
-            ListTile(
-              leading: const FaIcon(
-                FontAwesomeIcons.filePrescription,
-                color: Color(0xFF2FA7BB),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.calendarAlt,
+                    title: 'Ordonnances',
+                    badgeCount: 2,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OrdonnancesPage()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.hospital,
+                    title: 'Hôpitaux',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PharmaciePage()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.kitMedical,
+                    title: 'Premiers Secours',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SecoursScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.creditCard,
+                    title: 'Paiements',
+                    badgeCount: 1,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PaymentsPage()), // Corrected class name
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: FontAwesomeIcons.gear,
+                    title: 'Paramètres',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsPage()),
+                      );
+                    },
+                  ),
+                ],
               ),
-              title: const Text(
-                "Ordonnances",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const OrdonnancesPage()),
-                );
-              },
             ),
-            ListTile(
-              leading: const FaIcon(
-                //FontAwesomeIcons.prescriptionBottle,
-                FontAwesomeIcons.houseChimneyMedical,
-                color: Color(0xFF3DC481),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+              child: _buildDrawerItem(
+                icon: FontAwesomeIcons.rightFromBracket,
+                title: 'Déconnexion',
+                onTap: () {
+                  // Add logout functionality
+                },
+                color: Colors.red,
               ),
-              title: const Text(
-                "Hopitaux",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PharmaciePage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const FaIcon(
-                FontAwesomeIcons.kitMedical,
-                color: Color(0xFFDA0606),
-              ),
-              title: const Text(
-                "Premiers Secours",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SecoursScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const FaIcon(
-                FontAwesomeIcons.gear,
-                color: Color(0xFF171818),
-              ),
-              title: const Text(
-                "Paramètres",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
-                );
-              },
             ),
           ],
         ),
-      ),    );
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = Colors.white,
+    int badgeCount = 0,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color, size: 24),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (badgeCount > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                badgeCount.toString(),
+                style: const TextStyle(
+                  color: Color(0xFF2fa7bb),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      minLeadingWidth: 24,
+    );
   }
 }
-

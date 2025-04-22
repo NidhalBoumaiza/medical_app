@@ -1,10 +1,9 @@
-import 'dart:async'; // Import for Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
-
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
@@ -19,9 +18,9 @@ class Dashboardpatient extends StatefulWidget {
 class _DashboardpatientState extends State<Dashboardpatient> {
   // Data for "Que cherchez-vous ?" section (using Icons)
   final List<Map<String, dynamic>> searchItems = [
-    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins'},
-    {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies'},
-    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux'},
+    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': Colors.blueAccent},
+    {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies', 'color': Colors.blueAccent},
+    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux', 'color': Colors.blueAccent},
   ];
 
   // Data for "Spécialités" section (using asset images)
@@ -48,27 +47,24 @@ class _DashboardpatientState extends State<Dashboardpatient> {
     {'image': 'assets/images/brulure.jpg', 'text': 'Brûlures', 'videoUrl': 'https://example.com/burns_video'},
   ];
 
-  // Contrôleur pour le PageView
   final PageController _pageController = PageController();
-  int _currentPage = 0; // Variable pour suivre la page actuelle
-  late Timer _timer; // Timer for auto-scrolling
+  int _currentPage = 0;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    // Ajouter un écouteur pour synchroniser les points avec le PageView
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page?.round() ?? 0;
       });
     });
 
-    // Set up the timer for auto-scrolling every 3 seconds
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_currentPage < firstAidVideos.length - 1) {
         _currentPage++;
       } else {
-        _currentPage = 0; // Loop back to the first page
+        _currentPage = 0;
       }
       _pageController.animateToPage(
         _currentPage,
@@ -80,7 +76,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancel the timer to avoid memory leaks
+    _timer.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -88,6 +84,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -97,11 +94,15 @@ class _DashboardpatientState extends State<Dashboardpatient> {
               // "Que cherchez-vous ?" Section
               const Text(
                 'Que cherchez-vous ?',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(height: 16),
               Container(
-                height: 100,
+                height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: searchItems.length,
@@ -109,8 +110,8 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         child: InkWell(
                           onTap: () {
                             switch (searchItems[index]["text"]) {
@@ -136,22 +137,31 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                 break;
                             }
                           },
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             width: 100,
                             padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.white,
+                            ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 FaIcon(
                                   searchItems[index]['icon'],
-                                  size: 25,
-                                  color: Colors.black45,
+                                  size: 30,
+                                  color: searchItems[index]['color'],
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 Text(
                                   searchItems[index]['text'],
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 14),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ],
                             ),
@@ -170,7 +180,11 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                 children: [
                   const Text(
                     'Spécialités',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -181,13 +195,16 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                         ),
                       );
                     },
-                    child: const Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
+                    child: const Text(
+                      'Voir tout',
+                      style: TextStyle(fontSize: 16, color: Colors.teal),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Container(
-                height: 100,
+                height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: specialties.length,
@@ -202,28 +219,43 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          child: Container(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             width: 100,
                             padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.white,
+                            ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(
-                                  specialties[index]['image']!,
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(Icons.error, size: 40, color: Colors.red);
-                                  },
+                                ColorFiltered(
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.blueAccent,
+                                    BlendMode.srcATop,
+                                  ),
+                                  child: Image.asset(
+                                    specialties[index]['image']!,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.error, size: 40, color: Colors.red);
+                                    },
+                                  ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 Text(
                                   specialties[index]['text']!,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ],
                             ),
@@ -236,13 +268,17 @@ class _DashboardpatientState extends State<Dashboardpatient> {
               ),
               const SizedBox(height: 24),
 
-              // "Premiers Secours" Section (Pleine largeur avec slider)
+              // "Premiers Secours" Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     'Premiers Secours',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -251,37 +287,50 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                         MaterialPageRoute(builder: (context) => SecoursScreen()),
                       );
                     },
-                    child: const Text('Voir tout', style: TextStyle(fontSize: 16, color: Colors.teal)),
+                    child: const Text(
+                      'Voir tout',
+                      style: TextStyle(fontSize: 16, color: Colors.teal),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Container(
-                height: 200,
+                height: 220,
                 width: double.infinity,
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: firstAidVideos.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Image.asset(
-                            firstAidVideos[index]['image']!,
-                            height: 120,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.error, size: 60, color: Colors.red);
-                            },
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                            child: Image.asset(
+                              firstAidVideos[index]['image']!,
+                              height: 140,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.error, size: 60, color: Colors.red);
+                              },
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            firstAidVideos[index]['text']!,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              firstAidVideos[index]['text']!,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -290,18 +339,17 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Indicateur de page synchronisé
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   firstAidVideos.length,
                       (index) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    width: 8.0,
-                    height: 8.0,
+                    width: 10.0,
+                    height: 10.0,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _currentPage == index ? Colors.teal : Colors.grey,
+                      color: _currentPage == index ? Colors.teal : Colors.grey.shade400,
                     ),
                   ),
                 ),
