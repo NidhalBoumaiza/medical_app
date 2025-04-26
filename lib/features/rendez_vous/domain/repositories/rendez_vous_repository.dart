@@ -12,6 +12,10 @@ abstract class RendezVousRepository {
   Future<Either<Failure, Unit>> updateRendezVousStatus(
       String rendezVousId,
       String status,
+      String patientId,
+      String doctorId,
+      String patientName,
+      String doctorName,
       );
 
   Future<Either<Failure, Unit>> createRendezVous(RendezVousEntity rendezVous);

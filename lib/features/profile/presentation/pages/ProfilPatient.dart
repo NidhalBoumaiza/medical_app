@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/theme_provider.dart';
 
@@ -32,11 +35,25 @@ class _ProfilePatientState extends State<ProfilePatient> {
   void initState() {
     super.initState();
     _selectedLanguage = _getLanguageFromLocale(Get.locale?.languageCode ?? 'fr');
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _addressController = TextEditingController();
+    _loadUserData();
+  }
 
-    _nameController = TextEditingController(text: 'John Doe');
-    _emailController = TextEditingController(text: 'john.doe@example.com');
-    _phoneController = TextEditingController(text: '+1234567890');
-    _addressController = TextEditingController(text: '123 Main St, City');
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('CACHED_USER');
+    if (userJson != null) {
+      final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+      setState(() {
+        _nameController.text = '${userMap['name'] ?? ''} ${userMap['lastName'] ?? ''}'.trim();
+        _emailController.text = userMap['email'] as String? ?? '';
+        _phoneController.text = userMap['phoneNumber'] as String? ?? '';
+        _addressController.text = ''; // Address not stored in UserModel
+      });
+    }
   }
 
   String _getLanguageFromLocale(String localeCode) {
@@ -57,14 +74,26 @@ class _ProfilePatientState extends State<ProfilePatient> {
     super.dispose();
   }
 
-  void _saveProfile() {
+  void _saveProfile() async {
     if (_formKey.currentState!.validate()) {
-      Get.snackbar(
-        'success'.tr,
-        'profile_saved_successfully'.tr,
-        backgroundColor: Colors.green,
-        colorText: AppColors.whiteColor,
-      );
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('CACHED_USER');
+      if (userJson != null) {
+        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+        final nameParts = _nameController.text.trim().split(' ');
+        userMap['name'] = nameParts.isNotEmpty ? nameParts[0] : '';
+        userMap['lastName'] = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+        userMap['email'] = _emailController.text;
+        userMap['phoneNumber'] = _phoneController.text;
+        // Note: Address not stored in UserModel; consider adding to Firestore if needed
+        await prefs.setString('CACHED_USER', jsonEncode(userMap));
+        Get.snackbar(
+          'success'.tr,
+          'profile_saved_successfully'.tr,
+          backgroundColor: Colors.green,
+          colorText: AppColors.whiteColor,
+        );
+      }
     }
   }
 
@@ -96,6 +125,10 @@ class _ProfilePatientState extends State<ProfilePatient> {
       final localeCode = _languageCodes[newValue];
       if (localeCode != null) Get.updateLocale(Locale(localeCode));
     }
+  }
+
+  void _changeProfilePicture() {
+    Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
   }
 
   @override
@@ -144,7 +177,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                         ),
                         child: IconButton(
                           icon: const Icon(Icons.edit, color: AppColors.whiteColor, size: 20),
-                          onPressed: () => _changeProfilePicture(),
+                          onPressed: _changeProfilePicture,
                         ),
                       ),
                     ),
@@ -229,7 +262,6 @@ class _ProfilePatientState extends State<ProfilePatient> {
                 leading: const Icon(Icons.calendar_today),
                 title: Text('mes_rendez_vous'.tr),
                 onTap: () {
-                  // Placeholder for navigation to appointments page
                   Get.toNamed('/appointments');
                 },
               ),
@@ -237,7 +269,6 @@ class _ProfilePatientState extends State<ProfilePatient> {
                 leading: const Icon(Icons.help),
                 title: Text('aide_et_assistance_technique'.tr),
                 onTap: () {
-                  // Placeholder for navigation to help/support page
                   Get.toNamed('/help');
                 },
               ),
@@ -258,9 +289,5 @@ class _ProfilePatientState extends State<ProfilePatient> {
         ),
       ),
     );
-  }
-
-  void _changeProfilePicture() {
-    Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
   }
 }

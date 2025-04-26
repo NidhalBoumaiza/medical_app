@@ -2,43 +2,50 @@ import 'package:equatable/equatable.dart';
 import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
 
 abstract class ConversationsState extends Equatable {
-  const ConversationsState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class ConversationsInitial extends ConversationsState {}
-
-class ConversationsLoading extends ConversationsState {}
-
-class ConversationsLoaded extends ConversationsState {
   final List<ConversationEntity> conversations;
 
-  const ConversationsLoaded({required this.conversations});
+  const ConversationsState({required this.conversations});
 
   @override
   List<Object> get props => [conversations];
 }
 
+class ConversationsInitial extends ConversationsState {
+  const ConversationsInitial() : super(conversations: const []);
+}
+
+class ConversationsLoading extends ConversationsState {
+  const ConversationsLoading({required super.conversations});
+}
+
+class ConversationsLoaded extends ConversationsState {
+  const ConversationsLoaded({required super.conversations});
+}
+
 class ConversationsError extends ConversationsState {
   final String message;
 
-  const ConversationsError({required this.message});
+  const ConversationsError({
+    required this.message,
+    required super.conversations,
+  });
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [message, ...super.props];
 }
 
 class NavigateToChat extends ConversationsState {
   final String conversationId;
   final String userName;
+  final String recipientId;
 
   const NavigateToChat({
     required this.conversationId,
     required this.userName,
+    required this.recipientId,
+    required super.conversations,
   });
 
   @override
-  List<Object> get props => [conversationId, userName];
+  List<Object> get props => [conversationId, userName, recipientId, ...super.props];
 }

@@ -1,15 +1,15 @@
 import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/features/messagerie/data/models/message_model.dart';
+
 import '../repositories/message_repository.dart';
 
-class GetMessagesUseCase {
+class GetMessagesStreamUseCase {
   final MessagingRepository repository;
 
-  GetMessagesUseCase(this.repository);
+  GetMessagesStreamUseCase(this.repository);
 
-  // This is correctly defined with a positional parameter
-  Future<Either<Failure, List<MessageModel>>> call(String conversationId) async {
-    return await repository.getMessages(conversationId);
+  Stream<List<MessageModel>> call(String conversationId) {
+    return repository.getMessagesStream(conversationId);
   }
 }

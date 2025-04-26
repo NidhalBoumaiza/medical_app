@@ -15,6 +15,7 @@ import 'package:medical_app/features/authentication/domain/usecases/login_usecas
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
 import 'package:medical_app/features/messagerie/data/data_sources/message_local_datasource.dart';
+import 'package:medical_app/features/messagerie/domain/use_cases/get_messages_stream_usecase.dart';
 import 'package:medical_app/features/messagerie/presentation/blocs/messageries%20BLoC/messagerie_bloc.dart';
 import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_local_data_source.dart';
 import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_remote_data_source.dart';
@@ -51,7 +52,7 @@ Future<void> init() async {
     assignDoctorToRendezVousUseCase: sl(),
   ));
   sl.registerFactory(() => ConversationsBloc(getConversationsUseCase: sl(),));
-  sl.registerFactory(()=>MessagerieBloc(sendMessageUseCase: sl(), getConversationsUseCase:  sl(), getMessagesUseCase:  sl()));
+  sl.registerFactory(()=>MessagerieBloc(sendMessageUseCase: sl(), getMessagesUseCase:  sl(), getMessagesStreamUseCase: sl()));
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -64,6 +65,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetConversationsUseCase(sl()));
   sl.registerLazySingleton(() => SendMessageUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesUseCase(sl()));
+  sl.registerLazySingleton(() => GetMessagesStreamUseCase(sl()));
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
         () => AuthRepositoryImpl(
@@ -81,7 +83,7 @@ Future<void> init() async {
   sl.registerLazySingleton<MessagingRepository>(
         () => MessagingRepositoryImpl(
       remoteDataSource: sl(),
-      networkInfo: sl(), localDataSource: sl(),
+      networkInfo: sl(),
     ),
   );
   // Data Sourcess
@@ -108,7 +110,7 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
         () => MessagingRemoteDataSourceImpl(
-      firestore: sl(), storage: sl(), firebaseAuth: sl(),
+      firestore: sl(),
     ),
   );
 

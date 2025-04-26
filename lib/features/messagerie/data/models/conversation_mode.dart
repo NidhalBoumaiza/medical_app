@@ -5,6 +5,8 @@ class ConversationModel extends ConversationEntity {
     String? id,
     required String patientId,
     required String doctorId,
+    required String patientName,
+    required String doctorName,
     required String lastMessage,
     required String lastMessageType,
     required DateTime lastMessageTime,
@@ -13,6 +15,8 @@ class ConversationModel extends ConversationEntity {
     id: id,
     patientId: patientId,
     doctorId: doctorId,
+    patientName: patientName,
+    doctorName: doctorName,
     lastMessage: lastMessage,
     lastMessageType: lastMessageType,
     lastMessageTime: lastMessageTime,
@@ -24,6 +28,8 @@ class ConversationModel extends ConversationEntity {
       id: json['id'] as String?,
       patientId: json['patientId'] as String,
       doctorId: json['doctorId'] as String,
+      patientName: json['patientName'] as String,
+      doctorName: json['doctorName'] as String,
       lastMessage: json['lastMessage'] as String,
       lastMessageType: json['lastMessageType'] as String,
       lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
@@ -31,10 +37,13 @@ class ConversationModel extends ConversationEntity {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     final data = {
       'patientId': patientId,
       'doctorId': doctorId,
+      'patientName': patientName,
+      'doctorName': doctorName,
       'lastMessage': lastMessage,
       'lastMessageType': lastMessageType,
       'lastMessageTime': lastMessageTime.toIso8601String(),

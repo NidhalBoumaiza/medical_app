@@ -1,21 +1,41 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
-import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
-
-
+import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import '../blocs/conversation BLoC/conversations_bloc.dart';
 import '../blocs/conversation BLoC/conversations_event.dart';
 import '../blocs/conversation BLoC/conversations_state.dart';
 import 'chat_screen.dart';
 
-class ConversationsListScreen extends StatelessWidget {
+class ConversationsScreen extends StatefulWidget {
+  final String userId;
   final bool isDoctor;
 
-  const ConversationsListScreen({required this.isDoctor, super.key});
+  const ConversationsScreen({
+    required this.userId,
+    required this.isDoctor,
+    super.key,
+  });
+
+  @override
+  State<ConversationsScreen> createState() => _ConversationsScreenState();
+}
+
+class _ConversationsScreenState extends State<ConversationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ConversationsBloc>().add(FetchConversationsEvent(
+      userId: widget.userId,
+      isDoctor: widget.isDoctor,
+    ));
+    context.read<ConversationsBloc>().add(SubscribeToConversationsEvent(
+      userId: widget.userId,
+      isDoctor: widget.isDoctor,
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +55,7 @@ class ConversationsListScreen extends StatelessWidget {
       body: BlocConsumer<ConversationsBloc, ConversationsState>(
         listener: (context, state) {
           if (state is ConversationsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            showErrorSnackBar(context, state.message);
           } else if (state is NavigateToChat) {
             Navigator.push(
               context,
@@ -45,6 +63,7 @@ class ConversationsListScreen extends StatelessWidget {
                 builder: (context) => ChatScreen(
                   chatId: state.conversationId,
                   userName: state.userName,
+                  recipientId: state.recipientId,
                 ),
               ),
             );
@@ -53,89 +72,103 @@ class ConversationsListScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is ConversationsLoading) {
             return const Center(child: CircularProgressIndicator());
-          }
-          List<ConversationEntity> conversations = [];
-          if (state is ConversationsLoaded) {
-            conversations = state.conversations;
-          }
-          if (conversations.isEmpty) {
-            return Center(
-              child: Text(
-                'No conversations available',
-                style: GoogleFonts.raleway(
-                  fontSize: 60.sp,
-                  color: AppColors.grey,
+          } else if (state is ConversationsLoaded) {
+            if (state.conversations.isEmpty) {
+              return Center(
+                child: Text(
+                  'No conversations yet',
+                  style: GoogleFonts.raleway(
+                    fontSize: 60.sp,
+                    color: AppColors.grey,
+                  ),
                 ),
+              );
+            }
+            return ListView.builder(
+              itemCount: state.conversations.length,
+              itemBuilder: (context, index) {
+                final conversation = state.conversations[index];
+                // Display doctorName for patients, patientName for doctors
+                final displayName = widget.isDoctor ? conversation.patientName : conversation.doctorName;
+                // Set recipientId as doctorId for patients, patientId for doctors
+                final recipientId = widget.isDoctor ? conversation.patientId : conversation.doctorId;
+                return ListTile(
+                  title: Text(
+                    displayName,
+                    style: GoogleFonts.raleway(
+                      fontSize: 48.sp,
+                      color: AppColors.black,
+                    ),
+                  ),
+                  subtitle: Text(
+                    conversation.lastMessage,
+                    style: GoogleFonts.raleway(
+                      fontSize: 36.sp,
+                      color: AppColors.grey,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () {
+                    if (conversation.id != null) {
+                      context.read<ConversationsBloc>().add(SelectConversationEvent(
+                        conversationId: conversation.id!,
+                        userName: displayName,
+                        recipientId: recipientId,
+                      ));
+                    } else {
+                      showErrorSnackBar(context, 'Conversation ID is missing');
+                    }
+                  },
+                );
+              },
+            );
+          } else if (state is ConversationsError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${state.message}',
+                    style: GoogleFonts.raleway(
+                      fontSize: 60.sp,
+                      color: AppColors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 24.h),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<ConversationsBloc>().add(FetchConversationsEvent(
+                        userId: widget.userId,
+                        isDoctor: widget.isDoctor,
+                      ));
+                      context.read<ConversationsBloc>().add(SubscribeToConversationsEvent(
+                        userId: widget.userId,
+                        isDoctor: widget.isDoctor,
+                      ));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Retry',
+                      style: GoogleFonts.raleway(
+                        fontSize: 48.sp,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }
-          return ListView.builder(
-            itemCount: conversations.length,
-            itemBuilder: (context, index) {
-              final conversation = conversations[index];
-              final userName = isDoctor
-                  ? 'Patient ${conversation.patientId}'
-                  : 'Dr. ${conversation.doctorId}';
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.greyLight,
-                  child: Icon(
-                    conversation.lastMessageType == 'image'
-                        ? Icons.image
-                        : conversation.lastMessageType == 'file'
-                        ? Icons.description
-                        : Icons.message,
-                    color: AppColors.primaryColor,
-                    size: 60.sp,
-                  ),
-                ),
-                title: Text(
-                  userName,
-                  style: GoogleFonts.raleway(
-                    fontSize: 60.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.black,
-                  ),
-                ),
-                subtitle: Text(
-                  conversation.lastMessage.isNotEmpty
-                      ? conversation.lastMessage
-                      : conversation.lastMessageType == 'image'
-                      ? 'Image'
-                      : 'File',
-                  style: GoogleFonts.raleway(
-                    fontSize: 60.sp,
-                    color: AppColors.grey,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Text(
-                  _formatTime(conversation.lastMessageTime),
-                  style: GoogleFonts.raleway(
-                    fontSize: 60.sp,
-                    color: AppColors.grey,
-                  ),
-                ),
-                onTap: () {
-                  context.read<ConversationsBloc>().add(
-                    SelectConversationEvent(
-                      conversationId: conversation.id!,
-                      userName: userName,
-                    ),
-                  );
-                },
-              );
-            },
-          );
+          return const SizedBox.shrink();
         },
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
   }
 }

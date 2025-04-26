@@ -43,7 +43,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       builder: (context) => AlertDialog(
         title: Text('$action la consultation'),
         content: Text(
-          'Voulez-vous vraiment $action la consultation pour ${patientName}?',
+          'Voulez-vous vraiment $action la consultation pour $patientName ?',
         ),
         actions: [
           TextButton(
@@ -59,11 +59,25 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
     );
   }
 
-  void _updateConsultationStatus(String id, String newStatus, String patientName) async {
+  void _updateConsultationStatus(
+      String id,
+      String newStatus,
+      String patientName,
+      String patientId,
+      String doctorId,
+      String doctorName,
+      ) async {
     final action = newStatus == 'accepted' ? 'accepter' : 'refuser';
     final confirmed = await _showConfirmationDialog(action, patientName);
     if (confirmed == true) {
-      context.read<RendezVousBloc>().add(UpdateRendezVousStatus(id, newStatus));
+      context.read<RendezVousBloc>().add(UpdateRendezVousStatus(
+        rendezVousId: id,
+        status: newStatus,
+        patientId: patientId,
+        doctorId: doctorId,
+        patientName: patientName,
+        doctorName: doctorName,
+      ));
     }
   }
 
@@ -196,11 +210,17 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                 vertical: 15.h,
                                               ),
                                             ),
-                                            onPressed: () {
+                                            onPressed: () async {
+                                              final authLocalDataSource = sl<AuthLocalDataSource>();
+                                              final user = await authLocalDataSource.getUser();
+                                              final doctorName = '${user.name} ${user.lastName}'.trim();
                                               _updateConsultationStatus(
                                                 consultation.id ?? '',
                                                 'accepted',
                                                 consultation.patientName ?? 'Inconnu',
+                                                consultation.patientId ?? '',
+                                                consultation.doctorId ?? '',
+                                                doctorName,
                                               );
                                             },
                                             child: Text(
@@ -224,11 +244,17 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                                 vertical: 15.h,
                                               ),
                                             ),
-                                            onPressed: () {
+                                            onPressed: () async {
+                                              final authLocalDataSource = sl<AuthLocalDataSource>();
+                                              final user = await authLocalDataSource.getUser();
+                                              final doctorName = '${user.name} ${user.lastName}'.trim();
                                               _updateConsultationStatus(
                                                 consultation.id ?? '',
                                                 'refused',
                                                 consultation.patientName ?? 'Inconnu',
+                                                consultation.patientId ?? '',
+                                                consultation.doctorId ?? '',
+                                                doctorName,
                                               );
                                             },
                                             child: Text(

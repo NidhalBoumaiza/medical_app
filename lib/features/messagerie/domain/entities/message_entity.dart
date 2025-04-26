@@ -1,17 +1,22 @@
 import 'package:equatable/equatable.dart';
+import '../../data/models/message_model.dart';
 
-class MessageEntity extends Equatable {
-  final String? id; // Optional message ID
-  final String conversationId; // ID of the conversation
-  final String senderId; // ID of the sender (patient or doctor)
-  final String content; // Text content or empty for image/file
-  final String type; // 'text', 'image', or 'file'
-  final String? url; // URL for image/file (e.g., Firebase Storage)
-  final String? fileName; // Name of the file (for type 'file')
-  final DateTime timestamp; // When the message was sent
+enum MessageStatus { sending, sent, delivered, read, failed }
+
+abstract class MessageEntity extends Equatable {
+  final String id;
+  final String conversationId;
+  final String senderId;
+  final String content;
+  final String type;
+  final String? url;
+  final String? fileName;
+  final DateTime timestamp;
+  final MessageStatus status;
+  final List<String> readBy;
 
   const MessageEntity({
-    this.id,
+    required this.id,
     required this.conversationId,
     required this.senderId,
     required this.content,
@@ -19,29 +24,22 @@ class MessageEntity extends Equatable {
     this.url,
     this.fileName,
     required this.timestamp,
+    required this.status,
+    required this.readBy,
   });
 
-  factory MessageEntity.create({
+  MessageEntity copyWith({
     String? id,
-    required String conversationId,
-    required String senderId,
-    required String content,
-    required String type,
+    String? conversationId,
+    String? senderId,
+    String? content,
+    String? type,
     String? url,
     String? fileName,
-    required DateTime timestamp,
-  }) {
-    return MessageEntity(
-      id: id,
-      conversationId: conversationId,
-      senderId: senderId,
-      content: content,
-      type: type,
-      url: url,
-      fileName: fileName,
-      timestamp: timestamp,
-    );
-  }
+    DateTime? timestamp,
+    MessageStatus? status,
+    List<String>? readBy,
+  });
 
   @override
   List<Object?> get props => [
@@ -53,5 +51,30 @@ class MessageEntity extends Equatable {
     url,
     fileName,
     timestamp,
+    status,
+    readBy,
   ];
+
+  static MessageEntity create({
+    required String conversationId,
+    required String senderId,
+    required String content,
+    required String type,
+    String? fileName,
+    required DateTime timestamp,
+    String? url,
+  }) {
+    return MessageModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      conversationId: conversationId,
+      senderId: senderId,
+      content: content,
+      type: type,
+      fileName: fileName,
+      url: url,
+      timestamp: timestamp,
+      status: MessageStatus.sending,
+      readBy: [],
+    );
+  }
 }

@@ -7,7 +7,6 @@ import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_local_d
 import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_remote_data_source.dart';
 import 'package:medical_app/features/rendez_vous/domain/entities/rendez_vous_entity.dart';
 import 'package:medical_app/features/rendez_vous/domain/repositories/rendez_vous_repository.dart';
-
 import '../models/RendezVous.dart';
 
 class RendezVousRepositoryImpl implements RendezVousRepository {
@@ -78,10 +77,21 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
   Future<Either<Failure, Unit>> updateRendezVousStatus(
       String rendezVousId,
       String status,
+      String patientId,
+      String doctorId,
+      String patientName,
+      String doctorName,
       ) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.updateRendezVousStatus(rendezVousId, status);
+        await remoteDataSource.updateRendezVousStatus(
+          rendezVousId,
+          status,
+          patientId,
+          doctorId,
+          patientName,
+          doctorName,
+        );
         return const Right(unit);
       } on ServerException {
         return Left(ServerFailure());
@@ -97,8 +107,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
 
   @override
   Future<Either<Failure, Unit>> createRendezVous(
-      RendezVousEntity rendezVous,
-      ) async {
+      RendezVousEntity rendezVous) async {
     if (await networkInfo.isConnected) {
       try {
         final rendezVousModel = RendezVousModel(

@@ -55,8 +55,12 @@ class RendezVousBloc extends Bloc<RendezVousEvent, RendezVousState> {
       ) async {
     emit(RendezVousLoading());
     final failureOrUnit = await updateRendezVousStatusUseCase(
-      event.rendezVousId,
-      event.status,
+      rendezVousId: event.rendezVousId,
+      status: event.status,
+      patientId: event.patientId,
+      doctorId: event.doctorId,
+      patientName: event.patientName,
+      doctorName: event.doctorName,
     );
     emit(failureOrUnit.fold(
           (failure) => RendezVousError(_mapFailureToMessage(failure)),

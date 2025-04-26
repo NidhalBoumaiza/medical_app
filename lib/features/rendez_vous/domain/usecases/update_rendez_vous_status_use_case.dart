@@ -7,7 +7,21 @@ class UpdateRendezVousStatusUseCase {
 
   UpdateRendezVousStatusUseCase(this.rendezVousRepository);
 
-  Future<Either<Failure, Unit>> call(String rendezVousId, String status) async {
-    return await rendezVousRepository.updateRendezVousStatus(rendezVousId, status);
+  Future<Either<Failure, Unit>> call({
+    required String rendezVousId,
+    required String status,
+    required String patientId,
+    required String doctorId,
+    required String patientName,
+    required String doctorName,
+  }) async {
+    return await rendezVousRepository.updateRendezVousStatus(
+      rendezVousId,
+      status,
+      patientId,
+      doctorId,
+      patientName,
+      doctorName,
+    );
   }
 }

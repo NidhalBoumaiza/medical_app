@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/dashboard/presentation/pages/dashboard_patient.dart';
 import 'package:medical_app/features/localisation/presentation/pages/pharmacie_page.dart';
-import 'package:medical_app/features/messagerie/presentation/pages/conversations_list_screen.dart';
 import 'package:medical_app/features/notifications/presentation/pages/notifications_patient.dart';
 import 'package:medical_app/features/ordonnance/presentation/pages/OrdonnancesPage.dart';
 import 'package:medical_app/features/payement/presentation/pages/payement.dart';
@@ -13,6 +16,9 @@ import 'package:medical_app/features/profile/presentation/pages/ProfilPatient.da
 import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -23,6 +29,28 @@ class HomePatient extends StatefulWidget {
 
 class _HomePatientState extends State<HomePatient> {
   int _selectedIndex = 0;
+  String userId = '';
+  String patientName = 'John Doe';
+  String email = 'johndoe@example.com';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('CACHED_USER');
+    if (userJson != null) {
+      final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+      setState(() {
+        userId = userMap['id'] as String? ?? '';
+        patientName = '${userMap['name'] ?? ''} ${userMap['lastName'] ?? ''}'.trim();
+        email = userMap['email'] as String? ?? 'johndoe@example.com';
+      });
+    }
+  }
 
   static final List<BottomNavigationBarItem> _navItems = [
     BottomNavigationBarItem(
@@ -47,10 +75,10 @@ class _HomePatientState extends State<HomePatient> {
     ),
   ];
 
-  final List<Widget> _pages = [
+  late final List<Widget> _pages = [
     const Dashboardpatient(),
     const RendezVousPatient(),
-    const ConversationsListScreen(isDoctor: false),
+    ConversationsScreen(isDoctor: false, userId: userId),
     const ProfilePatient(),
   ];
 
@@ -64,6 +92,50 @@ class _HomePatientState extends State<HomePatient> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const NotificationsPage()),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = Colors.white,
+    int badgeCount = 0,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: color, size: 50.sp),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.raleway(
+              fontSize: 40.sp,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (badgeCount > 0)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Text(
+                badgeCount.toString(),
+                style: GoogleFonts.raleway(
+                  fontSize: 30.sp,
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+      onTap: onTap,
+      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+      minLeadingWidth: 50.w,
     );
   }
 
@@ -149,7 +221,7 @@ class _HomePatientState extends State<HomePatient> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'John Doe',
+                          patientName,
                           style: GoogleFonts.raleway(
                             fontSize: 45.sp,
                             color: AppColors.whiteColor,
@@ -158,7 +230,7 @@ class _HomePatientState extends State<HomePatient> {
                         ),
                         SizedBox(height: 10.h),
                         Text(
-                          'johndoe@example.com',
+                          email,
                           style: GoogleFonts.raleway(
                             fontSize: 35.sp,
                             color: AppColors.whiteColor.withOpacity(0.6),
@@ -233,7 +305,26 @@ class _HomePatientState extends State<HomePatient> {
                 child: _buildDrawerItem(
                   icon: FontAwesomeIcons.rightFromBracket,
                   title: 'Déconnexion',
-                  onTap: () {},
+                  onTap: () {
+                    Get.dialog(
+                      AlertDialog(
+                        title: Text('logout'.tr),
+                        content: Text('confirm_logout'.tr),
+                        actions: [
+                          TextButton(
+                            onPressed: Get.back,
+                            child: Text('cancel'.tr),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Get.offAllNamed('/login');
+                            },
+                            child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                   color: Colors.red,
                 ),
               ),
@@ -241,50 +332,6 @@ class _HomePatientState extends State<HomePatient> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color color = Colors.white,
-    int badgeCount = 0,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: color, size: 50.sp),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.raleway(
-              fontSize: 40.sp,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          if (badgeCount > 0)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
-              decoration: BoxDecoration(
-                color: AppColors.whiteColor,
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                badgeCount.toString(),
-                style: GoogleFonts.raleway(
-                  fontSize: 30.sp,
-                  color: AppColors.primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-        ],
-      ),
-      onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      minLeadingWidth: 50.w,
     );
   }
 }

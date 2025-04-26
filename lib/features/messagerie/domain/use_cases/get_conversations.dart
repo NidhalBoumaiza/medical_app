@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
-
 import '../repositories/message_repository.dart';
 
 class GetConversationsUseCase {
@@ -14,6 +13,16 @@ class GetConversationsUseCase {
     required bool isDoctor,
   }) async {
     return await messagingRepository.getConversations(
+      userId: userId,
+      isDoctor: isDoctor,
+    );
+  }
+
+  Stream<List<ConversationEntity>> stream({
+    required String userId,
+    required bool isDoctor,
+  }) {
+    return messagingRepository.getConversationsStream(
       userId: userId,
       isDoctor: isDoctor,
     );

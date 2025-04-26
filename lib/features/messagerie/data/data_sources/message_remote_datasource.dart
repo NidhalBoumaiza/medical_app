@@ -1,129 +1,184 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:medical_app/core/error/exceptions.dart';
 import 'package:medical_app/features/messagerie/data/models/message_model.dart';
-import 'package:path/path.dart' as path;
+import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
 
+import '../../domain/entities/message_entity.dart';
 import '../models/conversation_mode.dart';
 
 abstract class MessagingRemoteDataSource {
   Future<Unit> sendMessage(MessageModel message, File? file);
-  Future<List<ConversationModel>> getConversations(String userId, bool isDoctor);
+  Future<List<ConversationEntity>> getConversations(String userId, bool isDoctor);
+  Stream<List<ConversationEntity>> conversationsStream(String userId, bool isDoctor);
   Future<List<MessageModel>> getMessages(String conversationId);
+  Stream<List<MessageModel>> messageStream(String conversationId);
 }
 
 class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
   final FirebaseFirestore firestore;
-  final FirebaseStorage storage;
-  final FirebaseAuth firebaseAuth;
 
-  MessagingRemoteDataSourceImpl({
-    required this.firestore,
-    required this.storage,
-    required this.firebaseAuth,
-  });
+  MessagingRemoteDataSourceImpl({required this.firestore});
 
   @override
   Future<Unit> sendMessage(MessageModel message, File? file) async {
     try {
-      final messageId = firestore.collection('conversations').doc().id;
-      String? downloadUrl;
-      String? fileName;
-
-      // Upload file to Firebase Storage if provided
-      if (file != null) {
-        fileName = path.basename(file.path);
-        final storageRef = storage
-            .ref()
-            .child('conversations/${message.conversationId}/$messageId/$fileName');
-        final uploadTask = await storageRef.putFile(file);
-        downloadUrl = await uploadTask.ref.getDownloadURL();
-      }
-
-      // Create updated message with ID and URL/fileName
-      final updatedMessage = MessageModel(
-        id: messageId,
-        conversationId: message.conversationId,
-        senderId: message.senderId,
-        content: message.content,
-        type: message.type,
-        url: downloadUrl,
-        fileName: fileName,
-        timestamp: message.timestamp,
-      );
-
-      // Save message to Firestore
+      final messageData = {
+        'senderId': message.senderId,
+        'content': message.content,
+        'timestamp': message.timestamp.toIso8601String(),
+        'type': message.type,
+        'url': message.url,
+        'fileName': message.fileName,
+        'readBy': message.readBy,
+        'status': message.status.toString().split('.').last,
+      };
       await firestore
           .collection('conversations')
           .doc(message.conversationId)
           .collection('messages')
-          .doc(messageId)
-          .set(updatedMessage.toJson());
-
-      // Update conversation with last message details
-      await firestore.collection('conversations').doc(message.conversationId).set({
-        'lastMessage': message.type == 'text' ? message.content : fileName ?? '',
+          .doc(message.id)
+          .set(messageData);
+      await firestore.collection('conversations').doc(message.conversationId).update({
+        'lastMessage': message.content,
         'lastMessageType': message.type,
         'lastMessageTime': message.timestamp.toIso8601String(),
-        'lastMessageUrl': downloadUrl,
-        'patientId': message.conversationId.split('_')[0],
-        'doctorId': message.conversationId.split('_')[1],
-      }, SetOptions(merge: true));
-
+        'lastMessageUrl': message.url,
+      });
       return unit;
-    } on FirebaseException catch (e) {
-      throw ServerException('Firestore/Storage error: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Failed to send message: $e');
     }
   }
 
   @override
-  Future<List<ConversationModel>> getConversations(
-      String userId, bool isDoctor) async {
+  Future<List<ConversationEntity>> getConversations(String userId, bool isDoctor) async {
     try {
-      final querySnapshot = await firestore
+      final snapshot = await firestore
           .collection('conversations')
           .where(isDoctor ? 'doctorId' : 'patientId', isEqualTo: userId)
+          .orderBy('lastMessageTime', descending: true)
           .get();
-
-      return querySnapshot.docs.map((doc) {
-        return ConversationModel.fromJson({
-          'id': doc.id,
-          ...doc.data(),
-        });
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return ConversationModel(
+          id: doc.id,
+          patientId: data['patientId'] as String,
+          doctorId: data['doctorId'] as String,
+          patientName: data['patientName'] as String,
+          doctorName: data['doctorName'] as String,
+          lastMessage: data['lastMessage'] as String,
+          lastMessageType: data['lastMessageType'] as String,
+          lastMessageTime: DateTime.parse(data['lastMessageTime'] as String),
+          lastMessageUrl: data['lastMessageUrl'] as String?,
+        );
       }).toList();
-    } on FirebaseException catch (e) {
-      throw ServerException('Firestore error: ${e.message}');
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Failed to fetch conversations: $e');
+    }
+  }
+
+  @override
+  Stream<List<ConversationEntity>> conversationsStream(String userId, bool isDoctor) {
+    try {
+      return firestore
+          .collection('conversations')
+          .where(isDoctor ? 'doctorId' : 'patientId', isEqualTo: userId)
+          .orderBy('lastMessageTime', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) {
+        final data = doc.data();
+        return ConversationModel(
+          id: doc.id,
+          patientId: data['patientId'] as String,
+          doctorId: data['doctorId'] as String,
+          patientName: data['patientName'] as String,
+          doctorName: data['doctorName'] as String,
+          lastMessage: data['lastMessage'] as String,
+          lastMessageType: data['lastMessageType'] as String,
+          lastMessageTime: DateTime.parse(data['lastMessageTime'] as String),
+          lastMessageUrl: data['lastMessageUrl'] as String?,
+        );
+      }).toList())
+          .handleError((error) {
+        if (error is FirebaseException && error.code == 'FAILED_PRECONDITION') {
+          throw ServerMessageException('Firestore query requires an index: ${error.message}');
+        }
+        throw ServerException('Firestore stream error: $error');
+      });
+    } catch (e) {
+      throw ServerException('Failed to initialize stream: $e');
     }
   }
 
   @override
   Future<List<MessageModel>> getMessages(String conversationId) async {
     try {
-      final querySnapshot = await firestore
+      final snapshot = await firestore
           .collection('conversations')
           .doc(conversationId)
           .collection('messages')
           .orderBy('timestamp', descending: true)
           .get();
-
-      return querySnapshot.docs
-          .map((doc) => MessageModel.fromJson({
-        'id': doc.id,
-        ...doc.data(),
-      }))
-          .toList();
-    } on FirebaseException catch (e) {
-      throw ServerException('Firestore error: ${e.message}');
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return MessageModel(
+          id: doc.id,
+          conversationId: conversationId,
+          senderId: data['senderId'] as String,
+          content: data['content'] as String,
+          type: data['type'] as String,
+          url: data['url'] as String?,
+          fileName: data['fileName'] as String?,
+          timestamp: DateTime.parse(data['timestamp'] as String),
+          status: MessageStatus.values.firstWhere(
+                (status) => status.toString().split('.').last == data['status'],
+            orElse: () => MessageStatus.sent,
+          ),
+          readBy: List<String>.from(data['readBy'] ?? []),
+        );
+      }).toList();
     } catch (e) {
-      throw ServerException('Unexpected error: $e');
+      throw ServerException('Failed to fetch messages: $e');
+    }
+  }
+
+  @override
+  Stream<List<MessageModel>> messageStream(String conversationId) {
+    try {
+      return firestore
+          .collection('conversations')
+          .doc(conversationId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) {
+        final data = doc.data();
+        return MessageModel(
+          id: doc.id,
+          conversationId: conversationId,
+          senderId: data['senderId'] as String,
+          content: data['content'] as String,
+          type: data['type'] as String,
+          url: data['url'] as String?,
+          fileName: data['fileName'] as String?,
+          timestamp: DateTime.parse(data['timestamp'] as String),
+          status: MessageStatus.values.firstWhere(
+                (status) => status.toString().split('.').last == data['status'],
+            orElse: () => MessageStatus.sent,
+          ),
+          readBy: List<String>.from(data['readBy'] ?? []),
+        );
+      }).toList())
+          .handleError((error) {
+        if (error is FirebaseException && error.code == 'FAILED_PRECONDITION') {
+          throw ServerMessageException('Firestore query requires an index: ${error.message}');
+        }
+        throw ServerException('Firestore stream error: $error');
+      });
+    } catch (e) {
+      throw ServerException('Failed to initialize stream: $e');
     }
   }
 }

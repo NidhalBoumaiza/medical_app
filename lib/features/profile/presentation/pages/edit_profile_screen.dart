@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-
-import '../../../../core/utils/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:medical_app/core/utils/app_colors.dart';
+import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
+import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
+import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final Map<String, String> profileData;
+  final UserEntity user;
 
-  const EditProfileScreen({super.key, required this.profileData});
+  const EditProfileScreen({super.key, required this.user});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -13,55 +17,82 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-
-  late TextEditingController _nomController;
-  late TextEditingController _prenomController;
+  late TextEditingController _nameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _emailController;
-  late TextEditingController _telephoneController;
-  late TextEditingController _genreController;
-  late TextEditingController _dateNaissanceController;
-  late TextEditingController _adresseController;
-  late TextEditingController _contactUrgenceController;
+  late TextEditingController _phoneNumberController;
+  late TextEditingController _genderController;
+  late TextEditingController _dateOfBirthController;
+  late TextEditingController _antecedentController;
+  late TextEditingController _specialityController;
+  late TextEditingController _numLicenceController;
 
   @override
   void initState() {
     super.initState();
-    _nomController = TextEditingController(text: widget.profileData['nom']);
-    _prenomController = TextEditingController(text: widget.profileData['prenom']);
-    _emailController = TextEditingController(text: widget.profileData['email']);
-    _telephoneController = TextEditingController(text: widget.profileData['telephone']);
-    _genreController = TextEditingController(text: widget.profileData['genre']);
-    _dateNaissanceController = TextEditingController(text: widget.profileData['dateNaissance']);
-    _adresseController = TextEditingController(text: widget.profileData['adresse']);
-    _contactUrgenceController = TextEditingController(text: widget.profileData['contactUrgence']);
+    _nameController = TextEditingController(text: widget.user.name);
+    _lastNameController = TextEditingController(text: widget.user.lastName);
+    _emailController = TextEditingController(text: widget.user.email);
+    _phoneNumberController = TextEditingController(text: widget.user.phoneNumber);
+    _genderController = TextEditingController(text: widget.user.gender);
+    _dateOfBirthController = TextEditingController(
+        text: widget.user.dateOfBirth?.toIso8601String().split('T').first ?? '');
+    _antecedentController =
+        TextEditingController(text: widget.user is PatientEntity ? (widget.user as PatientEntity).antecedent : '');
+    _specialityController =
+        TextEditingController(text: widget.user is MedecinEntity ? (widget.user as MedecinEntity).speciality : '');
+    _numLicenceController =
+        TextEditingController(text: widget.user is MedecinEntity ? (widget.user as MedecinEntity).numLicence : '');
   }
 
   @override
   void dispose() {
-    _nomController.dispose();
-    _prenomController.dispose();
+    _nameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
-    _telephoneController.dispose();
-    _genreController.dispose();
-    _dateNaissanceController.dispose();
-    _adresseController.dispose();
-    _contactUrgenceController.dispose();
+    _phoneNumberController.dispose();
+    _genderController.dispose();
+    _dateOfBirthController.dispose();
+    _antecedentController.dispose();
+    _specialityController.dispose();
+    _numLicenceController.dispose();
     super.dispose();
   }
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      final updatedData = {
-        'nom': _nomController.text,
-        'prenom': _prenomController.text,
-        'email': _emailController.text,
-        'telephone': _telephoneController.text,
-        'genre': _genreController.text,
-        'dateNaissance': _dateNaissanceController.text,
-        'adresse': _adresseController.text,
-        'contactUrgence': _contactUrgenceController.text,
-      };
-      Navigator.pop(context, updatedData);
+      UserEntity updatedUser;
+      if (widget.user is PatientEntity) {
+        updatedUser = PatientEntity(
+          id: widget.user.id,
+          name: _nameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          role: widget.user.role,
+          gender: _genderController.text,
+          phoneNumber: _phoneNumberController.text,
+          dateOfBirth: _dateOfBirthController.text.isNotEmpty
+              ? DateTime.parse(_dateOfBirthController.text)
+              : null,
+          antecedent: _antecedentController.text,
+        );
+      } else {
+        updatedUser = MedecinEntity(
+          id: widget.user.id,
+          name: _nameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          role: widget.user.role,
+          gender: _genderController.text,
+          phoneNumber: _phoneNumberController.text,
+          dateOfBirth: _dateOfBirthController.text.isNotEmpty
+              ? DateTime.parse(_dateOfBirthController.text)
+              : null,
+          speciality: _specialityController.text,
+          numLicence: _numLicenceController.text,
+        );
+      }
+      Navigator.pop(context, updatedUser);
     }
   }
 
@@ -69,7 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Modifier vos données'),
+        title: Text('edit_profile'.tr),
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.whiteColor,
       ),
@@ -84,97 +115,105 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.r)),
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTextField(
-                        controller: _nomController,
-                        label: 'Nom',
+                        controller: _nameController,
+                        label: 'first_name_label'.tr,
                         icon: Icons.person,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer un nom' : null,
+                        validator: (value) => value!.isEmpty ? 'name_required'.tr : null,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildTextField(
-                        controller: _prenomController,
-                        label: 'Prénom',
+                        controller: _lastNameController,
+                        label: 'last_name_label'.tr,
                         icon: Icons.person,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer un prénom' : null,
+                        validator: (value) => value!.isEmpty ? 'last_name_required'.tr : null,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildTextField(
                         controller: _emailController,
-                        label: 'Email',
+                        label: 'email'.tr,
                         icon: Icons.email,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          if (value!.isEmpty) return 'Veuillez entrer un email';
+                          if (value!.isEmpty) return 'email_required'.tr;
                           if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                            return 'Veuillez entrer un email valide';
+                            return 'invalid_email_message'.tr;
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildTextField(
-                        controller: _telephoneController,
-                        label: 'Téléphone',
+                        controller: _phoneNumberController,
+                        label: 'phone_number_label'.tr,
                         icon: Icons.phone,
                         keyboardType: TextInputType.phone,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer un numéro de téléphone' : null,
+                        validator: (value) => value!.isEmpty ? 'phone_number_required'.tr : null,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildTextField(
-                        controller: _genreController,
-                        label: 'Genre',
+                        controller: _genderController,
+                        label: 'gender'.tr,
                         icon: Icons.person,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer un genre' : null,
+                        validator: (value) => value!.isEmpty ? 'gender_required'.tr : null,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildTextField(
-                        controller: _dateNaissanceController,
-                        label: 'Date de naissance (JJ/MM/AAAA)',
+                        controller: _dateOfBirthController,
+                        label: 'date_of_birth_label'.tr,
                         icon: Icons.calendar_today,
                         keyboardType: TextInputType.datetime,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer une date de naissance' : null,
+                        hintText: 'YYYY-MM-DD',
                       ),
-                      const SizedBox(height: 16),
-                      _buildTextField(
-                        controller: _adresseController,
-                        label: 'Adresse',
-                        icon: Icons.home,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer une adresse' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildTextField(
-                        controller: _contactUrgenceController,
-                        label: 'Contact d\'urgence',
-                        icon: Icons.phone,
-                        keyboardType: TextInputType.phone,
-                        validator: (value) => value!.isEmpty ? 'Veuillez entrer un contact d\'urgence' : null,
-                      ),
-                      const SizedBox(height: 24),
+                      if (widget.user is PatientEntity) ...[
+                        SizedBox(height: 16.h),
+                        _buildTextField(
+                          controller: _antecedentController,
+                          label: 'antecedent'.tr,
+                          icon: Icons.medical_services,
+                          validator: (value) => value!.isEmpty ? 'antecedent_required'.tr : null,
+                        ),
+                      ],
+                      if (widget.user is MedecinEntity) ...[
+                        SizedBox(height: 16.h),
+                        _buildTextField(
+                          controller: _specialityController,
+                          label: 'speciality'.tr,
+                          icon: Icons.work,
+                          validator: (value) => value!.isEmpty ? 'speciality_required'.tr : null,
+                        ),
+                        SizedBox(height: 16.h),
+                        _buildTextField(
+                          controller: _numLicenceController,
+                          label: 'num_licence'.tr,
+                          icon: Icons.badge,
+                          validator: (value) => value!.isEmpty ? 'num_licence_required'.tr : null,
+                        ),
+                      ],
+                      SizedBox(height: 24.h),
                       Center(
                         child: ElevatedButton(
                           onPressed: _saveChanges,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
-                            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                             elevation: 5,
                           ),
                           child: Text(
-                            'Sauvegarder',
-                            style: TextStyle(fontSize: 16, color: AppColors.whiteColor),
+                            'save'.tr,
+                            style: TextStyle(fontSize: 16.sp, color: AppColors.whiteColor),
                           ),
                         ),
                       ),
@@ -194,6 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    String? hintText,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -201,17 +241,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         labelStyle: TextStyle(color: AppColors.primaryColor),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor.withOpacity(0.5)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
         ),
         prefixIcon: Icon(icon, color: AppColors.primaryColor),

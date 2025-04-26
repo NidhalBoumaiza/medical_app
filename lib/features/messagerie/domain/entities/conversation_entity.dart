@@ -1,18 +1,22 @@
 import 'package:equatable/equatable.dart';
 
 class ConversationEntity extends Equatable {
-  final String? id; // Optional conversation ID
-  final String patientId; // ID of the patient
-  final String doctorId; // ID of the doctor
-  final String lastMessage; // Last message content or file name
-  final String lastMessageType; // 'text', 'image', or 'file'
-  final DateTime lastMessageTime; // Timestamp of last message
-  final String? lastMessageUrl; // URL for last image/file
+  final String? id;
+  final String patientId;
+  final String doctorId;
+  final String patientName;
+  final String doctorName;
+  final String lastMessage;
+  final String lastMessageType;
+  final DateTime lastMessageTime;
+  final String? lastMessageUrl;
 
   const ConversationEntity({
     this.id,
     required this.patientId,
     required this.doctorId,
+    required this.patientName,
+    required this.doctorName,
     required this.lastMessage,
     required this.lastMessageType,
     required this.lastMessageTime,
@@ -23,6 +27,8 @@ class ConversationEntity extends Equatable {
     String? id,
     required String patientId,
     required String doctorId,
+    required String patientName,
+    required String doctorName,
     required String lastMessage,
     required String lastMessageType,
     required DateTime lastMessageTime,
@@ -32,6 +38,8 @@ class ConversationEntity extends Equatable {
       id: id,
       patientId: patientId,
       doctorId: doctorId,
+      patientName: patientName,
+      doctorName: doctorName,
       lastMessage: lastMessage,
       lastMessageType: lastMessageType,
       lastMessageTime: lastMessageTime,
@@ -44,6 +52,8 @@ class ConversationEntity extends Equatable {
     id,
     patientId,
     doctorId,
+    patientName,
+    doctorName,
     lastMessage,
     lastMessageType,
     lastMessageTime,

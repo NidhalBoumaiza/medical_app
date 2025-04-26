@@ -20,11 +20,29 @@ class FetchRendezVous extends RendezVousEvent {
 class UpdateRendezVousStatus extends RendezVousEvent {
   final String rendezVousId;
   final String status;
+  final String patientId;
+  final String doctorId;
+  final String patientName;
+  final String doctorName;
 
-  const UpdateRendezVousStatus(this.rendezVousId, this.status);
+  const UpdateRendezVousStatus({
+    required this.rendezVousId,
+    required this.status,
+    required this.patientId,
+    required this.doctorId,
+    required this.patientName,
+    required this.doctorName,
+  });
 
   @override
-  List<Object> get props => [rendezVousId, status];
+  List<Object> get props => [
+    rendezVousId,
+    status,
+    patientId,
+    doctorId,
+    patientName,
+    doctorName,
+  ];
 }
 
 class CreateRendezVous extends RendezVousEvent {

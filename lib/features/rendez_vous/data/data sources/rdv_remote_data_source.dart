@@ -11,7 +11,14 @@ abstract class RendezVousRemoteDataSource {
     String? doctorId,
   });
 
-  Future<void> updateRendezVousStatus(String rendezVousId, String status);
+  Future<void> updateRendezVousStatus(
+      String rendezVousId,
+      String status,
+      String patientId,
+      String doctorId,
+      String patientName,
+      String doctorName,
+      );
 
   Future<void> createRendezVous(RendezVousModel rendezVous);
 
@@ -67,12 +74,43 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
   }
 
   @override
-  Future<void> updateRendezVousStatus(String rendezVousId, String status) async {
+  Future<void> updateRendezVousStatus(
+      String rendezVousId,
+      String status,
+      String patientId,
+      String doctorId,
+      String patientName,
+      String doctorName,
+      ) async {
     try {
       await firestore
           .collection('rendez_vous')
           .doc(rendezVousId)
           .update({'status': status});
+
+      if (status == 'accepted') {
+        // Check if a conversation already exists
+        final existingConversation = await firestore
+            .collection('conversations')
+            .where('patientId', isEqualTo: patientId)
+            .where('doctorId', isEqualTo: doctorId)
+            .get();
+
+        if (existingConversation.docs.isEmpty) {
+          // Create new conversation
+          final docRef = firestore.collection('conversations').doc();
+          await docRef.set({
+            'id': docRef.id,
+            'patientId': patientId,
+            'doctorId': doctorId,
+            'patientName': patientName,
+            'doctorName': doctorName,
+            'lastMessage': 'Conversation started for rendez-vous',
+            'lastMessageType': 'text',
+            'lastMessageTime': DateTime.now().toIso8601String(),
+          });
+        }
+      }
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {
         throw ServerMessageException('Rendezvous not found');
