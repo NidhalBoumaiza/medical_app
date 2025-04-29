@@ -18,24 +18,6 @@ class MessagingRepositoryImpl implements MessagingRepository {
   });
 
   @override
-  Future<Either<Failure, Unit>> sendMessage(MessageModel message, File? file) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final result = await remoteDataSource.sendMessage(message, file);
-        return Right(result);
-      } on ServerException {
-        return Left(ServerFailure());
-      } on ServerMessageException catch (e) {
-        return Left(ServerMessageFailure(e.message));
-      } on AuthException catch (e) {
-        return Left(AuthFailure(e.message));
-      }
-    } else {
-      return Left(OfflineFailure());
-    }
-  }
-
-  @override
   Future<Either<Failure, List<ConversationEntity>>> getConversations({
     required String userId,
     required bool isDoctor,
@@ -60,28 +42,39 @@ class MessagingRepositoryImpl implements MessagingRepository {
   Stream<List<ConversationEntity>> getConversationsStream({
     required String userId,
     required bool isDoctor,
-  }) {
-    return Stream.fromFuture(networkInfo.isConnected).asyncExpand((isConnected) {
-      if (isConnected) {
-        try {
-          return remoteDataSource.conversationsStream(userId, isDoctor).handleError((error) {
-            if (error is ServerException) {
-              throw ServerFailure();
-            } else if (error is ServerMessageException) {
-              throw ServerMessageFailure(error.message);
-            } else if (error is AuthException) {
-              throw AuthFailure(error.message);
-            } else {
-              throw ServerFailure();
-            }
-          });
-        } catch (e) {
-          return Stream.error(e);
-        }
-      } else {
-        return Stream.error(OfflineFailure());
+  }) async* {
+    final isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        yield* remoteDataSource.conversationsStream(userId, isDoctor);
+      } on ServerException {
+        throw ServerFailure();
+      } on ServerMessageException catch (e) {
+        throw ServerMessageFailure(e.message);
+      } on AuthException catch (e) {
+        throw AuthFailure(e.message);
       }
-    });
+    } else {
+      throw OfflineFailure();
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendMessage(MessageModel message, File? file) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.sendMessage(message, file);
+        return const Right(unit);
+      } on ServerException {
+        return Left(ServerFailure());
+      } on ServerMessageException catch (e) {
+        return Left(ServerMessageFailure(e.message));
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
   }
 
   @override
@@ -103,27 +96,20 @@ class MessagingRepositoryImpl implements MessagingRepository {
   }
 
   @override
-  Stream<List<MessageModel>> getMessagesStream(String conversationId) {
-    return Stream.fromFuture(networkInfo.isConnected).asyncExpand((isConnected) {
-      if (isConnected) {
-        try {
-          return remoteDataSource.messageStream(conversationId).handleError((error) {
-            if (error is ServerException) {
-              throw ServerFailure();
-            } else if (error is ServerMessageException) {
-              throw ServerMessageFailure(error.message);
-            } else if (error is AuthException) {
-              throw AuthFailure(error.message);
-            } else {
-              throw ServerFailure();
-            }
-          });
-        } catch (e) {
-          return Stream.error(e);
-        }
-      } else {
-        return Stream.error(OfflineFailure());
+  Stream<List<MessageModel>> getMessagesStream(String conversationId) async* {
+    final isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        yield* remoteDataSource.getMessagesStream(conversationId);
+      } on ServerException {
+        throw ServerFailure();
+      } on ServerMessageException catch (e) {
+        throw ServerMessageFailure(e.message);
+      } on AuthException catch (e) {
+        throw AuthFailure(e.message);
       }
-    });
+    } else {
+      throw OfflineFailure();
+    }
   }
 }

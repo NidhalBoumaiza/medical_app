@@ -3,16 +3,16 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:medical_app/core/error/exceptions.dart';
-
-import '../models/medecin_model.dart';
-import '../models/patient_model.dart';
-import '../models/user_model.dart';
+import 'package:medical_app/features/authentication/data/models/medecin_model.dart';
+import 'package:medical_app/features/authentication/data/models/patient_model.dart';
+import 'package:medical_app/features/authentication/data/models/user_model.dart';
 import 'auth_local_data_source.dart';
 
 abstract class AuthRemoteDataSource {
   Future<void> signInWithGoogle();
   Future<Unit> createAccount(UserModel user, String password);
   Future<UserModel> login(String email, String password);
+  Future<Unit> updateUser(UserModel user);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -179,6 +179,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       } else {
         throw AuthException(e.message ?? 'Login failed');
       }
+    } catch (e) {
+      throw ServerException('Unexpected error: $e');
+    }
+  }
+
+  @override
+  Future<Unit> updateUser(UserModel user) async {
+    try {
+      final collection = user is PatientModel
+          ? 'patients'
+          : user is MedecinModel
+          ? 'medecins'
+          : 'users';
+      await firestore.collection(collection).doc(user.id).set(user.toJson());
+      await localDataSource.cacheUser(user);
+      return unit;
+    } on FirebaseException catch (e) {
+      throw ServerException(e.message ?? 'Failed to update user');
     } catch (e) {
       throw ServerException('Unexpected error: $e');
     }

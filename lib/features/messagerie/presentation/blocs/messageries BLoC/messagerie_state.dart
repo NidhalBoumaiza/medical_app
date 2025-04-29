@@ -1,48 +1,47 @@
 import 'package:equatable/equatable.dart';
 import 'package:medical_app/features/messagerie/data/models/message_model.dart';
-import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
 
+// Base state for MessagerieBloc
 abstract class MessagerieState extends Equatable {
-  final List<MessageModel> messages;
+  final List<MessageModel> messages; // List of messages
+  final int stateId; // Unique ID to force UI rebuilds
 
-  const MessagerieState({required this.messages});
-
-  @override
-  List<Object?> get props => [messages];
-}
-
-class MessagerieInitial extends MessagerieState {
-  const MessagerieInitial() : super(messages: const []);
-}
-
-class MessagerieLoading extends MessagerieState {
-  const MessagerieLoading({required super.messages});
-}
-
-class MessagerieStreamActive extends MessagerieState {
-  const MessagerieStreamActive({required super.messages});
-}
-
-class MessagerieSuccess extends MessagerieState {
-  final List<ConversationEntity>? conversations;
-  final MessageModel? lastSentMessage;
-
-  const MessagerieSuccess({
-    required super.messages,
-    this.conversations,
-    this.lastSentMessage,
+  const MessagerieState({
+    required this.messages,
+    this.stateId = 0,
   });
 
   @override
-  List<Object?> get props => [...super.props, conversations, lastSentMessage];
+  List<Object?> get props => [messages, stateId];
+}
+
+class MessagerieInitial extends MessagerieState {
+  const MessagerieInitial() : super(messages: const [], stateId: 0);
+}
+
+class MessagerieLoading extends MessagerieState {
+  const MessagerieLoading({required super.messages, super.stateId});
+}
+
+class MessagerieStreamActive extends MessagerieState {
+  const MessagerieStreamActive({required super.messages, super.stateId});
+}
+
+class MessagerieMessageSent extends MessagerieState {
+  const MessagerieMessageSent({required super.messages, super.stateId});
+}
+
+class MessagerieSuccess extends MessagerieState {
+  const MessagerieSuccess({required super.messages, super.stateId});
 }
 
 class MessagerieError extends MessagerieState {
-  final String message;
+  final String message; // Error message
 
   const MessagerieError({
     required super.messages,
     required this.message,
+    super.stateId,
   });
 
   @override

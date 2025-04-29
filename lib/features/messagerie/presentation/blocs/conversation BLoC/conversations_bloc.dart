@@ -8,8 +8,8 @@ import 'conversations_state.dart';
 
 class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   final GetConversationsUseCase getConversationsUseCase;
-  StreamSubscription<List<ConversationEntity>>? _conversationsSubscription;
   List<ConversationEntity> _currentConversations = [];
+  StreamSubscription<List<ConversationEntity>>? _conversationsSubscription;
 
   ConversationsBloc({required this.getConversationsUseCase})
       : super(const ConversationsInitial()) {
@@ -17,7 +17,6 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<SubscribeToConversationsEvent>(_onSubscribeToConversations);
     on<ConversationsUpdatedEvent>(_onConversationsUpdated);
     on<ConversationsStreamErrorEvent>(_onConversationsStreamError);
-    on<SelectConversationEvent>(_onSelectConversation);
   }
 
   Future<void> _onFetchConversations(
@@ -47,12 +46,12 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       ) async {
     emit(ConversationsLoading(conversations: _currentConversations));
     try {
-      _conversationsSubscription?.cancel();
-      final conversationsStream = getConversationsUseCase.stream(
+      await _conversationsSubscription?.cancel();
+      final stream = getConversationsUseCase.getConversationsStream(
         userId: event.userId,
         isDoctor: event.isDoctor,
       );
-      _conversationsSubscription = conversationsStream.listen(
+      _conversationsSubscription = stream.listen(
             (conversations) {
           add(ConversationsUpdatedEvent(conversations: conversations));
         },
@@ -81,19 +80,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       Emitter<ConversationsState> emit,
       ) {
     emit(ConversationsError(
-      message: 'Failed to load conversations: ${event.error}',
-      conversations: _currentConversations,
-    ));
-  }
-
-  void _onSelectConversation(
-      SelectConversationEvent event,
-      Emitter<ConversationsState> emit,
-      ) {
-    emit(NavigateToChat(
-      conversationId: event.conversationId,
-      userName: event.userName,
-      recipientId: event.recipientId,
+      message: 'Stream error: ${event.error}',
       conversations: _currentConversations,
     ));
   }

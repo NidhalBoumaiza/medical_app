@@ -1,15 +1,17 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
+import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/theme_provider.dart';
+import 'blocs/BLoC update profile/update_user_bloc.dart';
 
 class ProfilMedecin extends StatefulWidget {
   const ProfilMedecin({Key? key}) : super(key: key);
@@ -125,9 +127,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                     ),
                   ).then((updatedUser) {
                     if (updatedUser != null) {
-                      setState(() {
-                        _medecin = updatedUser as MedecinEntity;
-                      });
+                      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedUser as MedecinEntity));
                     }
                   });
                 }
@@ -136,98 +136,115 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
             ),
           ],
         ),
-        body: _medecin == null
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 50.r,
-                      backgroundColor: AppColors.primaryColor.withOpacity(0.2),
-                      backgroundImage: const AssetImage('assets/images/profil.png'),
+        body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
+          listener: (context, state) {
+            if (state is UpdateUserSuccess) {
+              setState(() {
+                _medecin = state.user as MedecinEntity;
+              });
+              showSuccessSnackBar(context, 'profile_saved_successfully'.tr);
+            } else if (state is UpdateUserFailure) {
+              showErrorSnackBar(context, state.message);
+            }
+          },
+          builder: (context, state) {
+            if (state is UpdateUserLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _medecin == null
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 50.r,
+                          backgroundColor: AppColors.primaryColor.withOpacity(0.2),
+                          backgroundImage: const AssetImage('assets/images/profil.png'),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit, color: AppColors.whiteColor, size: 20),
+                              onPressed: _changeProfilePicture,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.edit, color: AppColors.whiteColor, size: 20),
-                          onPressed: _changeProfilePicture,
-                        ),
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildInfoTile('Nom', '${_medecin!.name} ${_medecin!.lastName}'),
+                  _buildInfoTile('Email', _medecin!.email),
+                  _buildInfoTile('Téléphone', _medecin!.phoneNumber),
+                  _buildInfoTile('Genre', _medecin!.gender),
+                  _buildInfoTile('Date de naissance',
+                      _medecin!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
+                  _buildInfoTile('Spécialité', _medecin!.speciality),
+                  _buildInfoTile('Numéro de licence', _medecin!.numLicence),
+                  SizedBox(height: 24.h),
+                  Divider(color: Theme.of(context).dividerColor),
+                  SwitchListTile(
+                    title: Text('notifications'.tr),
+                    value: _notificationsEnabled,
+                    onChanged: (value) => setState(() => _notificationsEnabled = value),
+                    secondary: const Icon(Icons.notifications),
+                    activeColor: AppColors.primaryColor,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: Text('language'.tr),
+                    trailing: DropdownButton<String>(
+                      value: _selectedLanguage,
+                      onChanged: _changeLanguage,
+                      items: _languages
+                          .map((value) => DropdownMenuItem(value: value, child: Text(value)))
+                          .toList(),
+                    ),
+                  ),
+                  SwitchListTile(
+                    title: Text('dark_mode'.tr),
+                    value: themeProvider.isDarkMode,
+                    onChanged: (_) => themeProvider.toggleTheme(),
+                    secondary: const Icon(Icons.brightness_6),
+                    activeColor: AppColors.primaryColor,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: Text('mes_rendez_vous'.tr),
+                    onTap: () => Get.toNamed('/appointments'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.help),
+                    title: Text('aide_et_assistance_technique'.tr),
+                    onTap: () => Get.toNamed('/help'),
+                  ),
+                  SizedBox(height: 24.h),
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.logout),
+                      label: Text('logout'.tr),
+                      onPressed: _showLogoutDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20.h),
-              _buildInfoTile('Nom', '${_medecin!.name} ${_medecin!.lastName}'),
-              _buildInfoTile('Email', _medecin!.email),
-              _buildInfoTile('Téléphone', _medecin!.phoneNumber),
-              _buildInfoTile('Genre', _medecin!.gender),
-              _buildInfoTile('Date de naissance',
-                  _medecin!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
-              _buildInfoTile('Spécialité', _medecin!.speciality),
-              _buildInfoTile('Numéro de licence', _medecin!.numLicence),
-              SizedBox(height: 24.h),
-              Divider(color: Theme.of(context).dividerColor),
-              SwitchListTile(
-                title: Text('notifications'.tr),
-                value: _notificationsEnabled,
-                onChanged: (value) => setState(() => _notificationsEnabled = value),
-                secondary: const Icon(Icons.notifications),
-                activeColor: AppColors.primaryColor,
-              ),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: Text('language'.tr),
-                trailing: DropdownButton<String>(
-                  value: _selectedLanguage,
-                  onChanged: _changeLanguage,
-                  items: _languages
-                      .map((value) => DropdownMenuItem(value: value, child: Text(value)))
-                      .toList(),
-                ),
-              ),
-              SwitchListTile(
-                title: Text('dark_mode'.tr),
-                value: themeProvider.isDarkMode,
-                onChanged: (_) => themeProvider.toggleTheme(),
-                secondary: const Icon(Icons.brightness_6),
-                activeColor: AppColors.primaryColor,
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: Text('mes_rendez_vous'.tr),
-                onTap: () => Get.toNamed('/appointments'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.help),
-                title: Text('aide_et_assistance_technique'.tr),
-                onTap: () => Get.toNamed('/help'),
-              ),
-              SizedBox(height: 24.h),
-              Center(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.logout),
-                  label: Text('logout'.tr),
-                  onPressed: _showLogoutDialog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -237,11 +254,11 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
     return ListTile(
       title: Text(
         label,
-        style: GoogleFonts.raleway(fontSize: 40.sp, color: AppColors.grey),
+        style: GoogleFonts.raleway(fontSize: 50.sp, color: AppColors.grey),
       ),
       subtitle: Text(
         value,
-        style: GoogleFonts.raleway(fontSize: 48.sp, color: AppColors.black),
+        style: GoogleFonts.raleway(fontSize: 50.sp, color: AppColors.black),
       ),
     );
   }

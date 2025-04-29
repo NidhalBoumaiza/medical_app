@@ -45,18 +45,3 @@ class ConversationsStreamErrorEvent extends ConversationsEvent {
   @override
   List<Object> get props => [error];
 }
-
-class SelectConversationEvent extends ConversationsEvent {
-  final String conversationId;
-  final String userName;
-  final String recipientId;
-
-  const SelectConversationEvent({
-    required this.conversationId,
-    required this.userName,
-    required this.recipientId,
-  });
-
-  @override
-  List<Object> get props => [conversationId, userName, recipientId];
-}

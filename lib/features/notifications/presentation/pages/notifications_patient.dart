@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:medical_app/core/utils/app_colors.dart';
+import 'package:medical_app/features/ordonnance/presentation/pages/OrdonnancesPage.dart';
+import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPatient.dart';
 
-import '../../../../core/utils/app_colors.dart';
-import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
-
-class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+class NotificationsPatient extends StatefulWidget {
+  const NotificationsPatient({super.key});
 
   @override
-  State<NotificationsPage> createState() => _NotificationsPageState();
+  State<NotificationsPatient> createState() => _NotificationsPatientState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
-  String _selectedFilter = 'Tous';
+class _NotificationsPatientState extends State<NotificationsPatient> {
+  String _selectedFilter = 'all'.tr;
   List<Map<String, dynamic>> _notifications = [
     {
-      'title': 'Rendez-vous confirmé',
-      'message': 'Votre consultation avec le Dr. Dupont est confirmée pour le 15/06 à 14:30',
-      'time': 'Il y a 10 min',
+      'title': 'appointment_confirmed'.tr,
+      'message': 'appointment_confirmed_with'.trParams({'doctor': 'Dr. Dupont', 'time': '15/06 à 14:30'}),
+      'time': '10_minutes_ago'.tr,
       'icon': Icons.event_available,
-      'category': 'Rendez-vous',
+      'category': 'appointments'.tr,
       'read': false,
       'id': '1',
       'priority': 'high',
@@ -27,52 +30,52 @@ class _NotificationsPageState extends State<NotificationsPage> {
       'date': DateTime.now().add(const Duration(days: 3)),
     },
     {
-      'title': 'Rendez-vous annulé',
-      'message': 'Votre consultation du 12/06 a été annulée. Cliquez pour replanifier',
-      'time': 'Il y a 1 heure',
+      'title': 'appointment_canceled'.tr,
+      'message': 'appointment_canceled_on'.trParams({'date': '12/06'}),
+      'time': '1_hour_ago'.tr,
       'icon': Icons.event_busy,
-      'category': 'Rendez-vous',
+      'category': 'appointments'.tr,
       'read': true,
       'id': '2',
       'priority': 'high',
-      'type': 'annulation',
+      'type': 'cancellation',
       'date': DateTime.now().add(const Duration(days: -1)),
     },
     {
-      'title': 'Rappel de médicament',
-      'message': 'Prendre votre dose de Doliprane 500mg ce matin',
-      'time': 'Aujourd\'hui, 08:00',
+      'title': 'medication_reminder'.tr,
+      'message': 'take_medication'.trParams({'medication': 'Doliprane 500mg'}),
+      'time': 'today_0800'.tr,
       'icon': Icons.medication_liquid,
-      'category': 'Médicaments',
+      'category': 'medications'.tr,
       'read': false,
       'id': '3',
       'priority': 'medium',
-      'type': 'rappel_medicament',
-      'medicament': 'Doliprane 500mg',
-      'dose': '1 comprimé',
+      'type': 'medication_reminder',
+      'medication': 'Doliprane 500mg',
+      'dose': '1_tablet'.tr,
     },
     {
-      'title': 'Rappel de rendez-vous',
-      'message': 'Vous avez un examen sanguin demain à 09:00 au labo Pasteur',
-      'time': 'Hier, 18:30',
+      'title': 'appointment_reminder'.tr,
+      'message': 'appointment_reminder_lab'.trParams({'time': 'demain à 09:00'}),
+      'time': 'yesterday_1830'.tr,
       'icon': Icons.notifications_active,
-      'category': 'Rendez-vous',
+      'category': 'appointments'.tr,
       'read': false,
       'id': '4',
       'priority': 'high',
-      'type': 'rappel_rdv',
+      'type': 'appointment_reminder',
       'date': DateTime.now().add(const Duration(days: 1)),
     },
     {
-      'title': 'Ordonnance prête',
-      'message': 'Votre ordonnance est disponible en pharmacie',
-      'time': 'Il y a 2 jours',
+      'title': 'prescription_ready'.tr,
+      'message': 'prescription_available'.tr,
+      'time': '2_days_ago'.tr,
       'icon': Icons.description,
-      'category': 'Médicaments',
+      'category': 'prescriptions'.tr,
       'read': true,
       'id': '5',
       'priority': 'medium',
-      'type': 'ordonnance',
+      'type': 'prescription',
     },
   ];
 
@@ -81,9 +84,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       backgroundColor: AppColors.whiteColor,
       appBar: AppBar(
-        title: const Text(
-          'Notifications',
-          style: TextStyle(
+        title: Text(
+          'notifications'.tr,
+          style: GoogleFonts.raleway(
+            fontSize: 50.sp,
             fontWeight: FontWeight.bold,
             color: AppColors.whiteColor,
           ),
@@ -92,7 +96,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         iconTheme: const IconThemeData(color: AppColors.whiteColor),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(Icons.filter_list, size: 24.sp),
             onPressed: _showFilterDialog,
           ),
         ],
@@ -109,28 +113,30 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildFilterChips() {
-    final filters = ['Tous', 'Rendez-vous', 'Médicaments'];
+    final filters = ['all'.tr, 'appointments'.tr, 'medications'.tr, 'prescriptions'.tr];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Row(
         children: filters.map((filter) {
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: EdgeInsets.only(right: 8.w),
             child: FilterChip(
-              label: Text(filter),
+              label: Text(
+                filter,
+                style: GoogleFonts.raleway(fontSize: 50.sp),
+              ),
               selected: _selectedFilter == filter,
               onSelected: (selected) {
                 setState(() {
-                  _selectedFilter = selected ? filter : 'Tous';
+                  _selectedFilter = selected ? filter : 'all'.tr;
                 });
               },
               selectedColor: AppColors.primaryColor.withOpacity(0.2),
               checkmarkColor: AppColors.primaryColor,
-              labelStyle: TextStyle(
-                color: _selectedFilter == filter
-                    ? AppColors.primaryColor
-                    : Colors.grey[600],
+              labelStyle: GoogleFonts.raleway(
+                fontSize: 14.sp,
+                color: _selectedFilter == filter ? AppColors.primaryColor : Colors.grey[600],
               ),
             ),
           );
@@ -140,7 +146,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildNotificationList() {
-    final filteredNotifications = _selectedFilter == 'Tous'
+    final filteredNotifications = _selectedFilter == 'all'.tr
         ? _notifications
         : _notifications.where((n) => n['category'] == _selectedFilter).toList();
 
@@ -149,11 +155,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_off, size: 50, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Icon(Icons.notifications_off, size: 50.sp, color: Colors.grey[400]),
+            SizedBox(height: 16.h),
             Text(
-              'Aucune notification',
-              style: TextStyle(color: Colors.grey[600]),
+              'no_notifications'.tr,
+              style: GoogleFonts.raleway(
+                fontSize: 50.sp,
+                color: Colors.grey[600],
+              ),
             ),
           ],
         ),
@@ -161,7 +170,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: filteredNotifications.length,
       itemBuilder: (context, index) {
         final notification = filteredNotifications[index];
@@ -175,29 +184,29 @@ class _NotificationsPageState extends State<NotificationsPage> {
       key: Key(notification['id']),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: 16.h),
         decoration: BoxDecoration(
           color: Colors.red[400],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        padding: EdgeInsets.only(right: 20.w),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
         return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text("Supprimer la notification"),
-            content: const Text("Voulez-vous vraiment supprimer cette notification ?"),
+            title: Text('delete_notification'.tr),
+            content: Text('confirm_delete_notification'.tr),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text("Annuler"),
+                child: Text('cancel'.tr),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -208,9 +217,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         _removeNotification(notification['id']);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Notification supprimée"),
+            content: Text('notification_deleted'.tr),
             action: SnackBarAction(
-              label: 'Annuler',
+              label: 'undo'.tr,
               onPressed: () {
                 setState(() {
                   _notifications.add(deletedNotification);
@@ -235,14 +244,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final isUnread = !notification['read'];
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       elevation: 1,
       color: AppColors.whiteColor,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         onTap: () {
           setState(() {
             notification['read'] = true;
@@ -250,14 +259,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
           _handleNotificationTap(notification);
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: _getPriorityColor(notification['priority']).withOpacity(0.1),
                       shape: BoxShape.circle,
@@ -265,24 +274,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     child: Icon(
                       notification['icon'],
                       color: _getPriorityColor(notification['priority']),
-                      size: 20,
+                      size: 20.sp,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       notification['title'],
-                      style: TextStyle(
+                      style: GoogleFonts.raleway(
+                        fontSize: 16.sp,
                         fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
-                        fontSize: 16,
                         color: Colors.grey[800],
                       ),
                     ),
                   ),
                   if (isUnread)
                     Container(
-                      width: 10,
-                      height: 10,
+                      width: 10.w,
+                      height: 10.h,
                       decoration: BoxDecoration(
                         color: AppColors.primaryColor,
                         shape: BoxShape.circle,
@@ -290,82 +299,84 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 notification['message'],
-                style: TextStyle(
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
                   color: Colors.grey[700],
-                  fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               if (notification['date'] != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: EdgeInsets.only(top: 4.h),
                   child: Row(
                     children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
-                      const SizedBox(width: 4),
+                      Icon(Icons.access_time, size: 14.sp, color: Colors.grey[500]),
+                      SizedBox(width: 4.w),
                       Text(
                         dateFormat.format(notification['date']),
-                        style: TextStyle(
+                        style: GoogleFonts.raleway(
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
-                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                 ),
-              if (notification['type'] == 'rappel_medicament')
+              if (notification['type'] == 'medication_reminder')
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: EdgeInsets.only(top: 8.h),
                   child: Row(
                     children: [
-                      Icon(Icons.medical_information, size: 14, color: Colors.grey[500]),
-                      const SizedBox(width: 4),
+                      Icon(Icons.medical_information, size: 14.sp, color: Colors.grey[500]),
+                      SizedBox(width: 4.w),
                       Text(
-                        '${notification['medicament']} - ${notification['dose']}',
-                        style: TextStyle(
+                        '${notification['medication']} - ${notification['dose']}',
+                        style: GoogleFonts.raleway(
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
-                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                 ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 notification['time'],
-                style: TextStyle(
+                style: GoogleFonts.raleway(
+                  fontSize: 12.sp,
                   color: Colors.grey[500],
-                  fontSize: 12,
                 ),
               ),
-              if (notification['type'] == 'annulation')
+              if (notification['type'] == 'cancellation')
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: EdgeInsets.only(top: 12.h),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => RendezVousPatient(
-                            ),
+                            builder: (context) => const RendezVousPatient(),
                           ),
                         );
                       },
-                      child: const Text(
-                        'Replanifier le rendez-vous',
-                        style: TextStyle(color: AppColors.whiteColor),
+                      child: Text(
+                        'reschedule_appointment'.tr,
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          color: AppColors.whiteColor,
+                        ),
                       ),
                     ),
                   ),
@@ -395,13 +406,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Filtrer les notifications'),
+          title: Text('filter_notifications'.tr, style: GoogleFonts.raleway(fontSize: 18.sp)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ...['Tous', 'Rendez-vous', 'Médicaments'].map((filter) {
+              ...['all'.tr, 'appointments'.tr, 'medications'.tr, 'prescriptions'.tr].map((filter) {
                 return RadioListTile(
-                  title: Text(filter),
+                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 16.sp)),
                   value: filter,
                   groupValue: _selectedFilter,
                   onChanged: (value) {
@@ -422,19 +433,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void _handleNotificationTap(Map<String, dynamic> notification) {
     switch (notification['type']) {
       case 'confirmation':
-      // Naviguer vers les détails du rendez-vous
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RendezVousPatient()),
+        );
         break;
-      case 'annulation':
-      // Ouvrir l'écran de replanification
+      case 'cancellation':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RendezVousPatient()),
+        );
         break;
-      case 'rappel_medicament':
-      // Ouvrir le suivi des médicaments
+      case 'medication_reminder':
+      // TODO: Navigate to a medication tracking page when implemented
         break;
-      case 'rappel_rdv':
-      // Voir les détails du rendez-vous
+      case 'appointment_reminder':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RendezVousPatient()),
+        );
         break;
-      case 'ordonnance':
-      // Ouvrir les ordonnances
+      case 'prescription':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const OrdonnancesPage()),
+        );
         break;
     }
   }

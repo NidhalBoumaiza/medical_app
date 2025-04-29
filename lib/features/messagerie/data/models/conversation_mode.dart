@@ -26,15 +26,26 @@ class ConversationModel extends ConversationEntity {
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
       id: json['id'] as String?,
-      patientId: json['patientId'] as String,
-      doctorId: json['doctorId'] as String,
-      patientName: json['patientName'] as String,
-      doctorName: json['doctorName'] as String,
-      lastMessage: json['lastMessage'] as String,
-      lastMessageType: json['lastMessageType'] as String,
-      lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
+      patientId: json['patientId'] as String? ?? '',
+      doctorId: json['doctorId'] as String? ?? '',
+      patientName: json['patientName'] as String? ?? 'Unknown Patient',
+      doctorName: json['doctorName'] as String? ?? 'Unknown Doctor',
+      lastMessage: json['lastMessage'] as String? ?? '',
+      lastMessageType: json['lastMessageType'] as String? ?? 'text',
+      lastMessageTime: parseDateTime(json['lastMessageTime'] as String?),
       lastMessageUrl: json['lastMessageUrl'] as String?,
     );
+  }
+
+  static DateTime parseDateTime(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return DateTime.now();
+    }
+    try {
+      return DateTime.parse(dateString);
+    } catch (e) {
+      return DateTime.now();
+    }
   }
 
   @override

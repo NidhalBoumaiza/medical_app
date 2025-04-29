@@ -1,30 +1,24 @@
 import 'package:dartz/dartz.dart';
 import 'package:medical_app/core/error/failures.dart';
 import 'package:medical_app/features/messagerie/domain/entities/conversation_entity.dart';
-import '../repositories/message_repository.dart';
+import 'package:medical_app/features/messagerie/domain/repositories/message_repository.dart';
 
 class GetConversationsUseCase {
-  final MessagingRepository messagingRepository;
+  final MessagingRepository repository;
 
-  GetConversationsUseCase(this.messagingRepository);
+  GetConversationsUseCase(this.repository);
 
   Future<Either<Failure, List<ConversationEntity>>> call({
     required String userId,
     required bool isDoctor,
   }) async {
-    return await messagingRepository.getConversations(
-      userId: userId,
-      isDoctor: isDoctor,
-    );
+    return await repository.getConversations(userId: userId, isDoctor: isDoctor);
   }
 
-  Stream<List<ConversationEntity>> stream({
+  Stream<List<ConversationEntity>> getConversationsStream({
     required String userId,
     required bool isDoctor,
   }) {
-    return messagingRepository.getConversationsStream(
-      userId: userId,
-      isDoctor: isDoctor,
-    );
+    return repository.getConversationsStream(userId: userId, isDoctor: isDoctor);
   }
 }

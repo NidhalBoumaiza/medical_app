@@ -197,7 +197,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                     },
                     child: const Text(
                       'Voir tout',
-                      style: TextStyle(fontSize: 16, color: Colors.teal),
+                      style: TextStyle(fontSize: 25, color: Colors.teal),
                     ),
                   ),
                 ],
@@ -239,11 +239,11 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                   ),
                                   child: Image.asset(
                                     specialties[index]['image']!,
-                                    width: 40,
-                                    height: 40,
+                                    width: 30,
+                                    height: 30,
                                     fit: BoxFit.contain,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.error, size: 40, color: Colors.red);
+                                      return const Icon(Icons.error, size: 30, color: Colors.red);
                                     },
                                   ),
                                 ),
@@ -252,7 +252,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                   specialties[index]['text']!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                   ),
@@ -289,7 +289,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                     },
                     child: const Text(
                       'Voir tout',
-                      style: TextStyle(fontSize: 16, color: Colors.teal),
+                      style: TextStyle(fontSize: 25, color: Colors.teal),
                     ),
                   ),
                 ],
@@ -326,7 +326,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                             child: Text(
                               firstAidVideos[index]['text']!,
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: 25,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),

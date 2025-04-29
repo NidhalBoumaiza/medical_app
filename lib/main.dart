@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,13 +15,17 @@ import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%
 import 'package:medical_app/injection_container.dart' as di;
 import 'package:provider/provider.dart';
 import 'package:medical_app/core/utils/theme_provider.dart';
-import 'features/messagerie/presentation/blocs/conversation BLoC/conversations_bloc.dart';
-import 'features/messagerie/presentation/blocs/messageries BLoC/messagerie_bloc.dart';
+import 'features/messagerie/presentation/blocs/conversation%20BLoC/conversations_bloc.dart';
+import 'features/messagerie/presentation/blocs/messageries%20BLoC/messagerie_bloc.dart';
+import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
 import 'i18n/app_translation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+  );
   await di.init();
 
   final authLocalDataSource = di.sl<AuthLocalDataSource>();
@@ -56,6 +61,7 @@ class MyApp extends StatelessWidget {
             providers: [
               BlocProvider(create: (context) => di.sl<LoginBloc>()),
               BlocProvider(create: (context) => di.sl<SignupBloc>()),
+              BlocProvider(create: (context) => di.sl<UpdateUserBloc>()),
               BlocProvider(create: (context) => di.sl<ToggleCubit>()),
               BlocProvider(create: (context) => di.sl<RendezVousBloc>()),
               BlocProvider(create: (context) => di.sl<ConversationsBloc>()),

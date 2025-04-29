@@ -33,19 +33,3 @@ class ConversationsError extends ConversationsState {
   @override
   List<Object> get props => [message, ...super.props];
 }
-
-class NavigateToChat extends ConversationsState {
-  final String conversationId;
-  final String userName;
-  final String recipientId;
-
-  const NavigateToChat({
-    required this.conversationId,
-    required this.userName,
-    required this.recipientId,
-    required super.conversations,
-  });
-
-  @override
-  List<Object> get props => [conversationId, userName, recipientId, ...super.props];
-}

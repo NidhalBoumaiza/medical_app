@@ -72,7 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           gender: _genderController.text,
           phoneNumber: _phoneNumberController.text,
           dateOfBirth: _dateOfBirthController.text.isNotEmpty
-              ? DateTime.parse(_dateOfBirthController.text)
+              ? DateTime.tryParse(_dateOfBirthController.text)
               : null,
           antecedent: _antecedentController.text,
         );
@@ -86,7 +86,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           gender: _genderController.text,
           phoneNumber: _phoneNumberController.text,
           dateOfBirth: _dateOfBirthController.text.isNotEmpty
-              ? DateTime.parse(_dateOfBirthController.text)
+              ? DateTime.tryParse(_dateOfBirthController.text)
               : null,
           speciality: _specialityController.text,
           numLicence: _numLicenceController.text,

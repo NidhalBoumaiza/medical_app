@@ -55,14 +55,14 @@ class SecoursScreen extends StatelessWidget {
                     const Text(
                       "Premiers secours : Réanimation cardio-pulmonaire (RCP)",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 50,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       "Apprenez les étapes essentielles pour effectuer une RCP en cas d'arrêt cardiaque. Cette vidéo vous guide à travers les compressions thoraciques et la respiration artificielle.",
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                      style: TextStyle(fontSize: 50, color: Colors.black54),
                     ),
                     const SizedBox(height: 16),
 
@@ -87,7 +87,7 @@ class SecoursScreen extends StatelessWidget {
                                     const Text(
                                       "Quiz : RCP",
                                       style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 50,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black87,
                                       ),
@@ -99,7 +99,7 @@ class SecoursScreen extends StatelessWidget {
                                     // Question
                                     const Text(
                                       "Quelle est la fréquence recommandée des compressions thoraciques lors d'une RCP pour un adulte ?",
-                                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                                      style: TextStyle(fontSize: 50, color: Colors.black54),
                                       textAlign: TextAlign.center,
                                     ),
                                     const SizedBox(height: 20),
@@ -138,7 +138,7 @@ class SecoursScreen extends StatelessWidget {
                                             ),
                                             child: const Text(
                                               "60-80 par minute",
-                                              style: TextStyle(fontSize: 16, color: Colors.white),
+                                              style: TextStyle(fontSize: 50, color: Colors.white),
                                             ),
                                           ),
                                         ),

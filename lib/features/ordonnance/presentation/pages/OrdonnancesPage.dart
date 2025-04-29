@@ -17,7 +17,7 @@ class _OrdonnancesPageState extends State<OrdonnancesPage> {
         leading: IconButton(
           icon: Icon(
             Icons.chevron_left,
-            size: 30,
+            size: 50,
           ),
           onPressed: () {
             Navigator.pop(context);

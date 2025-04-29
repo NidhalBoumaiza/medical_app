@@ -78,7 +78,7 @@ class _QuizScreenState extends State<QuizScreen> {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontSize: 50,
           ),
         ),
         backgroundColor: const Color(0xFF2FA7BB),

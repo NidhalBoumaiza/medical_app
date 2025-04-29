@@ -155,4 +155,58 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(OfflineFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, Unit>> updateUser(UserEntity user) async {
+    if (await networkInfo.isConnected) {
+      try {
+        UserModel userModel;
+        if (user is PatientEntity) {
+          userModel = PatientModel(
+            id: user.id!,
+            name: user.name,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+            gender: user.gender,
+            phoneNumber: user.phoneNumber,
+            dateOfBirth: user.dateOfBirth,
+            antecedent: user.antecedent,
+          );
+        } else if (user is MedecinEntity) {
+          userModel = MedecinModel(
+            id: user.id!,
+            name: user.name,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+            gender: user.gender,
+            phoneNumber: user.phoneNumber,
+            dateOfBirth: user.dateOfBirth,
+            speciality: user.speciality,
+            numLicence: user.numLicence,
+          );
+        } else {
+          userModel = UserModel(
+            id: user.id!,
+            name: user.name,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+            gender: user.gender,
+            phoneNumber: user.phoneNumber,
+            dateOfBirth: user.dateOfBirth,
+          );
+        }
+        await remoteDataSource.updateUser(userModel);
+        return const Right(unit);
+      } on ServerException {
+        return Left(ServerFailure());
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
+  }
 }

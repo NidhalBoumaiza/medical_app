@@ -12,6 +12,7 @@ import 'package:medical_app/features/authentication/data/repositories/auth_repos
 import 'package:medical_app/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:medical_app/features/authentication/domain/usecases/create_account_use_case.dart';
 import 'package:medical_app/features/authentication/domain/usecases/login_usecase.dart';
+import 'package:medical_app/features/authentication/domain/usecases/update_user_use_case.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
 import 'package:medical_app/features/messagerie/data/data_sources/message_local_datasource.dart';
@@ -35,7 +36,8 @@ import 'features/messagerie/domain/repositories/message_repository.dart';
 import 'features/messagerie/domain/use_cases/get_conversations.dart';
 import 'features/messagerie/domain/use_cases/get_message.dart';
 import 'features/messagerie/domain/use_cases/send_message.dart';
-import 'features/messagerie/presentation/blocs/conversation BLoC/conversations_bloc.dart';
+import 'features/messagerie/presentation/blocs/conversation%20BLoC/conversations_bloc.dart';
+import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -43,6 +45,7 @@ Future<void> init() async {
   // Blocs and Cubits
   sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
   sl.registerFactory(() => SignupBloc(createAccountUseCase: sl()));
+  sl.registerFactory(() => UpdateUserBloc(updateUserUseCase: sl()));
   sl.registerFactory(() => ToggleCubit());
   sl.registerFactory(() => RendezVousBloc(
     fetchRendezVousUseCase: sl(),
@@ -51,12 +54,17 @@ Future<void> init() async {
     fetchDoctorsBySpecialtyUseCase: sl(),
     assignDoctorToRendezVousUseCase: sl(),
   ));
-  sl.registerFactory(() => ConversationsBloc(getConversationsUseCase: sl(),));
-  sl.registerFactory(()=>MessagerieBloc(sendMessageUseCase: sl(), getMessagesUseCase:  sl(), getMessagesStreamUseCase: sl()));
+  sl.registerFactory(() => ConversationsBloc(getConversationsUseCase: sl()));
+  sl.registerFactory(() => MessagerieBloc(
+    sendMessageUseCase: sl(),
+    getMessagesUseCase: sl(),
+    getMessagesStreamUseCase: sl(),
+  ));
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => CreateAccountUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateUserUseCase(sl()));
   sl.registerLazySingleton(() => FetchRendezVousUseCase(sl()));
   sl.registerLazySingleton(() => UpdateRendezVousStatusUseCase(sl()));
   sl.registerLazySingleton(() => CreateRendezVousUseCase(sl()));
@@ -66,6 +74,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SendMessageUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesStreamUseCase(sl()));
+
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
         () => AuthRepositoryImpl(
@@ -86,8 +95,8 @@ Future<void> init() async {
       networkInfo: sl(),
     ),
   );
-  // Data Sourcess
 
+  // Data Sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
         () => AuthRemoteDataSourceImpl(
       firebaseAuth: sl(),
@@ -110,13 +119,12 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
         () => MessagingRemoteDataSourceImpl(
-      firestore: sl(),
+      firestore: sl(), storage: sl(),
     ),
   );
-
   sl.registerLazySingleton<MessagingLocalDataSource>(
         () => MessagingLocalDataSourceImpl(
-      sharedPreferences: sl(),
+      //sharedPreferences: sl(),
     ),
   );
 
