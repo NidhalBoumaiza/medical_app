@@ -33,6 +33,7 @@ void main() async {
 
   try {
     final token = await authLocalDataSource.getToken();
+    print ('Token: $token');
     final user = await authLocalDataSource.getUser();
     if (token != null && user.id!.isNotEmpty) {
       initialScreen = user.role == 'medecin' ? const HomeMedecin() : const HomePatient();

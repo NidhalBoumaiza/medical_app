@@ -5,6 +5,7 @@ import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
 import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
+import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserEntity user;
@@ -36,7 +37,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneNumberController = TextEditingController(text: widget.user.phoneNumber);
     _genderController = TextEditingController(text: widget.user.gender);
     _dateOfBirthController = TextEditingController(
-        text: widget.user.dateOfBirth?.toIso8601String().split('T').first ?? '');
+        text: widget.user.dateOfBirth != null
+            ? DateFormat('yyyy-MM-dd').format(widget.user.dateOfBirth!)
+            : '');
     _antecedentController =
         TextEditingController(text: widget.user is PatientEntity ? (widget.user as PatientEntity).antecedent : '');
     _specialityController =
@@ -96,6 +99,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _dateOfBirthController.text.isNotEmpty
+          ? DateTime.parse(_dateOfBirthController.text)
+          : DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: AppColors.whiteColor,
+              surface: Colors.white,
+              onSurface: AppColors.black,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _dateOfBirthController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +174,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       SizedBox(height: 16.h),
                       _buildTextField(
+                        enabled: false,
                         controller: _emailController,
                         label: 'email'.tr,
                         icon: Icons.email,
@@ -173,7 +207,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _dateOfBirthController,
                         label: 'date_of_birth_label'.tr,
                         icon: Icons.calendar_today,
-                        keyboardType: TextInputType.datetime,
+                        readOnly: true, // Make field read-only to prevent manual input
+                        onTap: () => _selectDate(context), // Open date picker on tap
                         hintText: 'YYYY-MM-DD',
                       ),
                       if (widget.user is PatientEntity) ...[
@@ -229,16 +264,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildTextField({
+    bool? enabled,
     required TextEditingController controller,
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
     String? hintText,
     String? Function(String?)? validator,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
+      enabled: enabled ?? true,
       controller: controller,
       keyboardType: keyboardType,
+      readOnly: readOnly,
+      onTap: onTap,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
@@ -251,13 +292,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor.withOpacity(0.5)),
         ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.r),
+          borderSide: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
+        ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
         ),
         prefixIcon: Icon(icon, color: AppColors.primaryColor),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: enabled == false ? Colors.grey[300] : Colors.grey[100],
       ),
       validator: validator,
     );

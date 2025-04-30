@@ -176,6 +176,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               );
             }
             return ListView.builder(
+
               padding: EdgeInsets.symmetric(vertical: 8.h),
               itemCount: state.conversations.length,
               itemBuilder: (context, index) {

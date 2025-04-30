@@ -40,6 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ImagePicker _picker = ImagePicker(); // For picking images
   final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
   final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth instance
+  List<XFile> _selectedImages = []; // Store selected images for preview
 
   @override
   void initState() {
@@ -153,17 +154,138 @@ class _ChatScreenState extends State<ChatScreen> {
       );
 
       print('Sending text message ${message.id}: ${message.content}');
-      // Only emit SendMessageEvent, as _onSendMessage handles local addition
       context.read<MessagerieBloc>().add(SendMessageEvent(message: message));
       _messageController.clear();
       _scrollToBottom();
     }
   }
 
-  // Picks and sends an image
+  // Picks multiple images and shows preview
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    final List<XFile>? images = await _picker.pickMultiImage();
+    if (images != null && images.isNotEmpty) {
+      setState(() {
+        _selectedImages = images;
+      });
+      print('Selected ${images.length} images');
+      _showImagePreview();
+    }
+  }
+
+  // Shows a modal bottom sheet to preview selected images
+  void _showImagePreview() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.all(16.w),
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Column(
+                children: [
+                  Text(
+                    'Selected Images (${_selectedImages.length})',
+                    style: GoogleFonts.raleway(
+                      fontSize: 50.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.black,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 8.w,
+                        mainAxisSpacing: 8.h,
+                      ),
+                      itemCount: _selectedImages.length,
+                      itemBuilder: (context, index) {
+                        final image = _selectedImages[index];
+                        return Stack(
+                          children: [
+                            Image.file(
+                              File(image.path),
+                              fit: BoxFit.cover,
+                              width: 100.w,
+                              height: 100.h,
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setModalState(() {
+                                    setState(() {
+                                      _selectedImages.removeAt(index);
+                                    });
+                                  });
+                                  if (_selectedImages.isEmpty) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(4.w),
+                                  color: Colors.black54,
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 40.sp,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  ElevatedButton(
+                    onPressed: _selectedImages.isEmpty
+                        ? null
+                        : () {
+                      _sendImages();
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.r),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    ),
+                    child: Text(
+                      'Send (${_selectedImages.length})',
+                      style: GoogleFonts.raleway(
+                        fontSize: 50.sp,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      setState(() {
+        _selectedImages = [];
+      });
+      print('Image preview closed, cleared selected images');
+    });
+  }
+
+  // Sends all selected images as individual messages
+  void _sendImages() {
+    for (var image in _selectedImages) {
       final file = File(image.path);
       final message = MessageModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -177,10 +299,9 @@ class _ChatScreenState extends State<ChatScreen> {
       );
 
       print('Sending image message ${message.id}');
-      // Only emit SendMessageEvent
       context.read<MessagerieBloc>().add(SendMessageEvent(message: message, file: file));
-      _scrollToBottom();
     }
+    _scrollToBottom();
   }
 
   // Picks and sends a file
@@ -202,7 +323,6 @@ class _ChatScreenState extends State<ChatScreen> {
       );
 
       print('Sending file message ${message.id}: $fileName');
-      // Only emit SendMessageEvent
       context.read<MessagerieBloc>().add(SendMessageEvent(message: message, file: file));
       _scrollToBottom();
     }
@@ -459,22 +579,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 color: AppColors.white,
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.image,
-                        color: AppColors.primaryColor,
-                        size: 50.sp,
-                      ),
-                      onPressed: _pickImage,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.attach_file,
-                        color: AppColors.primaryColor,
-                        size: 50.sp,
-                      ),
-                      onPressed: _pickFile,
-                    ),
+                    // IconButton(
+                    //   icon: Icon(
+                    //     Icons.image,
+                    //     color: AppColors.primaryColor,
+                    //     size: 50.sp,
+                    //   ),
+                    //   onPressed: _pickImage,
+                    // ),
+                    // IconButton(
+                    //   icon: Icon(
+                    //     Icons.attach_file,
+                    //     color: AppColors.primaryColor,
+                    //     size: 50.sp,
+                    //   ),
+                    //   onPressed: _pickFile,
+                    // ),
                     Expanded(
                       child: TextField(
                         controller: _messageController,
