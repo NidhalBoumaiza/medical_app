@@ -13,7 +13,10 @@ class PatientModel extends UserModel {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
+    bool? accountStatus,
+    int? verificationCode,
     required this.antecedent,
+    DateTime? validationCodeExpiresAt,
   }) : super(
     id: id,
     name: name,
@@ -23,6 +26,9 @@ class PatientModel extends UserModel {
     gender: gender,
     phoneNumber: phoneNumber,
     dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
   );
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +44,11 @@ class PatientModel extends UserModel {
           ? DateTime.parse(json['dateOfBirth'] as String)
           : null,
       antecedent: json['antecedent'] as String,
+      accountStatus: json['accountStatus'] as bool?,
+      verificationCode: json['verificationCode'] as int?,
+      validationCodeExpiresAt: json['validationCodeExpiresAt'] != null
+          ? DateTime.parse(json['validationCodeExpiresAt'] as String)
+          : null,
     );
   }
 
@@ -59,6 +70,9 @@ class PatientModel extends UserModel {
       phoneNumber: phoneNumber,
       dateOfBirth: dateOfBirth,
       antecedent: antecedent,
+      accountStatus: accountStatus,
+      verificationCode: verificationCode,
+      validationCodeExpiresAt: validationCodeExpiresAt,
     );
   }
 }

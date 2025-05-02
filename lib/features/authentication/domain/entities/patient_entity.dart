@@ -13,6 +13,9 @@ class PatientEntity extends UserEntity {
     required String phoneNumber,
     DateTime? dateOfBirth,
     required this.antecedent,
+    bool? accountStatus,
+    int? verificationCode,
+    DateTime? validationCodeExpiresAt,
   }) : super(
     id: id,
     name: name,
@@ -22,6 +25,10 @@ class PatientEntity extends UserEntity {
     gender: gender,
     phoneNumber: phoneNumber,
     dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
+
   );
 
   factory PatientEntity.create({
@@ -34,6 +41,9 @@ class PatientEntity extends UserEntity {
     required String phoneNumber,
     DateTime? dateOfBirth,
     required String antecedent,
+    bool? accountStatus,
+    int? verificationCode,
+    DateTime? validationCodeExpiresAt,
   }) {
     return PatientEntity(
       id: id,
@@ -45,6 +55,9 @@ class PatientEntity extends UserEntity {
       phoneNumber: phoneNumber,
       dateOfBirth: dateOfBirth,
       antecedent: antecedent,
+      accountStatus: accountStatus,
+      verificationCode: verificationCode,
+      validationCodeExpiresAt: validationCodeExpiresAt,
     );
   }
 

@@ -14,8 +14,11 @@ class MedecinModel extends UserModel {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
+    bool? accountStatus,
+    int? verificationCode,
     required this.speciality,
     required this.numLicence,
+    DateTime? validationCodeExpiresAt,
   }) : super(
     id: id,
     name: name,
@@ -25,6 +28,9 @@ class MedecinModel extends UserModel {
     gender: gender,
     phoneNumber: phoneNumber,
     dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
   );
 
   factory MedecinModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +47,11 @@ class MedecinModel extends UserModel {
           : null,
       speciality: json['speciality'] as String,
       numLicence: json['numLicence'] as String,
+      accountStatus: json['accountStatus'] as bool?,
+      verificationCode: json['verificationCode'] as int?,
+      validationCodeExpiresAt: json['validationCodeExpiresAt'] != null
+          ? DateTime.parse(json['validationCodeExpiresAt'] as String)
+          : null,
     );
   }
 
@@ -49,6 +60,7 @@ class MedecinModel extends UserModel {
     final Map<String, dynamic> data = super.toJson();
     data['speciality'] = speciality;
     data['numLicence'] = numLicence;
+
     return data;
   }
 
@@ -64,6 +76,9 @@ class MedecinModel extends UserModel {
       dateOfBirth: dateOfBirth,
       speciality: speciality,
       numLicence: numLicence,
+      accountStatus: accountStatus,
+      verificationCode: verificationCode,
+      validationCodeExpiresAt: validationCodeExpiresAt,
     );
   }
 }

@@ -9,6 +9,9 @@ class UserEntity extends Equatable {
   final String gender;
   final String phoneNumber;
   final DateTime? dateOfBirth;
+  final bool? accountStatus; // accountStatus is optional
+  final int? verificationCode; // verificationCode is optional
+  final DateTime? validationCodeExpiresAt; // validationCodeExpiresAt is optional
 
   UserEntity({
     this.id, // id is not required
@@ -19,6 +22,9 @@ class UserEntity extends Equatable {
     required this.gender,
     required this.phoneNumber,
     this.dateOfBirth,
+    this.accountStatus, // accountStatus is not required
+    this.verificationCode, // verificationCode is not required
+    this.validationCodeExpiresAt, // validationCodeExpiresAt is not required
   });
 
   factory UserEntity.create({
@@ -30,6 +36,9 @@ class UserEntity extends Equatable {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
+    bool? accountStatus, // accountStatus is optional
+    int? verificationCode,
+    DateTime? validationCodeExpiresAt, // validationCodeExpiresAt is optional
   }) {
     return UserEntity(
       id: id,
@@ -40,6 +49,9 @@ class UserEntity extends Equatable {
       gender: gender,
       phoneNumber: phoneNumber,
       dateOfBirth: dateOfBirth,
+      accountStatus: accountStatus,
+      verificationCode: verificationCode,
+      validationCodeExpiresAt: validationCodeExpiresAt,
     );
   }
 
@@ -53,5 +65,8 @@ class UserEntity extends Equatable {
     gender,
     phoneNumber,
     dateOfBirth,
+    accountStatus,
+    verificationCode,
+    validationCodeExpiresAt,
   ];
 }

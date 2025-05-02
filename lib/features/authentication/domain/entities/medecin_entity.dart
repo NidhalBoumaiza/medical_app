@@ -15,6 +15,9 @@ class MedecinEntity extends UserEntity {
     DateTime? dateOfBirth,
     required this.speciality,
     required this.numLicence,
+    bool? accountStatus,
+    int? verificationCode,
+    DateTime? validationCodeExpiresAt,
   }) : super(
     id: id,
     name: name,
@@ -24,6 +27,9 @@ class MedecinEntity extends UserEntity {
     gender: gender,
     phoneNumber: phoneNumber,
     dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
   );
 
   factory MedecinEntity.create({
@@ -37,6 +43,9 @@ class MedecinEntity extends UserEntity {
     DateTime? dateOfBirth,
     required String speciality,
     required String numLicence,
+    bool? accountStatus,
+    int? verificationCode,
+  DateTime? validationCodeExpiresAt,
   }) {
     return MedecinEntity(
       id: id,
@@ -49,6 +58,9 @@ class MedecinEntity extends UserEntity {
       dateOfBirth: dateOfBirth,
       speciality: speciality,
       numLicence: numLicence,
+      accountStatus: accountStatus,
+      verificationCode: verificationCode,
+      validationCodeExpiresAt: validationCodeExpiresAt,
     );
   }
 

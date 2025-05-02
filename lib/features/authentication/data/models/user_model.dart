@@ -10,6 +10,9 @@ class UserModel extends UserEntity {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
+    bool? accountStatus,
+    int? verificationCode,
+    DateTime? validationCodeExpiresAt
   }) : super(
     id: id,
     name: name,
@@ -19,6 +22,9 @@ class UserModel extends UserEntity {
     gender: gender,
     phoneNumber: phoneNumber,
     dateOfBirth: dateOfBirth,
+    accountStatus: accountStatus,
+    verificationCode: verificationCode,
+    validationCodeExpiresAt: validationCodeExpiresAt,
   );
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +38,11 @@ class UserModel extends UserEntity {
       phoneNumber: json['phoneNumber'] as String,
       dateOfBirth: json['dateOfBirth'] != null
           ? DateTime.parse(json['dateOfBirth'] as String)
+          : null,
+      accountStatus: json['accountStatus'] as bool?,
+      verificationCode: json['verificationCode'] as int?,
+      validationCodeExpiresAt: json['validationCodeExpiresAt'] != null
+          ? DateTime.parse(json['validationCodeExpiresAt'] as String)
           : null,
     );
   }
@@ -51,6 +62,15 @@ class UserModel extends UserEntity {
     }
     if (dateOfBirth != null) {
       data['dateOfBirth'] = dateOfBirth!.toIso8601String();
+    }
+    if (accountStatus != null) {
+      data['accountStatus'] = accountStatus;
+    }
+    if (verificationCode != null) {
+      data['verificationCode'] = verificationCode;
+    }
+    if (validationCodeExpiresAt != null) {
+      data['validationCodeExpiresAt'] = validationCodeExpiresAt!.toIso8601String();
     }
     return data;
   }

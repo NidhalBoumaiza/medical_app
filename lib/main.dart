@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:medical_app/cubit/toggle%20cubit/toggle_cubit.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
+
 import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/features/home/presentation/pages/home_medecin.dart';
 import 'package:medical_app/features/home/presentation/pages/home_patient.dart';
@@ -15,6 +17,9 @@ import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%
 import 'package:medical_app/injection_container.dart' as di;
 import 'package:provider/provider.dart';
 import 'package:medical_app/core/utils/theme_provider.dart';
+import 'features/authentication/presentation/blocs/forget password bloc/forgot_password_bloc.dart';
+import 'features/authentication/presentation/blocs/reset password bloc/reset_password_bloc.dart';
+import 'features/authentication/presentation/blocs/verify code bloc/verify_code_bloc.dart';
 import 'features/messagerie/presentation/blocs/conversation%20BLoC/conversations_bloc.dart';
 import 'features/messagerie/presentation/blocs/messageries%20BLoC/messagerie_bloc.dart';
 import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
@@ -23,6 +28,9 @@ import 'i18n/app_translation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.playIntegrity,
+  );
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
@@ -33,7 +41,7 @@ void main() async {
 
   try {
     final token = await authLocalDataSource.getToken();
-    print ('Token: $token');
+    print('Token: $token');
     final user = await authLocalDataSource.getUser();
     if (token != null && user.id!.isNotEmpty) {
       initialScreen = user.role == 'medecin' ? const HomeMedecin() : const HomePatient();
@@ -64,6 +72,9 @@ class MyApp extends StatelessWidget {
               BlocProvider(create: (context) => di.sl<SignupBloc>()),
               BlocProvider(create: (context) => di.sl<UpdateUserBloc>()),
               BlocProvider(create: (context) => di.sl<ToggleCubit>()),
+              BlocProvider(create: (context) => di.sl<ForgotPasswordBloc>()),
+              BlocProvider(create: (context) => di.sl<VerifyCodeBloc>()),
+              BlocProvider(create: (context) => di.sl<ResetPasswordBloc>()),
               BlocProvider(create: (context) => di.sl<RendezVousBloc>()),
               BlocProvider(create: (context) => di.sl<ConversationsBloc>()),
               BlocProvider(create: (context) => di.sl<MessagerieBloc>()),

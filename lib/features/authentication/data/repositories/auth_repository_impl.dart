@@ -89,6 +89,8 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(ServerMessageFailure(e.message));
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message));
+      } on UsedEmailOrPhoneNumberException catch (e) {
+        return Left(UsedEmailOrPhoneNumberFailure(e.message));
       }
     } else {
       return Left(OfflineFailure());
@@ -150,6 +152,8 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(UnauthorizedFailure());
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message));
+      } on YouHaveToCreateAccountAgainException catch (e) {
+        return Left(YouHaveToCreateAccountAgainFailure(e.message));
       }
     } else {
       return Left(OfflineFailure());
@@ -199,6 +203,76 @@ class AuthRepositoryImpl implements AuthRepository {
           );
         }
         await remoteDataSource.updateUser(userModel);
+        return const Right(unit);
+      } on ServerException {
+        return Left(ServerFailure());
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendVerificationCode({
+    required String email,
+    required VerificationCodeType codeType,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.sendVerificationCode(
+          email: email,
+          codeType: codeType,
+        );
+        return const Right(unit);
+      } on ServerException {
+        return Left(ServerFailure());
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> verifyCode({
+    required String email,
+    required int verificationCode,
+    required VerificationCodeType codeType,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.verifyCode(
+          email: email,
+          verificationCode: verificationCode,
+          codeType: codeType,
+        );
+        return const Right(unit);
+      } on ServerException {
+        return Left(ServerFailure());
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      }
+    } else {
+      return Left(OfflineFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> changePassword({
+    required String email,
+    required String newPassword,
+    required int verificationCode,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.changePassword(
+          email: email,
+          newPassword: newPassword,
+          verificationCode: verificationCode,
+        );
         return const Right(unit);
       } on ServerException {
         return Left(ServerFailure());

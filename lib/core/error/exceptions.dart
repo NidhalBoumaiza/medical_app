@@ -69,3 +69,23 @@ class AuthException extends Equatable implements Exception {
   @override
   List<Object?> get props => [message];
 }
+
+/// An exception thrown when email or phone number is already used.
+class UsedEmailOrPhoneNumberException extends Equatable implements Exception {
+  final String message;
+
+  const UsedEmailOrPhoneNumberException([this.message = 'Email or phone number already used']);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// An exception thrown when an inactive account's validation code has expired.
+class YouHaveToCreateAccountAgainException extends Equatable implements Exception {
+  final String message;
+
+  const YouHaveToCreateAccountAgainException([this.message = 'Account inactive and validation code expired. Please create a new account.']);
+
+  @override
+  List<Object?> get props => [message];
+}

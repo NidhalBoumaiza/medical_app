@@ -50,3 +50,21 @@ class AuthFailure extends Failure {
   @override
   String get message => customMessage ?? 'auth_failure_message'.tr;
 }
+
+class UsedEmailOrPhoneNumberFailure extends Failure {
+  final String? customMessage;
+
+  UsedEmailOrPhoneNumberFailure([this.customMessage]);
+
+  @override
+  String get message => customMessage ?? 'email_or_phone_number_used'.tr;
+}
+
+class YouHaveToCreateAccountAgainFailure extends Failure {
+  final String? customMessage;
+
+  YouHaveToCreateAccountAgainFailure([this.customMessage]);
+
+  @override
+  String get message => customMessage ?? 'create_account_again'.tr;
+}

@@ -11,12 +11,23 @@ import 'package:medical_app/features/authentication/data/data%20sources/auth_rem
 import 'package:medical_app/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:medical_app/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:medical_app/features/authentication/domain/usecases/create_account_use_case.dart';
+import 'package:medical_app/features/authentication/domain/usecases/send_verification_code_use_case.dart';
+import 'package:medical_app/features/authentication/domain/usecases/change_password_use_case.dart';
 import 'package:medical_app/features/authentication/domain/usecases/login_usecase.dart';
 import 'package:medical_app/features/authentication/domain/usecases/update_user_use_case.dart';
+import 'package:medical_app/features/authentication/domain/usecases/verify_code_use_case.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/Signup%20BLoC/signup_bloc.dart';
 import 'package:medical_app/features/authentication/presentation/blocs/login%20BLoC/login_bloc.dart';
+
 import 'package:medical_app/features/messagerie/data/data_sources/message_local_datasource.dart';
+import 'package:medical_app/features/messagerie/data/data_sources/message_remote_datasource.dart';
+import 'package:medical_app/features/messagerie/data/repositories/message_repository_impl.dart';
+import 'package:medical_app/features/messagerie/domain/repositories/message_repository.dart';
+import 'package:medical_app/features/messagerie/domain/use_cases/get_conversations.dart';
+import 'package:medical_app/features/messagerie/domain/use_cases/get_message.dart';
 import 'package:medical_app/features/messagerie/domain/use_cases/get_messages_stream_usecase.dart';
+import 'package:medical_app/features/messagerie/domain/use_cases/send_message.dart';
+import 'package:medical_app/features/messagerie/presentation/blocs/conversation%20BLoC/conversations_bloc.dart';
 import 'package:medical_app/features/messagerie/presentation/blocs/messageries%20BLoC/messagerie_bloc.dart';
 import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_local_data_source.dart';
 import 'package:medical_app/features/rendez_vous/data/data%20sources/rdv_remote_data_source.dart';
@@ -29,14 +40,9 @@ import 'package:medical_app/features/rendez_vous/domain/usecases/fetch_rendez_vo
 import 'package:medical_app/features/rendez_vous/domain/usecases/update_rendez_vous_status_use_case.dart';
 import 'package:medical_app/features/rendez_vous/presentation/blocs/rendez-vous%20BLoC/rendez_vous_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'features/messagerie/data/data_sources/message_remote_datasource.dart';
-import 'features/messagerie/data/repositories/message_repository_impl.dart';
-import 'features/messagerie/domain/repositories/message_repository.dart';
-import 'features/messagerie/domain/use_cases/get_conversations.dart';
-import 'features/messagerie/domain/use_cases/get_message.dart';
-import 'features/messagerie/domain/use_cases/send_message.dart';
-import 'features/messagerie/presentation/blocs/conversation%20BLoC/conversations_bloc.dart';
+import 'features/authentication/presentation/blocs/forget password bloc/forgot_password_bloc.dart';
+import 'features/authentication/presentation/blocs/reset password bloc/reset_password_bloc.dart';
+import 'features/authentication/presentation/blocs/verify code bloc/verify_code_bloc.dart';
 import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
 
 final sl = GetIt.instance;
@@ -47,6 +53,9 @@ Future<void> init() async {
   sl.registerFactory(() => SignupBloc(createAccountUseCase: sl()));
   sl.registerFactory(() => UpdateUserBloc(updateUserUseCase: sl()));
   sl.registerFactory(() => ToggleCubit());
+  sl.registerFactory(() => ForgotPasswordBloc(sendVerificationCodeUseCase: sl()));
+  sl.registerFactory(() => VerifyCodeBloc(verifyCodeUseCase: sl()));
+  sl.registerFactory(() => ResetPasswordBloc(changePasswordUseCase: sl()));
   sl.registerFactory(() => RendezVousBloc(
     fetchRendezVousUseCase: sl(),
     updateRendezVousStatusUseCase: sl(),
@@ -65,6 +74,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => CreateAccountUseCase(sl()));
   sl.registerLazySingleton(() => UpdateUserUseCase(sl()));
+  sl.registerLazySingleton(() => VerifyCodeUseCase(sl()));
+  sl.registerLazySingleton(() => ChangePasswordUseCase(sl()));
   sl.registerLazySingleton(() => FetchRendezVousUseCase(sl()));
   sl.registerLazySingleton(() => UpdateRendezVousStatusUseCase(sl()));
   sl.registerLazySingleton(() => CreateRendezVousUseCase(sl()));
@@ -74,6 +85,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SendMessageUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesStreamUseCase(sl()));
+  sl.registerLazySingleton(() => SendVerificationCodeUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -119,13 +131,12 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessagingRemoteDataSource>(
         () => MessagingRemoteDataSourceImpl(
-      firestore: sl(), storage: sl(),
+      firestore: sl(),
+      storage: sl(),
     ),
   );
   sl.registerLazySingleton<MessagingLocalDataSource>(
-        () => MessagingLocalDataSourceImpl(
-      //sharedPreferences: sl(),
-    ),
+        () => MessagingLocalDataSourceImpl(),
   );
 
   // Core
