@@ -85,7 +85,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
       backgroundColor: AppColors.whiteColor,
       appBar: AppBar(
         title: Text(
-          'notifications'.tr,
+          'Notifications'.tr,
           style: GoogleFonts.raleway(
             fontSize: 50.sp,
             fontWeight: FontWeight.bold,
@@ -96,7 +96,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
         iconTheme: const IconThemeData(color: AppColors.whiteColor),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, size: 24.sp),
+            icon: Icon(Icons.filter_list, size: 70.sp),
             onPressed: _showFilterDialog,
           ),
         ],
@@ -274,7 +274,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
                     child: Icon(
                       notification['icon'],
                       color: _getPriorityColor(notification['priority']),
-                      size: 20.sp,
+                      size: 50.sp,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -282,7 +282,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
                     child: Text(
                       notification['title'],
                       style: GoogleFonts.raleway(
-                        fontSize: 16.sp,
+                        fontSize: 50.sp,
                         fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
                         color: Colors.grey[800],
                       ),
@@ -303,7 +303,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
               Text(
                 notification['message'],
                 style: GoogleFonts.raleway(
-                  fontSize: 14.sp,
+                  fontSize: 50.sp,
                   color: Colors.grey[700],
                 ),
               ),
@@ -313,12 +313,12 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
                   padding: EdgeInsets.only(top: 4.h),
                   child: Row(
                     children: [
-                      Icon(Icons.access_time, size: 14.sp, color: Colors.grey[500]),
+                      Icon(Icons.access_time, size: 50.sp, color: Colors.grey[500]),
                       SizedBox(width: 4.w),
                       Text(
                         dateFormat.format(notification['date']),
                         style: GoogleFonts.raleway(
-                          fontSize: 12.sp,
+                          fontSize: 50.sp,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -330,12 +330,12 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
                   padding: EdgeInsets.only(top: 8.h),
                   child: Row(
                     children: [
-                      Icon(Icons.medical_information, size: 14.sp, color: Colors.grey[500]),
+                      Icon(Icons.medical_information, size: 50.sp, color: Colors.grey[500]),
                       SizedBox(width: 4.w),
                       Text(
                         '${notification['medication']} - ${notification['dose']}',
                         style: GoogleFonts.raleway(
-                          fontSize: 12.sp,
+                          fontSize: 50.sp,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -374,7 +374,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
                       child: Text(
                         'reschedule_appointment'.tr,
                         style: GoogleFonts.raleway(
-                          fontSize: 14.sp,
+                          fontSize: 45.sp,
                           color: AppColors.whiteColor,
                         ),
                       ),
@@ -412,7 +412,7 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
             children: [
               ...['all'.tr, 'appointments'.tr, 'medications'.tr, 'prescriptions'.tr].map((filter) {
                 return RadioListTile(
-                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 16.sp)),
+                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 50.sp)),
                   value: filter,
                   groupValue: _selectedFilter,
                   onChanged: (value) {

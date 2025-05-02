@@ -99,14 +99,6 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
-        appBar: AppBar(
-          title: const Text('Mes Consultations'),
-          backgroundColor: const Color(0xFF2FA7BB),
-          leading: IconButton(
-            icon: const Icon(Icons.chevron_left, size: 30),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
         body: BlocListener<RendezVousBloc, RendezVousState>(
           listener: (context, state) {
             if (state is RendezVousError) {
@@ -129,9 +121,9 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/images/DoctorConsultations.png',
-                    height: 1000.h,
-                    width: 900.w,
+                    'assets/images/Consultation.png',
+                    height: 800.h,
+                    width: 1000.w,
                   ),
                   SizedBox(height: 100.h),
                   BlocBuilder<RendezVousBloc, RendezVousState>(

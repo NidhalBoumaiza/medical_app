@@ -82,23 +82,22 @@ class _ProfilePatientState extends State<ProfilePatient> {
   void _showLogoutDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text('logout'.tr),
-        content: Text('confirm_logout'.tr),
+        title: Text('logout'.tr, style: GoogleFonts.raleway(fontSize: 22.sp)),
+        content: Text('confirm_logout'.tr, style: GoogleFonts.raleway(fontSize: 18.sp)),
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: Text('cancel'.tr),
+            child: Text('cancel'.tr, style: GoogleFonts.raleway(fontSize: 16.sp)),
           ),
           TextButton(
             onPressed: () {
               Get.back();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Déconnexion réussie")),
+                SnackBar(content: Text("Déconnexion réussie", style: GoogleFonts.raleway(fontSize: 16.sp))),
               );
-              // Exemple : Rediriger vers la page de connexion
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
             },
-            child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
+            child: Text('logout'.tr, style: GoogleFonts.raleway(fontSize: 16.sp, color: Colors.red)),
           ),
         ],
       ),
@@ -116,12 +115,12 @@ class _ProfilePatientState extends State<ProfilePatient> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('profile'.tr),
+          title: Text('Profile'.tr, style: GoogleFonts.raleway(fontSize: 50.sp, fontWeight: FontWeight.bold)),
           backgroundColor: AppColors.primaryColor,
           foregroundColor: AppColors.whiteColor,
           actions: [
             IconButton(
-              icon: const Icon(Icons.edit),
+              icon: Icon(Icons.edit, size: 70.sp),
               onPressed: () {
                 if (_patient != null) {
                   Navigator.push(
@@ -158,7 +157,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
             return _patient == null
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -166,11 +165,11 @@ class _ProfilePatientState extends State<ProfilePatient> {
                     child: Stack(
                       children: [
                         CircleAvatar(
-                          radius: 50.r,
+                          radius: 150.r,
                           backgroundColor: AppColors.primaryColor.withOpacity(0.2),
                           child: Icon(
                             Icons.person,
-                            size: 50.sp,
+                            size: 200.sp,
                             color: AppColors.primaryColor,
                           ),
                         ),
@@ -178,12 +177,15 @@ class _ProfilePatientState extends State<ProfilePatient> {
                           bottom: 0,
                           right: 0,
                           child: Container(
+                            width: 90.sp,
+                            height: 200.sp,
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor,
+                             color: AppColors.iconColor,
                               shape: BoxShape.circle,
+
                             ),
                             child: IconButton(
-                              icon: Icon(Icons.edit, color: AppColors.whiteColor, size: 20.sp),
+                              icon: Icon(Icons.edit, color: AppColors.whiteColor, size: 50.sp),
                               onPressed: _changeProfilePicture,
                             ),
                           ),
@@ -191,7 +193,7 @@ class _ProfilePatientState extends State<ProfilePatient> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 24.h),
                   _buildInfoTile('first_name_label'.tr, '${_patient!.name} ${_patient!.lastName}'),
                   _buildInfoTile('email'.tr, _patient!.email),
                   _buildInfoTile('phone_number_label'.tr, _patient!.phoneNumber),
@@ -199,13 +201,14 @@ class _ProfilePatientState extends State<ProfilePatient> {
                   _buildInfoTile('date_of_birth_label'.tr,
                       _patient!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
                   _buildInfoTile('antecedent'.tr, _patient!.antecedent),
-                  SizedBox(height: 24.h),
+                  SizedBox(height: 28.h),
                   Divider(color: Theme.of(context).dividerColor),
+
                   SwitchListTile(
                     title: Text('notifications'.tr),
                     value: _notificationsEnabled,
                     onChanged: (value) => setState(() => _notificationsEnabled = value),
-                    secondary: const Icon(Icons.notifications),
+                    secondary: Icon(Icons.notifications),
                     activeColor: AppColors.primaryColor,
                   ),
                   ListTile(
@@ -223,20 +226,20 @@ class _ProfilePatientState extends State<ProfilePatient> {
                     title: Text('dark_mode'.tr),
                     value: themeProvider.isDarkMode,
                     onChanged: (_) => themeProvider.toggleTheme(),
-                    secondary: const Icon(Icons.brightness_6),
+                    secondary: Icon(Icons.brightness_6),
                     activeColor: AppColors.primaryColor,
                   ),
                   ListTile(
-                    leading: const Icon(Icons.calendar_today),
+                    leading: Icon(Icons.calendar_today),
                     title: Text('mes_rendez_vous'.tr),
                     onTap: () => Get.toNamed('/appointments'),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.help),
+                    leading: Icon(Icons.help),
                     title: Text('aide_et_assistance_technique'.tr),
                     onTap: () => Get.toNamed('/help'),
                   ),
-                  SizedBox(height: 24.h),
+                  SizedBox(height: 28.h),
                   Center(
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.logout),
@@ -261,11 +264,19 @@ class _ProfilePatientState extends State<ProfilePatient> {
     return ListTile(
       title: Text(
         label,
-        style: GoogleFonts.raleway(fontSize: 16.sp, color: AppColors.grey),
+        style: GoogleFonts.raleway(
+          fontSize: 50.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.grey,
+        ),
       ),
       subtitle: Text(
         value,
-        style: GoogleFonts.raleway(fontSize: 18.sp, color: AppColors.black),
+        style: GoogleFonts.raleway(
+          fontSize: 50.sp,
+          fontWeight: FontWeight.normal,
+          color: AppColors.black,
+        ),
       ),
     );
   }

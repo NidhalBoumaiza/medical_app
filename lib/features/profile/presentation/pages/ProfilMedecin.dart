@@ -111,31 +111,6 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
 
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('profile'.tr),
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: AppColors.whiteColor,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                if (_medecin != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditProfileScreen(user: _medecin!),
-                    ),
-                  ).then((updatedUser) {
-                    if (updatedUser != null) {
-                      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedUser as MedecinEntity));
-                    }
-                  });
-                }
-              },
-              tooltip: 'edit_profile'.tr,
-            ),
-          ],
-        ),
         body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
           listener: (context, state) {
             if (state is UpdateUserSuccess) {
@@ -154,7 +129,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
             return _medecin == null
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -162,21 +137,42 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                     child: Stack(
                       children: [
                         CircleAvatar(
-                          radius: 50.r,
+                          radius: 150.r,
                           backgroundColor: AppColors.primaryColor.withOpacity(0.2),
-                          backgroundImage: const AssetImage('assets/images/profil.png'),
+                          child: Icon(
+                            Icons.person,
+                            size: 200.sp,
+                            color: AppColors.primaryColor,
+                          ),
                         ),
                         Positioned(
                           bottom: 0,
                           right: 0,
                           child: Container(
+                            width: 90.sp,
+                            height: 200.sp,
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor,
+                              color: AppColors.iconColor,
                               shape: BoxShape.circle,
+
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.edit, color: AppColors.whiteColor, size: 20),
-                              onPressed: _changeProfilePicture,
+                              icon: Icon(Icons.edit, color: AppColors.whiteColor, size: 50.sp),
+                              onPressed: () {
+                                if (_medecin != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditProfileScreen(user: _medecin!),
+                                    ),
+                                  ).then((updatedUser) {
+                                    if (updatedUser != null) {
+                                      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedUser as MedecinEntity));
+                                    }
+                                  });
+                                }
+                              },
+                              tooltip: 'edit_profile'.tr,
                             ),
                           ),
                         ),
@@ -221,12 +217,12 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
-                    title: Text('mes_rendez_vous'.tr),
+                    title: Text('mes rendez vous'.tr),
                     onTap: () => Get.toNamed('/appointments'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.help),
-                    title: Text('aide_et_assistance_technique'.tr),
+                    title: Text('aide et assistance technique'.tr),
                     onTap: () => Get.toNamed('/help'),
                   ),
                   SizedBox(height: 24.h),

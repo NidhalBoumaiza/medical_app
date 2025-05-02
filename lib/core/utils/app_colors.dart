@@ -13,4 +13,10 @@ class AppColors {
   static const textPrimary = Colors.black87; // Alias for black
   static const textSecondary = Colors.grey; // Alias for grey
   static const divider = Color(0xFFE0E0E0); // New divider color
+
+
+
+  static const iconColor = Color(0xff70bed5); // Matches provided primaryColor
+
+
 }

@@ -16,8 +16,10 @@ import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousPa
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../authentication/presentation/pages/login_screen.dart';
 import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
 import '../../../profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
+import '../../../rendez_vous/presentation/pages/appointments.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -55,29 +57,29 @@ class _HomePatientState extends State<HomePatient> {
   static final List<BottomNavigationBarItem> _navItems = [
     BottomNavigationBarItem(
       icon: Icon(Icons.home_outlined, size: 60.sp),
-      activeIcon: Icon(Icons.home_filled, size: 60.sp),
+      activeIcon: Icon(Icons.home_filled, size: 70.sp),
       label: 'home'.tr,
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.calendar_today_outlined, size: 60.sp),
-      activeIcon: Icon(Icons.calendar_today, size: 60.sp),
+      activeIcon: Icon(Icons.calendar_today, size: 70.sp),
       label: 'appointments'.tr,
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.chat_bubble_outline, size: 60.sp),
-      activeIcon: Icon(Icons.chat_bubble, size: 60.sp),
+      activeIcon: Icon(Icons.chat_bubble, size: 70.sp),
       label: 'messages'.tr,
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline, size: 60.sp),
-      activeIcon: Icon(Icons.person, size: 60.sp),
+      activeIcon: Icon(Icons.person, size: 70.sp),
       label: 'profile'.tr,
     ),
   ];
 
   late List<Widget> _pages = [
     const Dashboardpatient(),
-    const RendezVousPatient(),
+    const AppointmentsPage(),
     ConversationsScreen(),
     const ProfilePatient(),
   ];
@@ -99,7 +101,7 @@ class _HomePatientState extends State<HomePatient> {
     Get.dialog(
       AlertDialog(
         title: Text('logout'.tr),
-        content: Text('confirm_logout'.tr),
+        content: Text('confirm logout'.tr),
         actions: [
           TextButton(
             onPressed: Get.back,
@@ -107,10 +109,31 @@ class _HomePatientState extends State<HomePatient> {
           ),
           TextButton(
             onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('CACHED_USER');
-              await prefs.remove('TOKEN');
-              Get.offAllNamed('/login');
+              try {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('CACHED_USER');
+                await prefs.remove('TOKEN');
+
+                // Use Get.offAll instead of Get.offAllNamed for more reliable navigation
+                Get.offAll(() => LoginScreen());
+
+                // Optional: show success message
+                Get.snackbar(
+                  'Success',
+                  'Logged out successfully',
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                );
+              } catch (e) {
+                // Show error message if logout fails
+                Get.snackbar(
+                  'Error',
+                  'Failed to logout: $e',
+                  backgroundColor: Colors.red,
+                  colorText: Colors.white,
+                );
+                print("Logout error: $e");
+              }
             },
             child: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
           ),
@@ -127,29 +150,30 @@ class _HomePatientState extends State<HomePatient> {
     int badgeCount = 0,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color, size: 30.sp),
+      leading: Icon(icon, color: color, size: 60.sp),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: GoogleFonts.raleway(
-              fontSize: 40.sp,
+              fontSize: 50.sp,
               color: color,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
           ),
           if (badgeCount > 0)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: AppColors.whiteColor,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(15.r),
               ),
               child: Text(
                 badgeCount.toString(),
                 style: GoogleFonts.raleway(
-                  fontSize: 40.sp,
+                  fontSize: 50.sp,
                   color: AppColors.primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -158,8 +182,8 @@ class _HomePatientState extends State<HomePatient> {
         ],
       ),
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      minLeadingWidth: 40.w,
+      contentPadding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 15.h),
+      minLeadingWidth: 50.w,
     );
   }
 
@@ -206,6 +230,7 @@ class _HomePatientState extends State<HomePatient> {
             ],
           ),
           body: _pages[_selectedIndex],
+
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               boxShadow: [
@@ -229,61 +254,73 @@ class _HomePatientState extends State<HomePatient> {
                 type: BottomNavigationBarType.fixed,
                 backgroundColor: AppColors.whiteColor,
                 elevation: 10,
-                selectedLabelStyle: GoogleFonts.raleway(fontSize: 50.sp),
-                unselectedLabelStyle: GoogleFonts.raleway(fontSize: 50.sp),
+                selectedLabelStyle: GoogleFonts.raleway(fontSize: 50.sp,fontWeight: FontWeight.bold),
+                unselectedLabelStyle: GoogleFonts.raleway(fontSize: 45.sp,fontWeight: FontWeight.bold),
                 onTap: _onItemTapped,
               ),
             ),
           ),
+
+          //menu
           drawer: Drawer(
             width: 0.8.sw,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.horizontal(right: Radius.circular(16)),
             ),
-            backgroundColor: const Color(0xFF3F51B5),
+            backgroundColor: const Color(0xFF2fa7bb),
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.only(top: 40.h, left: 20.w, right: 20.w, bottom: 20.h),
+                  padding: EdgeInsets.only(top: 50.h, left: 25.w, right: 25.w, bottom: 30.h),
                   child: Row(
                     children: [
                       CircleAvatar(
-                        radius: 70.r,
+                        radius: 80.r,
                         backgroundColor: AppColors.whiteColor,
                         child: Icon(
                           Icons.person,
-                          size: 70.sp,
-                          color: const Color(0xFF3F51B5),
+                          size: 80.sp,
+                          color: const Color(0xFF2fa7bb),
                         ),
                       ),
-                      SizedBox(width: 20.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            patientName,
-                            style: GoogleFonts.raleway(
-                              fontSize: 70.sp,
-                              color: AppColors.whiteColor,
-                              fontWeight: FontWeight.bold,
+                      SizedBox(width: 25.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              patientName,
+                              style: GoogleFonts.raleway(
+                                fontSize: 70.sp,
+                                color: AppColors.whiteColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          SizedBox(height: 10.h),
-                          Text(
-                            email,
-                            style: GoogleFonts.raleway(
-                              fontSize: 70.sp,
-                              color: AppColors.whiteColor.withOpacity(0.6),
+                            SizedBox(height: 10.h),
+                            Text(
+                              email,
+                              style: GoogleFonts.raleway(
+                                fontSize: 60.sp,
+                                color: AppColors.whiteColor.withOpacity(0.7),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
+                Divider(
+                  color: Colors.white.withOpacity(0.3),
+                  thickness: 1,
+                  height: 1,
+                ),
+                SizedBox(height: 15.h),
                 Expanded(
                   child: ListView(
-                    padding: EdgeInsets.zero,
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
                     children: [
                       _buildDrawerItem(
                         icon: FontAwesomeIcons.filePrescription,
@@ -327,26 +364,22 @@ class _HomePatientState extends State<HomePatient> {
                           );
                         },
                       ),
-                      _buildDrawerItem(
-                        icon: FontAwesomeIcons.gear,
-                        title: 'settings'.tr,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SettingsPage()),
-                          );
-                        },
-                      ),
+
                     ],
                   ),
                 ),
+                Divider(
+                  color: Colors.white.withOpacity(0.3),
+                  thickness: 1,
+                  height: 1,
+                ),
                 Padding(
-                  padding: EdgeInsets.only(bottom: 20.h, left: 20.w, right: 20.w),
+                  padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 25.w),
                   child: _buildDrawerItem(
                     icon: FontAwesomeIcons.rightFromBracket,
-                    title: 'logout'.tr,
+                    title: 'Logout'.tr,
                     onTap: _logout,
-                    color: Colors.red,
+                    color: Colors.red.shade900,
                   ),
                 ),
               ],

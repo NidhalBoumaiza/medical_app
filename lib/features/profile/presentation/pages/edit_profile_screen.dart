@@ -133,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('edit_profile'.tr),
+        title: Text('Edit Profile'.tr),
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.whiteColor,
       ),
@@ -165,14 +165,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         icon: Icons.person,
                         validator: (value) => value!.isEmpty ? 'name_required'.tr : null,
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
                       _buildTextField(
                         controller: _lastNameController,
                         label: 'last_name_label'.tr,
                         icon: Icons.person,
                         validator: (value) => value!.isEmpty ? 'last_name_required'.tr : null,
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
                       _buildTextField(
                         enabled: false,
                         controller: _emailController,
@@ -187,7 +187,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
                       _buildTextField(
                         controller: _phoneNumberController,
                         label: 'phone_number_label'.tr,
@@ -195,24 +195,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         keyboardType: TextInputType.phone,
                         validator: (value) => value!.isEmpty ? 'phone_number_required'.tr : null,
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
                       _buildTextField(
                         controller: _genderController,
                         label: 'gender'.tr,
                         icon: Icons.person,
                         validator: (value) => value!.isEmpty ? 'gender_required'.tr : null,
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
                       _buildTextField(
                         controller: _dateOfBirthController,
                         label: 'date_of_birth_label'.tr,
                         icon: Icons.calendar_today,
-                        readOnly: true, // Make field read-only to prevent manual input
-                        onTap: () => _selectDate(context), // Open date picker on tap
+                        readOnly: true,
+                        onTap: () => _selectDate(context),
                         hintText: 'YYYY-MM-DD',
                       ),
                       if (widget.user is PatientEntity) ...[
-                        SizedBox(height: 16.h),
+                        SizedBox(height: 24.h),
                         _buildTextField(
                           controller: _antecedentController,
                           label: 'antecedent'.tr,
@@ -221,14 +221,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       ],
                       if (widget.user is MedecinEntity) ...[
-                        SizedBox(height: 16.h),
+                        SizedBox(height: 24.h),
                         _buildTextField(
                           controller: _specialityController,
                           label: 'speciality'.tr,
                           icon: Icons.work,
                           validator: (value) => value!.isEmpty ? 'speciality_required'.tr : null,
                         ),
-                        SizedBox(height: 16.h),
+                        SizedBox(height: 24.h),
                         _buildTextField(
                           controller: _numLicenceController,
                           label: 'num_licence'.tr,
@@ -248,7 +248,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                           child: Text(
                             'save'.tr,
-                            style: TextStyle(fontSize: 16.sp, color: AppColors.whiteColor),
+                            style: TextStyle(fontSize: 50.sp, color: AppColors.whiteColor),
                           ),
                         ),
                       ),
@@ -284,6 +284,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         labelText: label,
         hintText: hintText,
         labelStyle: TextStyle(color: AppColors.primaryColor),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        contentPadding: EdgeInsets.only(
+          top: 70.h,
+          bottom: 70.h,
+          left: 16.w,
+          right: 16.w,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: AppColors.primaryColor),

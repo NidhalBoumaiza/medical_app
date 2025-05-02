@@ -18,9 +18,9 @@ class Dashboardpatient extends StatefulWidget {
 class _DashboardpatientState extends State<Dashboardpatient> {
   // Data for "Que cherchez-vous ?" section (using Icons)
   final List<Map<String, dynamic>> searchItems = [
-    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': Colors.blueAccent},
+    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': Colors.teal},
     {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies', 'color': Colors.blueAccent},
-    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux', 'color': Colors.blueAccent},
+    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux', 'color': Colors.teal},
   ];
 
   // Data for "Spécialités" section (using asset images)
