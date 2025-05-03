@@ -85,18 +85,22 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       backgroundColor: AppColors.whiteColor,
       appBar: AppBar(
         title: Text(
-          'notifications'.tr,
-          style: GoogleFonts.raleway(
-            fontSize: 50.sp,
-            fontWeight: FontWeight.bold,
-            color: AppColors.whiteColor,
+          'Notifications'.tr,
+        ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.chevron_left,
+            size: 30,
           ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         backgroundColor: AppColors.primaryColor,
         iconTheme: const IconThemeData(color: AppColors.whiteColor),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, size: 24.sp),
+            icon: Icon(Icons.filter_list, size: 70.sp),
             onPressed: _showFilterDialog,
           ),
         ],
@@ -124,7 +128,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             child: FilterChip(
               label: Text(
                 filter,
-                style: GoogleFonts.raleway(fontSize: 14.sp),
+                style: GoogleFonts.raleway(fontSize: 50.sp),
               ),
               selected: _selectedFilter == filter,
               onSelected: (selected) {
@@ -160,7 +164,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
             Text(
               'no_notifications'.tr,
               style: GoogleFonts.raleway(
-                fontSize: 16.sp,
+                fontSize: 50.sp,
                 color: Colors.grey[600],
               ),
             ),
@@ -303,7 +307,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               Text(
                 notification['message'],
                 style: GoogleFonts.raleway(
-                  fontSize: 14.sp,
+                  fontSize: 50.sp,
                   color: Colors.grey[700],
                 ),
               ),
@@ -313,12 +317,12 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                   padding: EdgeInsets.only(top: 4.h),
                   child: Row(
                     children: [
-                      Icon(Icons.access_time, size: 14.sp, color: Colors.grey[500]),
+                      Icon(Icons.access_time, size: 50.sp, color: Colors.grey[500]),
                       SizedBox(width: 4.w),
                       Text(
                         dateFormat.format(notification['date']),
                         style: GoogleFonts.raleway(
-                          fontSize: 12.sp,
+                          fontSize: 50.sp,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -329,7 +333,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               Text(
                 notification['time'],
                 style: GoogleFonts.raleway(
-                  fontSize: 12.sp,
+                  fontSize: 45.sp,
                   color: Colors.grey[500],
                 ),
               ),
@@ -357,7 +361,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
                       child: Text(
                         notification['type'] == 'appointment_request' ? 'review_appointment'.tr : 'view_appointments'.tr,
                         style: GoogleFonts.raleway(
-                          fontSize: 14.sp,
+                          fontSize: 50.sp,
                           color: AppColors.whiteColor,
                         ),
                       ),
@@ -389,13 +393,13 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('filter_notifications'.tr, style: GoogleFonts.raleway(fontSize: 18.sp)),
+          title: Text('filter_notifications'.tr, style: GoogleFonts.raleway(fontSize: 50.sp)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ...['all'.tr, 'appointments'.tr, 'messages'.tr, 'prescriptions'.tr].map((filter) {
                 return RadioListTile(
-                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 16.sp)),
+                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 50.sp)),
                   value: filter,
                   groupValue: _selectedFilter,
                   onChanged: (value) {

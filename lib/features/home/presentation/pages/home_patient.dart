@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
 import '../../../profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
-import '../../../rendez_vous/presentation/pages/appointments.dart';
+import '../../../rendez_vous/presentation/pages/appointments_patients.dart';
 
 class HomePatient extends StatefulWidget {
   const HomePatient({super.key});
@@ -79,7 +79,7 @@ class _HomePatientState extends State<HomePatient> {
 
   late List<Widget> _pages = [
     const Dashboardpatient(),
-    const AppointmentsPage(),
+    const AppointmentsPatients(),
     ConversationsScreen(),
     const ProfilePatient(),
   ];

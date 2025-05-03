@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
@@ -99,6 +100,19 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
+        appBar: AppBar(
+          title: Text("Consultations"),
+          backgroundColor: Color(0xFF2FA7BB),
+          leading: IconButton(
+            icon: Icon(
+              Icons.chevron_left,
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
         body: BlocListener<RendezVousBloc, RendezVousState>(
           listener: (context, state) {
             if (state is RendezVousError) {

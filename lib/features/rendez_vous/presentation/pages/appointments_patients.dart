@@ -4,14 +4,14 @@ import 'package:intl/intl.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/rendez_vous_entity.dart';
 
-class AppointmentsPage extends StatefulWidget {
-  const AppointmentsPage({Key? key}) : super(key: key);
+class AppointmentsPatients extends StatefulWidget {
+  const AppointmentsPatients({Key? key}) : super(key: key);
 
   @override
-  _AppointmentsPageState createState() => _AppointmentsPageState();
+  _AppointmentsPatientsState createState() => _AppointmentsPatientsState();
 }
 
-class _AppointmentsPageState extends State<AppointmentsPage> {
+class _AppointmentsPatientsState extends State<AppointmentsPatients> {
   // Simulation des données des rendez-vous (à remplacer par Firestore)
   List<RendezVousEntity> appointments = [
     RendezVousEntity.create(

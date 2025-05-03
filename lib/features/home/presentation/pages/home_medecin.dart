@@ -11,14 +11,13 @@ import 'package:medical_app/features/dashboard/presentation/pages/dashboard_mede
 import 'package:medical_app/features/notifications/presentation/pages/notifications_medecin.dart';
 import 'package:medical_app/features/ordonnance/presentation/pages/OrdonnancesPage.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.dart';
-import 'package:medical_app/features/rendez_vous/presentation/pages/RendezVousMedecin.dart';
-import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
 import 'package:medical_app/widgets/reusable_text_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
 import '../../../profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
+import '../../../rendez_vous/presentation/pages/appointments_medecins.dart';
 
 class HomeMedecin extends StatefulWidget {
   const HomeMedecin({super.key});
@@ -77,7 +76,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
 
   late List<Widget> pages = [
     const DashboardMedecin(),
-    const RendezVousMedecin(),
+    const AppointmentsMedecins(),
     ConversationsScreen(),
     const ProfilMedecin(),
   ];
@@ -190,8 +189,8 @@ class _HomeMedecinState extends State<HomeMedecin> {
               email = state.user.email;
               userId = state.user.id ?? '';
               pages = [
-                const DashboardMedecin(),
-                const RendezVousMedecin(),
+                DashboardMedecin(),
+                const AppointmentsMedecins(),
                 ConversationsScreen(),
                 const ProfilMedecin(),
               ];
