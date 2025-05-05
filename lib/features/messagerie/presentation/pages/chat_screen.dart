@@ -409,13 +409,22 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text(
           widget.userName,
-          style: GoogleFonts.raleway(
-            fontSize: 50.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
+          //style: GoogleFonts.raleway(
+           // fontSize: 50.sp,
+            //fontWeight: FontWeight.w600,
+            //color: AppColors.black,
+          //),
         ),
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.primaryColor,
+        leading: IconButton(
+          icon: Icon(
+            Icons.chevron_left,
+            size: 30,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         elevation: 0,
       ),
       body: BlocConsumer<MessagerieBloc, MessagerieState>(

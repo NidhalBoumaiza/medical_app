@@ -63,15 +63,15 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: const Color(0xFF42A5F5).withOpacity(0.3)),
+                border: Border.all(color: const Color(0xFF2fa7bb).withOpacity(0.3)),
               ),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: "Trouver médecin, spécialité...",
-                  hintStyle: const TextStyle(color: Color(0xFF42A5F5)),
+                  hintStyle: const TextStyle(color: Color(0xFF2fa7bb)),
                   prefixIcon: const Icon(
                     Icons.search,
-                    color: Color(0xFF42A5F5),
+                    color: Color(0xFF2fa7bb),
                   ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
@@ -86,7 +86,7 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
+                  crossAxisCount: 3, // Modifié de 4 à 3 par ligne
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,
@@ -105,7 +105,6 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFF42A5F5), width: 0.2),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +114,7 @@ class _AllSpecialtiesPageState extends State<AllSpecialtiesPage> {
                             width: 40,
                             height: 40,
                             fit: BoxFit.contain,
-                            color: const Color(0xFF42A5F5),
+                            color: const Color(0xFF2fa7bb),
                             colorBlendMode: BlendMode.srcIn,
                             errorBuilder: (context, error, stackTrace) {
                               return const Icon(

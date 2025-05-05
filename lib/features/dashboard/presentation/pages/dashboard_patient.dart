@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
+import '../../../../core/utils/app_colors.dart';
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
@@ -18,25 +20,26 @@ class Dashboardpatient extends StatefulWidget {
 class _DashboardpatientState extends State<Dashboardpatient> {
   // Data for "Que cherchez-vous ?" section (using Icons)
   final List<Map<String, dynamic>> searchItems = [
-    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': Colors.teal},
-    {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies', 'color': Colors.blueAccent},
-    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux', 'color': Colors.teal},
+    {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': AppColors.primaryColor},
+    {'icon': FontAwesomeIcons.prescriptionBottleMedical, 'text': 'Pharmacies', 'color': Colors.green},
+    {'icon': FontAwesomeIcons.hospital, 'text': 'Hopitaux', 'color': Colors.redAccent},
   ];
 
   // Data for "Spécialités" section (using asset images)
   final List<Map<String, dynamic>> specialties = [
     {'image': 'assets/images/dentiste.png', 'text': 'Dentiste'},
+    {'image': 'assets/images/bebe.png', 'text': 'Pédiatre'},
+    {'image': 'assets/images/generaliste.png', 'text': 'Généraliste'},
     {'image': 'assets/images/pnmeulogue.png', 'text': 'Pneumologue'},
     {'image': 'assets/images/dermatologue.png', 'text': 'Dermatologue'},
     {'image': 'assets/images/diet.png', 'text': 'Nutritionniste'},
     {'image': 'assets/images/cardio.png', 'text': 'Cardiologue'},
     {'image': 'assets/images/psy.png', 'text': 'Psychologue'},
-    {'image': 'assets/images/generaliste.png', 'text': 'Médecin généraliste'},
     {'image': 'assets/images/neurologue.png', 'text': 'Neurologue'},
     {'image': 'assets/images/orthopediste.png', 'text': 'Orthopédique'},
     {'image': 'assets/images/gyneco.png', 'text': 'Gynécologue'},
     {'image': 'assets/images/ophtalmo.png', 'text': 'Ophtalmologue'},
-    {'image': 'assets/images/medecin1.png', 'text': 'Médecin esthétique'},
+    {'image': 'assets/images/botox.png', 'text': 'Médecin esthétique'},
   ];
 
   // Data for "Vidéos éducatives de premiers secours" section
@@ -197,7 +200,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                     },
                     child: const Text(
                       'Voir tout',
-                      style: TextStyle(fontSize: 25, color: Colors.teal),
+                      style: TextStyle(fontSize: 25, color: AppColors.primaryColor),
                     ),
                   ),
                 ],
@@ -233,14 +236,14 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 ColorFiltered(
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.blueAccent,
+                                  colorFilter: ColorFilter.mode(
+                                    AppColors.primaryColor, //couleur des icones de specialités
                                     BlendMode.srcATop,
                                   ),
                                   child: Image.asset(
                                     specialties[index]['image']!,
-                                    width: 30,
-                                    height: 30,
+                                    width: 50,
+                                    height: 50,
                                     fit: BoxFit.contain,
                                     errorBuilder: (context, error, stackTrace) {
                                       return const Icon(Icons.error, size: 30, color: Colors.red);
@@ -248,12 +251,14 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
+                                //nom du spécialité
                                 Text(
                                   specialties[index]['text']!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                    //fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
                                 ),
@@ -289,7 +294,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                     },
                     child: const Text(
                       'Voir tout',
-                      style: TextStyle(fontSize: 25, color: Colors.teal),
+                      style: TextStyle(fontSize: 25, color: AppColors.primaryColor),
                     ),
                   ),
                 ],
