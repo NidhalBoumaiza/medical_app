@@ -6,11 +6,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
+import 'package:medical_app/core/utils/navigation_with_transition.dart';
+import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
 import 'package:medical_app/features/authentication/domain/entities/patient_entity.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_profile_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/utils/theme_provider.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import 'blocs/BLoC update profile/update_user_bloc.dart';
 
@@ -90,12 +90,24 @@ class _ProfilePatientState extends State<ProfilePatient> {
             child: Text('cancel'.tr, style: GoogleFonts.raleway(fontSize: 16.sp)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Get.back();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Déconnexion réussie", style: GoogleFonts.raleway(fontSize: 16.sp))),
-              );
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+              try {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('CACHED_USER');
+                await prefs.remove('TOKEN');
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Déconnexion réussie", style: GoogleFonts.raleway(fontSize: 16.sp))),
+                );
+                
+                navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
+                  context,
+                  const LoginScreen(),
+                );
+              } catch (e) {
+                showErrorSnackBar(context, 'Failed to logout: $e');
+              }
             },
             child: Text('logout'.tr, style: GoogleFonts.raleway(fontSize: 16.sp, color: Colors.red)),
           ),
@@ -110,8 +122,6 @@ class _ProfilePatientState extends State<ProfilePatient> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -123,16 +133,10 @@ class _ProfilePatientState extends State<ProfilePatient> {
               icon: Icon(Icons.edit, size: 70.sp),
               onPressed: () {
                 if (_patient != null) {
-                  Navigator.push(
+                  navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => EditProfileScreen(user: _patient!),
-                    ),
-                  ).then((updatedUser) {
-                    if (updatedUser != null) {
-                      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedUser as PatientEntity));
-                    }
-                  });
+                    EditProfileScreen(user: _patient!),
+                  );
                 }
               },
               tooltip: 'edit_profile'.tr,
@@ -222,12 +226,17 @@ class _ProfilePatientState extends State<ProfilePatient> {
                           .toList(),
                     ),
                   ),
-                  SwitchListTile(
-                    title: Text('dark_mode'.tr),
-                    value: themeProvider.isDarkMode,
-                    onChanged: (_) => themeProvider.toggleTheme(),
-                    secondary: Icon(Icons.brightness_6),
-                    activeColor: AppColors.primaryColor,
+                  BlocBuilder<ThemeCubit, ThemeState>(
+                    builder: (context, state) {
+                      final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
+                      return SwitchListTile(
+                        title: Text('dark_mode'.tr),
+                        value: isDarkMode,
+                        onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
+                        secondary: Icon(Icons.brightness_6),
+                        activeColor: AppColors.primaryColor,
+                      );
+                    }
                   ),
                   ListTile(
                     leading: Icon(Icons.calendar_today),

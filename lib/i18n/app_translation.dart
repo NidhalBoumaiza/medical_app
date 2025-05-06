@@ -1,4 +1,64 @@
 import 'package:get/get_navigation/src/root/internacionalization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+
+// Language service to manage language preferences
+class LanguageService {
+  static const String LANGUAGE_KEY = 'app_language';
+  
+  // Save language preference
+  static Future<void> saveLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(LANGUAGE_KEY, languageCode);
+  }
+  
+  // Get saved language preference
+  static Future<Locale?> getSavedLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString(LANGUAGE_KEY);
+    
+    if (languageCode == null) return null;
+    
+    switch (languageCode) {
+      case 'fr':
+        return const Locale('fr', 'FR');
+      case 'en':
+        return const Locale('en', 'US');
+      case 'ar':
+        return const Locale('ar', 'AR');
+      default:
+        return null;
+    }
+  }
+  
+  // Get language name from language code
+  static String getLanguageName(String localeCode) {
+    switch (localeCode) {
+      case 'fr':
+        return 'Français';
+      case 'en':
+        return 'English';
+      case 'ar':
+        return 'العربية';
+      default:
+        return 'Français';
+    }
+  }
+  
+  // Get language code from language name
+  static String? getLanguageCode(String languageName) {
+    switch (languageName) {
+      case 'Français':
+        return 'fr';
+      case 'English':
+        return 'en';
+      case 'العربية':
+        return 'ar';
+      default:
+        return null;
+    }
+  }
+}
 
 // ignore_for_file: constant_identifier_names
 
@@ -96,6 +156,24 @@ class AppTranslations extends Translations {
       'available_doctors': 'Médecins disponibles',
       'no_doctors_available': 'Aucun médecin disponible',
       'doctor_name': 'Nom du médecin',
+      // Settings page strings
+      'settings': 'Paramètres',
+      'appearance': 'Apparence',
+      'language': 'Langue',
+      'notifications': 'Notifications',
+      'dark_mode': 'Mode sombre',
+      'light_mode': 'Mode clair',
+      'account': 'Compte',
+      'about': 'À propos',
+      'edit_profile': 'Modifier le profil',
+      'change_password': 'Changer le mot de passe',
+      'logout': 'Se déconnecter',
+      'logout_success': 'Déconnexion réussie',
+      'appointments': 'Rendez-vous',
+      'medications': 'Médicaments',
+      'messages': 'Messages',
+      'prescriptions': 'Ordonnances',
+      'copyright': '© 2023 Medical App. Tous droits réservés.',
     },
     'en_US': {
       'title': 'Medical App',
@@ -114,7 +192,7 @@ class AppTranslations extends Translations {
       'password_hint': 'Enter your password',
       'forgot_password': 'Forgot Password?',
       'connect_button_text': 'Connect',
-      'no_account': 'Don’t have an account?',
+      'no_account': 'Don\'t have an account?',
       'sign_up': 'Sign Up',
       'continue_with_google': 'Continue with Google',
       'email_required': 'Email is required',
@@ -174,6 +252,24 @@ class AppTranslations extends Translations {
       'available_doctors': 'Available Doctors',
       'no_doctors_available': 'No doctors available',
       'doctor_name': 'Doctor Name',
+      // Settings page strings
+      'settings': 'Settings',
+      'appearance': 'Appearance',
+      'language': 'Language',
+      'notifications': 'Notifications',
+      'dark_mode': 'Dark Mode',
+      'light_mode': 'Light Mode',
+      'account': 'Account',
+      'about': 'About',
+      'edit_profile': 'Edit Profile',
+      'change_password': 'Change Password',
+      'logout': 'Logout',
+      'logout_success': 'Logout successful',
+      'appointments': 'Appointments',
+      'medications': 'Medications',
+      'messages': 'Messages',
+      'prescriptions': 'Prescriptions',
+      'copyright': '© 2023 Medical App. All rights reserved.',
     },
     'ar_AR': {
       'title': 'تطبيق طبي',
@@ -252,6 +348,24 @@ class AppTranslations extends Translations {
       'available_doctors': 'الأطباء المتاحون',
       'no_doctors_available': 'لا يوجد أطباء متاحون',
       'doctor_name': 'اسم الطبيب',
+      // Settings page strings
+      'settings': 'الإعدادات',
+      'appearance': 'المظهر',
+      'language': 'اللغة',
+      'notifications': 'الإشعارات',
+      'dark_mode': 'الوضع المظلم',
+      'light_mode': 'الوضع الفاتح',
+      'account': 'الحساب',
+      'about': 'حول',
+      'edit_profile': 'تعديل الملف الشخصي',
+      'change_password': 'تغيير كلمة المرور',
+      'logout': 'تسجيل الخروج',
+      'logout_success': 'تم تسجيل الخروج بنجاح',
+      'appointments': 'المواعيد',
+      'medications': 'الأدوية',
+      'messages': 'الرسائل',
+      'prescriptions': 'الوصفات الطبية',
+      'copyright': '© 2023 تطبيق طبي. جميع الحقوق محفوظة.',
     },
   };
 }

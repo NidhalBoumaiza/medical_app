@@ -6,18 +6,22 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
-import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart'; // Import your login screen
+import 'package:medical_app/core/utils/navigation_with_transition.dart';
+import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
+import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/features/dashboard/presentation/pages/dashboard_medecin.dart';
 import 'package:medical_app/features/notifications/presentation/pages/notifications_medecin.dart';
 import 'package:medical_app/features/ordonnance/presentation/pages/OrdonnancesPage.dart';
 import 'package:medical_app/features/profile/presentation/pages/ProfilMedecin.dart';
+import 'package:medical_app/features/rendez_vous/presentation/pages/appointments_medecins.dart';
+import 'package:medical_app/features/settings/presentation/pages/SettingsPage.dart';
 import 'package:medical_app/widgets/reusable_text_widget.dart';
+import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../messagerie/presentation/pages/conversations_list_screen.dart';
-import '../../../profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
-import '../../../rendez_vous/presentation/pages/appointments_medecins.dart';
+import '../../../profile/presentation/pages/blocs/BLoC%20update%20profile/update_user_bloc.dart';
 
 class HomeMedecin extends StatefulWidget {
   const HomeMedecin({super.key});
@@ -82,9 +86,9 @@ class _HomeMedecinState extends State<HomeMedecin> {
   ];
 
   void _onNotificationTapped() {
-    Navigator.push(
+    navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
       context,
-      MaterialPageRoute(builder: (context) => const NotificationsMedecin()),
+      const NotificationsMedecin(),
     );
   }
 
@@ -105,8 +109,10 @@ class _HomeMedecinState extends State<HomeMedecin> {
                 await prefs.remove('CACHED_USER');
                 await prefs.remove('TOKEN');
 
-                // Use Get.offAll instead of Get.offAllNamed for more reliable navigation
-                Get.offAll(() => LoginScreen()); // Make sure this is your actual login screen class
+                navigateToAnotherScreenWithSlideTransitionFromRightToLeftPushReplacement(
+                  context,
+                  LoginScreen(),
+                );
 
                 // Optional: show success message
                 Get.snackbar(
@@ -267,11 +273,9 @@ class _HomeMedecinState extends State<HomeMedecin> {
             ),
             child: FloatingActionButton(
               onPressed: () {
-                Navigator.push(
+                navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ConversationsScreen(),
-                  ),
+                  ConversationsScreen(),
                 );
               },
               child: Icon(Icons.smart_toy_outlined, size: 70.sp),
@@ -346,9 +350,10 @@ class _HomeMedecinState extends State<HomeMedecin> {
                         title: 'prescriptions'.tr,
                         badgeCount: 2,
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pop(context);
+                          navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                             context,
-                            MaterialPageRoute(builder: (context) => const OrdonnancesPage()),
+                            const OrdonnancesPage(),
                           );
                         },
                       ),
@@ -356,13 +361,60 @@ class _HomeMedecinState extends State<HomeMedecin> {
                         icon: FontAwesomeIcons.hospital,
                         title: 'hospitals'.tr,
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pop(context);
+                          navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                             context,
-                            MaterialPageRoute(builder: (context) => const PharmaciePage()),
+                            const PharmaciePage(),
                           );
                         },
                       ),
-
+                      _buildDrawerItem(
+                        icon: FontAwesomeIcons.gear,
+                        title: 'settings'.tr,
+                        onTap: () {
+                          Navigator.pop(context);
+                          navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
+                            context,
+                            const SettingsPage(),
+                          );
+                        },
+                      ),
+                      // Theme toggle
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        child: BlocBuilder<ThemeCubit, ThemeState>(
+                          builder: (context, state) {
+                            final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
+                            return Row(
+                              children: [
+                                Icon(
+                                  isDarkMode 
+                                      ? FontAwesomeIcons.moon 
+                                      : FontAwesomeIcons.sun,
+                                  color: Colors.white,
+                                  size: 60.sp,
+                                ),
+                                SizedBox(width: 30.w),
+                                Text(
+                                  isDarkMode 
+                                      ? 'dark_mode'.tr 
+                                      : 'light_mode'.tr,
+                                  style: GoogleFonts.raleway(
+                                    color: Colors.white,
+                                    fontSize: 60.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Transform.scale(
+                                  scale: 0.8,
+                                  child: const ThemeCubitSwitch(compact: true),
+                                ),
+                              ],
+                            );
+                          }
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -6,11 +6,12 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
+import 'package:medical_app/core/utils/navigation_with_transition.dart';
+import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
 import 'package:medical_app/features/authentication/domain/entities/medecin_entity.dart';
+import 'package:medical_app/features/authentication/presentation/pages/login_screen.dart';
 import 'package:medical_app/features/profile/presentation/pages/edit_profile_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/utils/theme_provider.dart';
 import 'blocs/BLoC update profile/update_user_bloc.dart';
 
 class ProfilMedecin extends StatefulWidget {
@@ -107,8 +108,6 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return SafeArea(
       child: Scaffold(
         body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
@@ -154,25 +153,10 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                             decoration: BoxDecoration(
                               color: AppColors.iconColor,
                               shape: BoxShape.circle,
-
                             ),
                             child: IconButton(
                               icon: Icon(Icons.edit, color: AppColors.whiteColor, size: 50.sp),
-                              onPressed: () {
-                                if (_medecin != null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EditProfileScreen(user: _medecin!),
-                                    ),
-                                  ).then((updatedUser) {
-                                    if (updatedUser != null) {
-                                      context.read<UpdateUserBloc>().add(UpdateUserEvent(updatedUser as MedecinEntity));
-                                    }
-                                  });
-                                }
-                              },
-                              tooltip: 'edit_profile'.tr,
+                              onPressed: _changeProfilePicture,
                             ),
                           ),
                         ),
@@ -208,12 +192,17 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                           .toList(),
                     ),
                   ),
-                  SwitchListTile(
-                    title: Text('dark_mode'.tr),
-                    value: themeProvider.isDarkMode,
-                    onChanged: (_) => themeProvider.toggleTheme(),
-                    secondary: const Icon(Icons.brightness_6),
-                    activeColor: AppColors.primaryColor,
+                  BlocBuilder<ThemeCubit, ThemeState>(
+                    builder: (context, state) {
+                      final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
+                      return SwitchListTile(
+                        title: Text('dark_mode'.tr),
+                        value: isDarkMode,
+                        onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
+                        secondary: const Icon(Icons.brightness_6),
+                        activeColor: AppColors.primaryColor,
+                      );
+                    }
                   ),
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
