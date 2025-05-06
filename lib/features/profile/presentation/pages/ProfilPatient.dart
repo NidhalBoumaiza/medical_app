@@ -124,25 +124,6 @@ class _ProfilePatientState extends State<ProfilePatient> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Profile'.tr, style: GoogleFonts.raleway(fontSize: 50.sp, fontWeight: FontWeight.bold)),
-          backgroundColor: AppColors.primaryColor,
-          foregroundColor: AppColors.whiteColor,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.edit, size: 70.sp),
-              onPressed: () {
-                if (_patient != null) {
-                  navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-                    context,
-                    EditProfileScreen(user: _patient!),
-                  );
-                }
-              },
-              tooltip: 'edit_profile'.tr,
-            ),
-          ],
-        ),
         body: BlocConsumer<UpdateUserBloc, UpdateUserState>(
           listener: (context, state) {
             if (state is UpdateUserSuccess) {
@@ -156,113 +137,224 @@ class _ProfilePatientState extends State<ProfilePatient> {
           },
           builder: (context, state) {
             if (state is UpdateUserLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
             }
             return _patient == null
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
                 : SingleChildScrollView(
-              padding: EdgeInsets.all(20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Stack(
+                    padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 24.h, bottom: 16.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 150.r,
-                          backgroundColor: AppColors.primaryColor.withOpacity(0.2),
-                          child: Icon(
-                            Icons.person,
-                            size: 200.sp,
-                            color: AppColors.primaryColor,
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: EdgeInsets.all(16.w),
+                          child: Column(
+                            children: [
+                              Stack(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(4.w),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.whiteColor,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryColor.withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 50.r,
+                                      backgroundColor: AppColors.primaryColor.withOpacity(0.2),
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 60.sp,
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 32.w,
+                                      height: 32.h,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2fa7bb),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        icon: Icon(Icons.camera_alt, color: AppColors.whiteColor, size: 18.sp),
+                                        onPressed: _changeProfilePicture,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 16.h),
+                              Text(
+                                '${_patient!.name} ${_patient!.lastName}',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                _patient!.email,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color: Colors.black54,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 90.sp,
-                            height: 200.sp,
-                            decoration: BoxDecoration(
-                             color: AppColors.iconColor,
-                              shape: BoxShape.circle,
-
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.edit, color: AppColors.whiteColor, size: 50.sp),
-                              onPressed: _changeProfilePicture,
-                            ),
+                        SizedBox(height: 20.h),
+                        Text(
+                          'personal_information'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
                         ),
+                        SizedBox(height: 12.h),
+                        _buildInfoTile('phone_number_label'.tr, _patient!.phoneNumber),
+                        _buildInfoTile('gender'.tr, _patient!.gender),
+                        _buildInfoTile('date_of_birth_label'.tr,
+                            _patient!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
+                        _buildInfoTile('antecedent'.tr, _patient!.antecedent),
+                        SizedBox(height: 20.h),
+                        
+                        Text(
+                          'preferences'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Column(
+                            children: [
+                              SwitchListTile(
+                                title: Text(
+                                  'notifications'.tr, 
+                                  style: GoogleFonts.raleway(fontSize: 14.sp)
+                                ),
+                                value: _notificationsEnabled,
+                                onChanged: (value) => setState(() => _notificationsEnabled = value),
+                                secondary: const Icon(Icons.notifications, color: AppColors.primaryColor, size: 22),
+                                activeColor: AppColors.primaryColor,
+                              ),
+                              Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+                              ListTile(
+                                leading: const Icon(Icons.language, color: AppColors.primaryColor, size: 22),
+                                title: Text('language'.tr, style: GoogleFonts.raleway(fontSize: 14.sp)),
+                                trailing: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedLanguage,
+                                      onChanged: _changeLanguage,
+                                      items: _languages
+                                          .map((value) => DropdownMenuItem(value: value, child: Text(value)))
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+                              BlocBuilder<ThemeCubit, ThemeState>(
+                                builder: (context, state) {
+                                  final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
+                                  return SwitchListTile(
+                                    title: Text('dark_mode'.tr, style: GoogleFonts.raleway(fontSize: 14.sp)),
+                                    value: isDarkMode,
+                                    onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
+                                    secondary: const Icon(Icons.brightness_6, color: AppColors.primaryColor, size: 22),
+                                    activeColor: AppColors.primaryColor,
+                                  );
+                                }
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        SizedBox(height: 20.h),
+                        Text(
+                          'fonctionnalites'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.calendar_today, color: AppColors.primaryColor, size: 22),
+                                title: Text('mes_rendez_vous'.tr, style: GoogleFonts.raleway(fontSize: 14.sp)),
+                                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                                onTap: () => Get.toNamed('/appointments'),
+                              ),
+                              Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+                              ListTile(
+                                leading: const Icon(Icons.help, color: AppColors.primaryColor, size: 22),
+                                title: Text('aide_et_assistance_technique'.tr, style: GoogleFonts.raleway(fontSize: 14.sp)),
+                                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                                onTap: () => Get.toNamed('/help'),
+                              ),
+                              Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+                              ListTile(
+                                leading: const Icon(Icons.logout, color: Colors.red, size: 22),
+                                title: Text('logout'.tr, 
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 14.sp,
+                                    color: Colors.red,
+                                  )
+                                ),
+                                onTap: _showLogoutDialog,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 24.h),
-                  _buildInfoTile('first_name_label'.tr, '${_patient!.name} ${_patient!.lastName}'),
-                  _buildInfoTile('email'.tr, _patient!.email),
-                  _buildInfoTile('phone_number_label'.tr, _patient!.phoneNumber),
-                  _buildInfoTile('gender'.tr, _patient!.gender),
-                  _buildInfoTile('date_of_birth_label'.tr,
-                      _patient!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
-                  _buildInfoTile('antecedent'.tr, _patient!.antecedent),
-                  SizedBox(height: 28.h),
-                  Divider(color: Theme.of(context).dividerColor),
-
-                  SwitchListTile(
-                    title: Text('notifications'.tr),
-                    value: _notificationsEnabled,
-                    onChanged: (value) => setState(() => _notificationsEnabled = value),
-                    secondary: Icon(Icons.notifications),
-                    activeColor: AppColors.primaryColor,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.language),
-                    title: Text('language'.tr),
-                    trailing: DropdownButton<String>(
-                      value: _selectedLanguage,
-                      onChanged: _changeLanguage,
-                      items: _languages
-                          .map((value) => DropdownMenuItem(value: value, child: Text(value)))
-                          .toList(),
-                    ),
-                  ),
-                  BlocBuilder<ThemeCubit, ThemeState>(
-                    builder: (context, state) {
-                      final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
-                      return SwitchListTile(
-                        title: Text('dark_mode'.tr),
-                        value: isDarkMode,
-                        onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
-                        secondary: Icon(Icons.brightness_6),
-                        activeColor: AppColors.primaryColor,
-                      );
-                    }
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.calendar_today),
-                    title: Text('mes_rendez_vous'.tr),
-                    onTap: () => Get.toNamed('/appointments'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.help),
-                    title: Text('aide_et_assistance_technique'.tr),
-                    onTap: () => Get.toNamed('/help'),
-                  ),
-                  SizedBox(height: 28.h),
-                  Center(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.logout),
-                      label: Text('logout'.tr),
-                      onPressed: _showLogoutDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 12.h),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
+                  );
           },
         ),
       ),
@@ -270,21 +362,31 @@ class _ProfilePatientState extends State<ProfilePatient> {
   }
 
   Widget _buildInfoTile(String label, String value) {
-    return ListTile(
-      title: Text(
-        label,
-        style: GoogleFonts.raleway(
-          fontSize: 50.sp,
-          fontWeight: FontWeight.w600,
-          color: AppColors.grey,
-        ),
-      ),
-      subtitle: Text(
-        value,
-        style: GoogleFonts.raleway(
-          fontSize: 50.sp,
-          fontWeight: FontWeight.normal,
-          color: AppColors.black,
+    return Card(
+      margin: EdgeInsets.only(bottom: 10.h),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.raleway(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            Text(
+              value,
+              style: GoogleFonts.raleway(
+                fontSize: 14.sp,
+                color: Colors.black54,
+              ),
+            ),
+          ],
         ),
       ),
     );

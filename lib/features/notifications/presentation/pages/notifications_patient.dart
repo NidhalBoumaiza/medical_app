@@ -100,6 +100,15 @@ class _NotificationsPatientState extends State<NotificationsPatient> {
             onPressed: _showFilterDialog,
           ),
         ],
+        leading: IconButton(
+          icon: Icon(
+            Icons.chevron_left,
+            size: 30,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Column(
         children: [

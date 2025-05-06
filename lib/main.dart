@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
               : ThemeMode.light;
           
           return ScreenUtilInit(
-            designSize: const Size(1344, 2992),
+            designSize: const Size(360, 800),
             minTextAdapt: true,
             splitScreenMode: true,
             builder: (context, child) {

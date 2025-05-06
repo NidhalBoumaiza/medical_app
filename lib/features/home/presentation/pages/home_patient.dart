@@ -370,42 +370,7 @@ class _HomePatientState extends State<HomePatient> {
                       height: 1,
                     ),
                     SizedBox(height: 15),
-                    
-                    // Home item
-                    _buildDrawerItem(
-                      icon: Icons.home_outlined,
-                      title: 'home'.tr,
-                      onTap: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          _selectedIndex = 0;
-                        });
-                      },
-                    ),
-                    
-                    // Profile item
-                    _buildDrawerItem(
-                      icon: Icons.person_outline,
-                      title: 'profile'.tr,
-                      onTap: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          _selectedIndex = 3;
-                        });
-                      },
-                    ),
-                    
-                    // Notifications item
-                    _buildDrawerItem(
-                      icon: Icons.notifications_outlined,
-                      title: 'notifications'.tr,
-                      badgeCount: 3,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _onNotificationTapped();
-                      },
-                    ),
-                    
+
                     Expanded(
                       child: ListView(
                         padding: EdgeInsets.symmetric(vertical: 10),

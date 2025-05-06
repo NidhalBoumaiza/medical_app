@@ -101,7 +101,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator(color: AppColors.primaryColor)),
       );
     }
 
@@ -113,11 +113,11 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 65.sp, color: AppColors.grey),
+                Icon(Icons.error_outline, size: 40.sp, color: AppColors.grey),
                 SizedBox(height: 16.h),
                 Text(
                   _errorMessage,
-                  style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.black),
+                  style: GoogleFonts.raleway(fontSize: 16.sp, color: AppColors.black),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16.h),
@@ -127,12 +127,11 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                    textStyle: GoogleFonts.raleway(fontSize: 65.sp),
                     backgroundColor: AppColors.primaryColor,
                   ),
                   child: Text(
                     _t('go_to_login'),
-                    style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.white),
+                    style: GoogleFonts.raleway(fontSize: 14.sp, color: AppColors.white),
                   ),
                 ),
               ],
@@ -143,139 +142,128 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _t('messages'),
-          style: GoogleFonts.raleway(
-            fontSize: 65.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
-        ),
-        elevation: 0,
-        backgroundColor: AppColors.white,
-      ),
-      body: BlocBuilder<ConversationsBloc, ConversationsState>(
-        builder: (context, state) {
-          if (state is ConversationsLoading) {
-            return Center(child: CircularProgressIndicator());
-          } else if (state is ConversationsLoaded) {
-            if (state.conversations.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.chat_bubble_outline, size: 65.sp, color: AppColors.grey),
-                    SizedBox(height: 16.h),
-                    Text(
-                      _t('no_conversations'),
-                      style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.black),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return ListView.builder(
-
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              itemCount: state.conversations.length,
-              itemBuilder: (context, index) {
-                final conversation = state.conversations[index];
-                final displayName = _isDoctor ? conversation.patientName : conversation.doctorName;
-                final recipientId = _isDoctor ? conversation.patientId : conversation.doctorId;
-                final timestamp = conversation.lastMessageTime != null
-                    ? DateFormat('MMM d, HH:mm').format(conversation.lastMessageTime!)
-                    : '';
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: 30.r,
-                    backgroundColor: AppColors.greyLight,
-                    child: Text(
-                      displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                      style: GoogleFonts.raleway(
-                        fontSize: 65.sp,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    displayName.isNotEmpty ? displayName : 'Unknown',
-                    style: GoogleFonts.raleway(
-                      fontSize: 65.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  subtitle: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          conversation.lastMessage.isNotEmpty ? conversation.lastMessage : 'No message',
-                          style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.grey),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 20.h),
+            Expanded(
+              child: BlocBuilder<ConversationsBloc, ConversationsState>(
+                builder: (context, state) {
+                  if (state is ConversationsLoading) {
+                    return Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+                  } else if (state is ConversationsLoaded) {
+                    if (state.conversations.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.chat_bubble_outline, size: 40.sp, color: AppColors.grey),
+                            SizedBox(height: 16.h),
+                            Text(
+                              _t('no_conversations'),
+                              style: GoogleFonts.raleway(fontSize: 16.sp, color: AppColors.black),
+                            ),
+                          ],
                         ),
-                      ),
-                      if (timestamp.isNotEmpty)
-                        Text(
-                          timestamp,
-                          style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.grey),
-                        ),
-                    ],
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  onTap: () {
-                    print('Navigating to ChatScreen with chatId: ${conversation.id}, userName: $displayName, recipientId: $recipientId');
-                    navigateToAnotherScreenWithSlideTransitionFromRightToLeft(context, ChatScreen(chatId: conversation.id! , userName: displayName, recipientId: recipientId,));
-
-                  },
-                );
-              },
-            );
-          } else if (state is ConversationsError) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 65.sp, color: AppColors.grey),
-                    SizedBox(height: 16.h),
-                    Text(
-                      _t('error') + state.message,
-                      style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.black),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<ConversationsBloc>().add(SubscribeToConversationsEvent(
-                          userId: _userId,
-                          isDoctor: _isDoctor,
-                        ));
+                      );
+                    }
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                      itemCount: state.conversations.length,
+                      itemBuilder: (context, index) {
+                        final conversation = state.conversations[index];
+                        final displayName = _isDoctor ? conversation.patientName : conversation.doctorName;
+                        final recipientId = _isDoctor ? conversation.patientId : conversation.doctorId;
+                        final timestamp = conversation.lastMessageTime != null
+                            ? DateFormat('MMM d, HH:mm').format(conversation.lastMessageTime!)
+                            : '';
+                        return ListTile(
+                          leading: CircleAvatar(
+                            radius: 24.r,
+                            backgroundColor: AppColors.greyLight,
+                            child: Text(
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                              style: GoogleFonts.raleway(
+                                fontSize: 16.sp,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            displayName.isNotEmpty ? displayName : 'Unknown',
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.black,
+                            ),
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  conversation.lastMessage.isNotEmpty ? conversation.lastMessage : 'No message',
+                                  style: GoogleFonts.raleway(fontSize: 13.sp, color: AppColors.grey),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (timestamp.isNotEmpty)
+                                Text(
+                                  timestamp,
+                                  style: GoogleFonts.raleway(fontSize: 12.sp, color: AppColors.grey),
+                                ),
+                            ],
+                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          onTap: () {
+                            print('Navigating to ChatScreen with chatId: ${conversation.id}, userName: $displayName, recipientId: $recipientId');
+                            navigateToAnotherScreenWithSlideTransitionFromRightToLeft(context, ChatScreen(chatId: conversation.id! , userName: displayName, recipientId: recipientId,));
+                          },
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                        textStyle: GoogleFonts.raleway(fontSize: 65.sp),
-                        backgroundColor: AppColors.primaryColor,
+                    );
+                  } else if (state is ConversationsError) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 40.sp, color: AppColors.grey),
+                            SizedBox(height: 16.h),
+                            Text(
+                              _t('error') + state.message,
+                              style: GoogleFonts.raleway(fontSize: 16.sp, color: AppColors.black),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 16.h),
+                            ElevatedButton(
+                              onPressed: () {
+                                context.read<ConversationsBloc>().add(SubscribeToConversationsEvent(
+                                  userId: _userId,
+                                  isDoctor: _isDoctor,
+                                ));
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                                backgroundColor: AppColors.primaryColor,
+                              ),
+                              child: Text(
+                                _t('retry'),
+                                style: GoogleFonts.raleway(fontSize: 14.sp, color: AppColors.white),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Text(
-                        _t('retry'),
-                        style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.white),
-                      ),
-                    ),
-                  ],
-                ),
+                    );
+                  }
+                  return Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+                },
               ),
-            );
-          }
-          return Center(
-            child: Text(
-              'Initializing...',
-              style: GoogleFonts.raleway(fontSize: 65.sp, color: AppColors.black),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
