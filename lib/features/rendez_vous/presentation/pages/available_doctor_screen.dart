@@ -295,7 +295,12 @@ class _AvailableDoctorsScreenState extends State<AvailableDoctorsScreen> {
                         SizedBox(height: 4.h),
                         BlocListener<RatingBloc, RatingState>(
                           listener: (context, state) {
-                            if (state is DoctorAverageRatingLoaded && 
+                            if (state is DoctorRatingState && 
+                                doctor.id != null) {
+                              setState(() {
+                                _doctorRatings[doctor.id!] = state.averageRating;
+                              });
+                            } else if (state is DoctorAverageRatingLoaded && 
                                 doctor.id != null) {
                               setState(() {
                                 _doctorRatings[doctor.id!] = state.averageRating;

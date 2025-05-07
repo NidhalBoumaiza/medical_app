@@ -40,6 +40,20 @@ class DoctorAverageRatingLoaded extends RatingState {
   List<Object> get props => [averageRating];
 }
 
+// Combined state that holds both ratings and average rating
+class DoctorRatingState extends RatingState {
+  final double averageRating;
+  final List<DoctorRatingEntity> ratings;
+
+  const DoctorRatingState({
+    required this.averageRating,
+    required this.ratings,
+  });
+
+  @override
+  List<Object> get props => [averageRating, ratings];
+}
+
 class RatingError extends RatingState {
   final String message;
 

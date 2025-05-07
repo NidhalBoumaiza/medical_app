@@ -170,8 +170,8 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                   _buildInfoTile('Genre', _medecin!.gender),
                   _buildInfoTile('Date de naissance',
                       _medecin!.dateOfBirth?.toIso8601String().split('T').first ?? 'Non spécifiée'),
-                  _buildInfoTile('Spécialité', _medecin!.speciality),
-                  _buildInfoTile('Numéro de licence', _medecin!.numLicence),
+                  _buildInfoTile('Spécialité', _medecin!.speciality!),
+                  _buildInfoTile('Numéro de licence', _medecin!.numLicence!),
                   SizedBox(height: 24.h),
                   Divider(color: Theme.of(context).dividerColor),
                   SwitchListTile(

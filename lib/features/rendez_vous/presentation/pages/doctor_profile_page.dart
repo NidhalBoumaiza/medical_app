@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../authentication/domain/entities/medecin_entity.dart';
@@ -27,13 +28,85 @@ class DoctorProfilePage extends StatefulWidget {
 }
 
 class _DoctorProfilePageState extends State<DoctorProfilePage> {
+  double _averageRating = 0.0;
+  int _ratingCount = 0;
+  bool _isLoading = true;
+  List<DoctorRatingEntity> _ratings = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   void initState() {
     super.initState();
-    // Request ratings and average rating when page loads
     if (widget.doctor.id != null) {
-      context.read<RatingBloc>().add(GetDoctorRatings(widget.doctor.id!));
-      context.read<RatingBloc>().add(GetDoctorAverageRating(widget.doctor.id!));
+      _loadDoctorRatingsDirectly();
+    }
+  }
+
+  Future<void> _loadDoctorRatingsDirectly() async {
+    if (widget.doctor.id == null) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      // 1. Get ratings count and calculate average
+      final QuerySnapshot ratingSnapshot = await _firestore
+          .collection('doctor_ratings')
+          .where('doctorId', isEqualTo: widget.doctor.id)
+          .get();
+      
+      // Calculate total rating and count
+      double totalRating = 0.0;
+      final docs = ratingSnapshot.docs;
+      
+      for (var doc in docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data.containsKey('rating')) {
+          totalRating += (data['rating'] as num).toDouble();
+        }
+      }
+      
+      // 2. Get the actual rating documents for display
+      final List<DoctorRatingEntity> ratings = [];
+      for (var doc in docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        
+        // Convert Timestamp to DateTime
+        DateTime createdAt;
+        if (data['createdAt'] is Timestamp) {
+          createdAt = (data['createdAt'] as Timestamp).toDate();
+        } else {
+          createdAt = DateTime.now(); // Fallback if createdAt is missing
+        }
+        
+        ratings.add(DoctorRatingEntity(
+          id: doc.id,
+          doctorId: data['doctorId'],
+          patientId: data['patientId'],
+          patientName: data['patientName'],
+          rating: (data['rating'] as num).toDouble(),
+          comment: data['comment'],
+          createdAt: createdAt,
+          rendezVousId: data['rendezVousId'],
+        ));
+      }
+      
+      // Sort ratings by date (newest first)
+      ratings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      setState(() {
+        _ratingCount = docs.length;
+        _averageRating = _ratingCount > 0 ? totalRating / _ratingCount : 0.0;
+        _ratings = ratings;
+        _isLoading = false;
+      });
+      
+    } catch (e) {
+      print('Error loading doctor ratings: $e');
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -75,33 +148,18 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                 ),
               ),
             ),
-            BlocBuilder<RatingBloc, RatingState>(
-              builder: (context, state) {
-                if (state is DoctorAverageRatingLoaded) {
-                  return _buildRatingSummary(state.averageRating);
-                } else if (state is RatingLoading) {
-                  return Center(
+            
+            // Rating summary
+            _isLoading
+                ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       child: CircularProgressIndicator(
                         color: AppColors.primaryColor,
                       ),
                     ),
-                  );
-                } else if (state is RatingError) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Text(
-                      "Erreur lors du chargement des évaluations: ${state.message}",
-                      style: GoogleFonts.raleway(
-                        color: Colors.red,
-                      ),
-                    ),
-                  );
-                }
-                return _buildRatingSummary(0.0);
-              },
-            ),
+                  )
+                : _buildRatingSummary(_averageRating, _ratingCount),
             
             // Patient comments
             Padding(
@@ -115,66 +173,38 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                 ),
               ),
             ),
-            BlocBuilder<RatingBloc, RatingState>(
-              builder: (context, state) {
-                if (state is DoctorRatingsLoaded) {
-                  final ratings = state.ratings;
-                  if (ratings.isEmpty) {
-                    return Padding(
-                      padding: EdgeInsets.all(16.w),
-                      child: Center(
-                        child: Text(
-                          "Aucun commentaire disponible",
-                          style: GoogleFonts.raleway(
-                            color: Colors.grey[600],
-                            fontSize: 16.sp,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: ratings.length,
-                    itemBuilder: (context, index) {
-                      return _buildCommentCard(ratings[index]);
-                    },
-                  );
-                } else if (state is RatingLoading) {
-                  return Center(
+            
+            // Comments list
+            _isLoading
+                ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       child: CircularProgressIndicator(
                         color: AppColors.primaryColor,
                       ),
                     ),
-                  );
-                } else if (state is RatingError) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Text(
-                      "Erreur lors du chargement des commentaires: ${state.message}",
-                      style: GoogleFonts.raleway(
-                        color: Colors.red,
+                  )
+                : _ratings.isEmpty
+                    ? Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Center(
+                          child: Text(
+                            "Aucun commentaire disponible",
+                            style: GoogleFonts.raleway(
+                              color: Colors.grey[600],
+                              fontSize: 16.sp,
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _ratings.length,
+                        itemBuilder: (context, index) {
+                          return _buildCommentCard(_ratings[index]);
+                        },
                       ),
-                    ),
-                  );
-                }
-                return Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Center(
-                    child: Text(
-                      "Chargement des commentaires...",
-                      style: GoogleFonts.raleway(
-                        color: Colors.grey[600],
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
             
             // Book appointment button
             if (widget.canBookAppointment && widget.onBookAppointment != null)
@@ -317,7 +347,7 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
     );
   }
 
-  Widget _buildRatingSummary(double averageRating) {
+  Widget _buildRatingSummary(double averageRating, int ratingCount) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       shape: RoundedRectangleBorder(
@@ -361,20 +391,12 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                   onRatingUpdate: (rating) {},
                 ),
                 SizedBox(height: 4.h),
-                BlocBuilder<RatingBloc, RatingState>(
-                  builder: (context, state) {
-                    int ratingCount = 0;
-                    if (state is DoctorRatingsLoaded) {
-                      ratingCount = state.ratings.length;
-                    }
-                    return Text(
-                      "$ratingCount évaluations",
-                      style: GoogleFonts.raleway(
-                        fontSize: 14.sp,
-                        color: Colors.grey.shade600,
-                      ),
-                    );
-                  },
+                Text(
+                  "$ratingCount évaluations",
+                  style: GoogleFonts.raleway(
+                    fontSize: 14.sp,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),

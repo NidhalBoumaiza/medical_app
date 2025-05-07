@@ -5,15 +5,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/specialties.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../authentication/domain/entities/medecin_entity.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
 import '../../domain/entities/rendez_vous_entity.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import '../../../../features/authentication/data/models/user_model.dart';
 import '../../../../injection_container.dart' as di;
 import 'appointment_details_page.dart';
+import 'doctor_profile_page.dart';
 
 class AppointmentsPatients extends StatefulWidget {
   const AppointmentsPatients({Key? key}) : super(key: key);
@@ -28,6 +31,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
   UserModel? currentUser;
   bool isLoading = true;
   String? cancellingAppointmentId; // Track ID of appointment being cancelled
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -148,6 +152,76 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
     if (result == true && currentUser != null && currentUser!.id != null) {
       _rendezVousBloc.add(FetchRendezVous(patientId: currentUser!.id));
     }
+  }
+
+  // Fetch doctor info from Firestore
+  Future<MedecinEntity?> _fetchDoctorInfo(String doctorId) async {
+    try {
+      final doctorDoc = await _firestore.collection('medecins').doc(doctorId).get();
+      
+      if (doctorDoc.exists) {
+        Map<String, dynamic> doctorData = doctorDoc.data() as Map<String, dynamic>;
+        return MedecinEntity(
+          id: doctorId,
+          name: doctorData['name'] ?? '',
+          lastName: doctorData['lastName'] ?? '',
+          email: doctorData['email'] ?? '',
+          speciality: doctorData['speciality'],
+          role: doctorData['role'] ?? 'doctor',
+          gender: doctorData['gender'] ?? 'unknown',
+          phoneNumber: doctorData['phoneNumber'] ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching doctor info: $e');
+      return null;
+    }
+  }
+
+  void _navigateToDoctorProfile(String? doctorId, String doctorName, String? speciality) async {
+    if (doctorId == null) return;
+    
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+    
+    // Try to fetch doctor from Firestore
+    MedecinEntity? doctorEntity = await _fetchDoctorInfo(doctorId);
+    
+    // Dismiss loading indicator
+    Navigator.pop(context);
+    
+    // If fetch failed, create a basic doctor entity with available info
+    if (doctorEntity == null) {
+      doctorEntity = MedecinEntity(
+        id: doctorId,
+        name: doctorName.split(' ')[0],
+        lastName: doctorName.split(' ').length > 1 ? doctorName.split(' ')[1] : '',
+        email: "docteur@medical-app.com",
+        speciality: speciality,
+        role: 'doctor',
+        gender: 'unknown',
+        phoneNumber: "+212 600000000",
+      );
+    }
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DoctorProfilePage(
+          doctor: doctorEntity!,
+          canBookAppointment: false,
+        ),
+      ),
+    );
   }
 
   // Fonction pour ajouter un nouveau rendez-vous (à implémenter)
@@ -302,10 +376,17 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                     color: AppColors.primaryColor,
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    color: Colors.white,
-                                                    size: 24.sp,
+                                                  child: InkWell(
+                                                    onTap: () => _navigateToDoctorProfile(
+                                                      appointment.doctorId,
+                                                      appointment.doctorName ?? "Médecin",
+                                                      appointment.speciality,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      color: Colors.white,
+                                                      size: 24.sp,
+                                                    ),
                                                   ),
                                                 ),
                                                 SizedBox(width: 12.w),
@@ -313,14 +394,21 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                   child: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(
-                                                        appointment.doctorName != null
-                                                            ? "Dr. ${appointment.doctorName?.split(" ").last ?? ''}"
-                                                            : "Médecin à assigner",
-                                                        style: GoogleFonts.raleway(
-                                                          fontSize: 15.sp,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: Colors.black87,
+                                                      InkWell(
+                                                        onTap: () => _navigateToDoctorProfile(
+                                                          appointment.doctorId,
+                                                          appointment.doctorName ?? "Médecin",
+                                                          appointment.speciality,
+                                                        ),
+                                                        child: Text(
+                                                          appointment.doctorName != null
+                                                              ? "Dr. ${appointment.doctorName?.split(" ").last ?? ''}"
+                                                              : "Médecin à assigner",
+                                                          style: GoogleFonts.raleway(
+                                                            fontSize: 15.sp,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black87,
+                                                          ),
                                                         ),
                                                       ),
                                                       SizedBox(height: 4.h),

@@ -66,8 +66,8 @@ class AuthRepositoryImpl implements AuthRepository {
             gender: user.gender,
             phoneNumber: user.phoneNumber,
             dateOfBirth: user.dateOfBirth,
-            speciality: user.speciality,
-            numLicence: user.numLicence,
+            speciality: user.speciality!,
+            numLicence: user.numLicence!,
           );
         } else {
           userModel = UserModel(
@@ -187,8 +187,8 @@ class AuthRepositoryImpl implements AuthRepository {
             gender: user.gender,
             phoneNumber: user.phoneNumber,
             dateOfBirth: user.dateOfBirth,
-            speciality: user.speciality,
-            numLicence: user.numLicence,
+            speciality: user.speciality!,
+            numLicence: user.numLicence!,
           );
         } else {
           userModel = UserModel(

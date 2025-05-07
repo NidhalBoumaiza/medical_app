@@ -7,14 +7,17 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../features/authentication/data/models/user_model.dart';
+import '../../../../features/authentication/domain/entities/medecin_entity.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../ratings/domain/entities/doctor_rating_entity.dart';
 import '../../../ratings/presentation/bloc/rating_bloc.dart';
 import '../../domain/entities/rendez_vous_entity.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
+import 'doctor_profile_page.dart';
 
 class AppointmentDetailsPage extends StatefulWidget {
   final RendezVousEntity appointment;
@@ -38,6 +41,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
   bool hasRatedAppointment = false;
   bool isAppointmentPast = false;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -219,6 +223,78 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
       default:
         return Colors.grey;
     }
+  }
+
+  // Fetch doctor info from Firestore
+  Future<MedecinEntity?> _fetchDoctorInfo(String doctorId) async {
+    try {
+      final doctorDoc = await _firestore.collection('medecins').doc(doctorId).get();
+      
+      if (doctorDoc.exists) {
+        Map<String, dynamic> doctorData = doctorDoc.data() as Map<String, dynamic>;
+        return MedecinEntity(
+          id: doctorId,
+          name: doctorData['name'] ?? '',
+          lastName: doctorData['lastName'] ?? '',
+          email: doctorData['email'] ?? '',
+          speciality: doctorData['speciality'],
+          role: doctorData['role'] ?? 'doctor',
+          gender: doctorData['gender'] ?? 'unknown',
+          phoneNumber: doctorData['phoneNumber'] ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching doctor info: $e');
+      return null;
+    }
+  }
+
+  void _navigateToDoctorProfile() async {
+    if (widget.appointment.doctorId == null) return;
+    
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+    
+    // Try to fetch doctor from Firestore
+    MedecinEntity? doctorEntity = await _fetchDoctorInfo(widget.appointment.doctorId!);
+    
+    // Dismiss loading indicator
+    Navigator.pop(context);
+    
+    // If fetch failed, create a basic doctor entity with available info
+    if (doctorEntity == null) {
+      doctorEntity = MedecinEntity(
+        id: widget.appointment.doctorId!,
+        name: widget.appointment.doctorName?.split(' ')[0] ?? "",
+        lastName: (widget.appointment.doctorName?.split(' ')?.length ?? 0) > 1
+            ? widget.appointment.doctorName?.split(' ')[1] ?? ""
+            : "",
+        email: "docteur@medical-app.com",
+        speciality: widget.appointment.speciality,
+        role: 'doctor',
+        gender: 'unknown',
+        phoneNumber: "+212 600000000",
+      );
+    }
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DoctorProfilePage(
+          doctor: doctorEntity!,
+          canBookAppointment: false,
+        ),
+      ),
+    );
   }
 
   @override
@@ -408,10 +484,13 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                           ),
                                         ],
                                       ),
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 36.sp,
+                                      child: InkWell(
+                                        onTap: widget.appointment.doctorId != null ? _navigateToDoctorProfile : null,
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                          size: 36.sp,
+                                        ),
                                       ),
                                     ),
                                     SizedBox(width: 16.w),
@@ -419,14 +498,17 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            widget.appointment.doctorName != null
-                                                ? "Dr. ${widget.appointment.doctorName}"
-                                                : "Médecin à assigner",
-                                            style: GoogleFonts.raleway(
-                                              fontSize: 18.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
+                                          InkWell(
+                                            onTap: widget.appointment.doctorId != null ? _navigateToDoctorProfile : null,
+                                            child: Text(
+                                              widget.appointment.doctorName != null
+                                                  ? "Dr. ${widget.appointment.doctorName}"
+                                                  : "Médecin à assigner",
+                                              style: GoogleFonts.raleway(
+                                                fontSize: 18.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
                                             ),
                                           ),
                                           SizedBox(height: 4.h),

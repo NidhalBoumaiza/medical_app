@@ -1,8 +1,8 @@
 import 'package:medical_app/features/authentication/domain/entities/user_entity.dart';
 
 class MedecinEntity extends UserEntity {
-  final String speciality;
-  final String numLicence;
+  final String? speciality;
+  final String? numLicence;
 
   MedecinEntity({
     String? id,
@@ -13,8 +13,8 @@ class MedecinEntity extends UserEntity {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
-    required this.speciality,
-    required this.numLicence,
+    this.speciality,
+    this.numLicence = '',
     bool? accountStatus,
     int? verificationCode,
     DateTime? validationCodeExpiresAt,
@@ -41,11 +41,11 @@ class MedecinEntity extends UserEntity {
     required String gender,
     required String phoneNumber,
     DateTime? dateOfBirth,
-    required String speciality,
-    required String numLicence,
+    String? speciality,
+    String? numLicence = '',
     bool? accountStatus,
     int? verificationCode,
-  DateTime? validationCodeExpiresAt,
+    DateTime? validationCodeExpiresAt,
   }) {
     return MedecinEntity(
       id: id,

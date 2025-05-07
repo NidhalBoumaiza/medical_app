@@ -60,24 +60,58 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
     GetDoctorRatings event,
     Emitter<RatingState> emit,
   ) async {
-    emit(RatingLoading());
+    if (state is! DoctorRatingsLoaded && state is! DoctorRatingState) {
+      emit(RatingLoading());
+    }
+    
     final result = await getDoctorRatingsUseCase(event.doctorId);
-    emit(_mapFailureOrRatingsToState(
-      result,
-      (ratings) => DoctorRatingsLoaded(ratings: ratings),
-    ));
+    
+    result.fold(
+      (failure) => emit(RatingError(_mapFailureToMessage(failure))),
+      (ratings) {
+        if (state is DoctorRatingState) {
+          final currentState = state as DoctorRatingState;
+          emit(DoctorRatingState(
+            averageRating: currentState.averageRating,
+            ratings: ratings,
+          ));
+        } else {
+          emit(DoctorRatingState(
+            averageRating: 0.0, 
+            ratings: ratings,
+          ));
+        }
+      },
+    );
   }
 
   Future<void> _onGetDoctorAverageRating(
     GetDoctorAverageRating event,
     Emitter<RatingState> emit,
   ) async {
-    emit(RatingLoading());
+    if (state is! DoctorAverageRatingLoaded && state is! DoctorRatingState) {
+      emit(RatingLoading());
+    }
+    
     final result = await getDoctorAverageRatingUseCase(event.doctorId);
-    emit(_mapFailureOrAverageRatingToState(
-      result,
-      (averageRating) => DoctorAverageRatingLoaded(averageRating: averageRating),
-    ));
+    
+    result.fold(
+      (failure) => emit(RatingError(_mapFailureToMessage(failure))),
+      (averageRating) {
+        if (state is DoctorRatingState) {
+          final currentState = state as DoctorRatingState;
+          emit(DoctorRatingState(
+            averageRating: averageRating,
+            ratings: currentState.ratings,
+          ));
+        } else {
+          emit(DoctorRatingState(
+            averageRating: averageRating, 
+            ratings: const [],
+          ));
+        }
+      },
+    );
   }
 
   RatingState _mapFailureOrSuccessToState(
