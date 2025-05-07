@@ -101,10 +101,10 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
         appBar: AppBar(
-          title: Text("Consultations"),
-          backgroundColor: Color(0xFF2FA7BB),
+          title: const Text("Consultations"),
+          backgroundColor: const Color(0xFF2FA7BB),
           leading: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.chevron_left,
               size: 30,
             ),
@@ -129,17 +129,20 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
           },
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(50.w, 20.h, 50.w, 0),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Image responsive
                   Image.asset(
                     'assets/images/Consultation.png',
-                    height: 800.h,
-                    width: 1000.w,
+                    height:250.h,
+                    width: double.infinity,
+                    fit: BoxFit.contain,
                   ),
-                  SizedBox(height: 100.h),
+                  SizedBox(height: 20.h),
+                  // Liste des consultations
                   BlocBuilder<RendezVousBloc, RendezVousState>(
                     builder: (context, state) {
                       if (state is RendezVousLoading || doctorId == null) {
@@ -149,11 +152,16 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                             .where((rv) => rv.status == 'pending')
                             .toList();
                         if (pendingRendezVous.isEmpty) {
-                          return ReusableTextWidget(
-                            text: "Aucune consultation en attente",
-                            textSize: 55,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey,
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: ReusableTextWidget(
+                                text: "Aucune consultation en attente",
+                                textSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey,
+                              ),
+                            ),
                           );
                         }
                         return ListView.builder(
@@ -164,33 +172,33 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                             final consultation = pendingRendezVous[index];
                             return Card(
                               elevation: 2,
-                              margin: EdgeInsets.symmetric(vertical: 20.h),
+                              margin: EdgeInsets.symmetric(vertical: 8.h),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.r),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(40.w),
+                                padding: EdgeInsets.all(16.w),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ReusableTextWidget(
                                       text: "Patient: ${consultation.patientName ?? 'Inconnu'}",
-                                      textSize: 50,
+                                      textSize: 16,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
                                     ),
-                                    SizedBox(height: 20.h),
+                                    SizedBox(height: 8.h),
                                     ReusableTextWidget(
                                       text:
                                       "Heure de début: ${consultation.startTime?.toLocal().toString().substring(0, 16) ?? 'Non défini'}",
-                                      textSize: 50,
+                                      textSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey[700],
                                     ),
-                                    SizedBox(height: 20.h),
+                                    SizedBox(height: 8.h),
                                     ReusableTextWidget(
                                       text: "Statut: ${_translateStatus(consultation.status ?? 'pending')}",
-                                      textSize: 50,
+                                      textSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: consultation.status == 'pending'
                                           ? Colors.orange
@@ -199,76 +207,79 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                                           : Colors.red,
                                     ),
                                     if (consultation.status == 'pending') ...[
-                                      SizedBox(height: 20.h),
+                                      SizedBox(height: 16.h),
                                       Row(
                                         mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                         children: [
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius.circular(20.r),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(8.r),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 12.h,
+                                                ),
                                               ),
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 30.w,
-                                                vertical: 15.h,
-                                              ),
-                                            ),
-                                            onPressed: () async {
-                                              final authLocalDataSource = sl<AuthLocalDataSource>();
-                                              final user = await authLocalDataSource.getUser();
-                                              final doctorName = '${user.name} ${user.lastName}'.trim();
-                                              _updateConsultationStatus(
-                                                consultation.id ?? '',
-                                                'accepted',
-                                                consultation.patientName ?? 'Inconnu',
-                                                consultation.patientId ?? '',
-                                                consultation.doctorId ?? '',
-                                                doctorName,
-                                              );
-                                            },
-                                            child: Text(
-                                              'Accepter',
-                                              style: GoogleFonts.raleway(
-                                                fontSize: 40.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.whiteColor,
+                                              onPressed: () async {
+                                                final authLocalDataSource = sl<AuthLocalDataSource>();
+                                                final user = await authLocalDataSource.getUser();
+                                                final doctorName = '${user.name} ${user.lastName}'.trim();
+                                                _updateConsultationStatus(
+                                                  consultation.id ?? '',
+                                                  'accepted',
+                                                  consultation.patientName ?? 'Inconnu',
+                                                  consultation.patientId ?? '',
+                                                  consultation.doctorId ?? '',
+                                                  doctorName,
+                                                );
+                                              },
+                                              child: Text(
+                                                'Accepter',
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.whiteColor,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                BorderRadius.circular(20.r),
+                                          SizedBox(width: 8.w),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(8.r),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 12.h,
+                                                ),
                                               ),
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 30.w,
-                                                vertical: 15.h,
-                                              ),
-                                            ),
-                                            onPressed: () async {
-                                              final authLocalDataSource = sl<AuthLocalDataSource>();
-                                              final user = await authLocalDataSource.getUser();
-                                              final doctorName = '${user.name} ${user.lastName}'.trim();
-                                              _updateConsultationStatus(
-                                                consultation.id ?? '',
-                                                'refused',
-                                                consultation.patientName ?? 'Inconnu',
-                                                consultation.patientId ?? '',
-                                                consultation.doctorId ?? '',
-                                                doctorName,
-                                              );
-                                            },
-                                            child: Text(
-                                              'Refuser',
-                                              style: GoogleFonts.raleway(
-                                                fontSize: 40.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.whiteColor,
+                                              onPressed: () async {
+                                                final authLocalDataSource = sl<AuthLocalDataSource>();
+                                                final user = await authLocalDataSource.getUser();
+                                                final doctorName = '${user.name} ${user.lastName}'.trim();
+                                                _updateConsultationStatus(
+                                                  consultation.id ?? '',
+                                                  'refused',
+                                                  consultation.patientName ?? 'Inconnu',
+                                                  consultation.patientId ?? '',
+                                                  consultation.doctorId ?? '',
+                                                  doctorName,
+                                                );
+                                              },
+                                              child: Text(
+                                                'Refuser',
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors.whiteColor,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -284,7 +295,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                       } else if (state is RendezVousError) {
                         return ReusableTextWidget(
                           text: state.message,
-                          textSize: 55,
+                          textSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.red,
                         );
@@ -292,7 +303,7 @@ class _RendezVousMedecinState extends State<RendezVousMedecin> {
                       return const SizedBox.shrink();
                     },
                   ),
-                  SizedBox(height: 80.h),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),

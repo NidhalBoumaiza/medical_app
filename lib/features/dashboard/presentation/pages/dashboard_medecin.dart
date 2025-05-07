@@ -187,23 +187,23 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                   child: Column(
                     children: [
                       _buildAppointmentItem(
-                          "Ahmed Ben Salah",
-                          "Consultation normale",
-                          "09:30",
+                        "Ahmed Ben Salah",
+                        "Consultation normale",
+                        "09:30",
                         AppColors.primaryColor,
                       ),
                       const Divider(),
                       _buildAppointmentItem(
-                          "Fatma Karray",
-                          "Suivi post-op",
-                          "11:15",
+                        "Fatma Karray",
+                        "Suivi post-op",
+                        "11:15",
                         AppColors.primaryColor,
                       ),
                       const Divider(),
                       _buildAppointmentItem(
-                          "Mohamed Dridi",
-                          "Première visite",
-                          "14:00",
+                        "Mohamed Dridi",
+                        "Première visite",
+                        "14:00",
                         AppColors.primaryColor,
                       ),
 

@@ -102,7 +102,7 @@ class MyApp extends StatelessWidget {
             builder: (context, child) {
               return GetMaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: 'Medical App',
+                title: 'MediLink',
                 theme: AppThemes.lightTheme,
                 darkTheme: AppThemes.darkTheme,
                 themeMode: themeMode,

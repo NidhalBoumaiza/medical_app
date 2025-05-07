@@ -57,23 +57,23 @@ class _HomeMedecinState extends State<HomeMedecin> {
 
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
-      icon: Icon(Icons.home_outlined, size: 60.sp),
-      activeIcon: Icon(Icons.home_filled, size: 70.sp),
+      icon: Icon(Icons.home_outlined, size: 22.sp),
+      activeIcon: Icon(Icons.home_filled, size: 24.sp),
       label: 'home'.tr,
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.calendar_today_outlined, size: 60.sp),
-      activeIcon: Icon(Icons.calendar_today, size: 70.sp),
+      icon: Icon(Icons.calendar_today_outlined, size: 22.sp),
+      activeIcon: Icon(Icons.calendar_today, size: 24.sp),
       label: 'appointments'.tr,
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.chat_bubble_outline, size: 60.sp),
-      activeIcon: Icon(Icons.chat_bubble, size: 70.sp),
+      icon: Icon(Icons.chat_bubble_outline, size: 22.sp),
+      activeIcon: Icon(Icons.chat_bubble, size: 24.sp),
       label: 'messages'.tr,
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.person_outline, size: 60.sp),
-      activeIcon: Icon(Icons.person, size: 70.sp),
+      icon: Icon(Icons.person_outline, size: 22.sp),
+      activeIcon: Icon(Icons.person, size: 24.sp),
       label: 'profile'.tr,
     ),
   ];
@@ -147,14 +147,14 @@ class _HomeMedecinState extends State<HomeMedecin> {
     int badgeCount = 0,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color, size: 60.sp),
+      leading: Icon(icon, color: color, size: 22.sp),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: GoogleFonts.raleway(
-              fontSize: 50.sp,
+              fontSize: 16.sp,
               color: color,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
@@ -162,15 +162,15 @@ class _HomeMedecinState extends State<HomeMedecin> {
           ),
           if (badgeCount > 0)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
                 color: AppColors.whiteColor,
-                borderRadius: BorderRadius.circular(15.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Text(
                 badgeCount.toString(),
                 style: GoogleFonts.raleway(
-                  fontSize: 50.sp,
+                  fontSize: 14.sp,
                   color: AppColors.primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -179,8 +179,8 @@ class _HomeMedecinState extends State<HomeMedecin> {
         ],
       ),
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 15.h),
-      minLeadingWidth: 50.w,
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      minLeadingWidth: 24.w,
     );
   }
 
@@ -207,15 +207,15 @@ class _HomeMedecinState extends State<HomeMedecin> {
           appBar: AppBar(
             title: ReusableTextWidget(
               text: "MediLink",
-              textSize: 70,
+              textSize: 22,
               fontWeight: FontWeight.bold,
               color: AppColors.whiteColor,
-              letterSpacing: 2.5,
+              letterSpacing: 1.2,
             ),
             backgroundColor: AppColors.primaryColor,
             actions: [
               IconButton(
-                icon: Icon(Icons.notifications_none, size: 70.sp, color: AppColors.whiteColor),
+                icon: Icon(Icons.notifications_none, size: 24.sp, color: AppColors.whiteColor),
                 onPressed: _onNotificationTapped,
               ),
             ],
@@ -245,14 +245,13 @@ class _HomeMedecinState extends State<HomeMedecin> {
                 backgroundColor: AppColors.whiteColor,
                 elevation: 10,
                 selectedLabelStyle: GoogleFonts.raleway(
-                  fontSize: 50.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                 ),
                 unselectedLabelStyle: GoogleFonts.raleway(
-                  fontSize: 45.sp,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
-
                 ),
                 onTap: (index) {
                   setState(() {
@@ -278,7 +277,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   ConversationsScreen(),
                 );
               },
-              child: Icon(Icons.smart_toy_outlined, size: 70.sp),
+              child: Icon(Icons.smart_toy_outlined, size: 24.sp),
               backgroundColor: Colors.transparent,
               elevation: 0,
             ),
@@ -294,19 +293,19 @@ class _HomeMedecinState extends State<HomeMedecin> {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.only(top: 50.h, left: 25.w, right: 25.w, bottom: 30.h),
+                  padding: EdgeInsets.only(top: 24.h, left: 16.w, right: 16.w, bottom: 16.h),
                   child: Row(
                     children: [
                       CircleAvatar(
-                        radius: 80.r,
+                        radius: 32.r,
                         backgroundColor: AppColors.whiteColor,
                         child: Icon(
                           Icons.person,
-                          size: 80.sp,
+                          size: 28.sp,
                           color: const Color(0xFF2fa7bb),
                         ),
                       ),
-                      SizedBox(width: 25.w),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,17 +313,17 @@ class _HomeMedecinState extends State<HomeMedecin> {
                             Text(
                               doctorName,
                               style: GoogleFonts.raleway(
-                                fontSize: 70.sp,
+                                fontSize: 18.sp,
                                 color: AppColors.whiteColor,
                                 fontWeight: FontWeight.bold,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 10.h),
+                            SizedBox(height: 4.h),
                             Text(
                               email,
                               style: GoogleFonts.raleway(
-                                fontSize: 60.sp,
+                                fontSize: 14.sp,
                                 color: AppColors.whiteColor.withOpacity(0.7),
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -340,10 +339,10 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   thickness: 1,
                   height: 1,
                 ),
-                SizedBox(height: 15.h),
+                SizedBox(height: 8.h),
                 Expanded(
                   child: ListView(
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
                     children: [
                       _buildDrawerItem(
                         icon: FontAwesomeIcons.filePrescription,
@@ -381,38 +380,38 @@ class _HomeMedecinState extends State<HomeMedecin> {
                       ),
                       // Theme toggle
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                         child: BlocBuilder<ThemeCubit, ThemeState>(
-                          builder: (context, state) {
-                            final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
-                            return Row(
-                              children: [
-                                Icon(
-                                  isDarkMode 
-                                      ? FontAwesomeIcons.moon 
-                                      : FontAwesomeIcons.sun,
-                                  color: Colors.white,
-                                  size: 60.sp,
-                                ),
-                                SizedBox(width: 30.w),
-                                Text(
-                                  isDarkMode 
-                                      ? 'dark_mode'.tr 
-                                      : 'light_mode'.tr,
-                                  style: GoogleFonts.raleway(
+                            builder: (context, state) {
+                              final isDarkMode = state is ThemeLoaded ? state.themeMode == ThemeMode.dark : false;
+                              return Row(
+                                children: [
+                                  Icon(
+                                    isDarkMode
+                                        ? FontAwesomeIcons.moon
+                                        : FontAwesomeIcons.sun,
                                     color: Colors.white,
-                                    fontSize: 60.sp,
-                                    fontWeight: FontWeight.w500,
+                                    size: 18.sp,
                                   ),
-                                ),
-                                const Spacer(),
-                                Transform.scale(
-                                  scale: 0.8,
-                                  child: const ThemeCubitSwitch(compact: true),
-                                ),
-                              ],
-                            );
-                          }
+                                  SizedBox(width: 16.w),
+                                  Text(
+                                    isDarkMode
+                                        ? 'dark_mode'.tr
+                                        : 'light_mode'.tr,
+                                    style: GoogleFonts.raleway(
+                                      color: Colors.white,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Transform.scale(
+                                    scale: 0.8,
+                                    child: const ThemeCubitSwitch(compact: true),
+                                  ),
+                                ],
+                              );
+                            }
                         ),
                       ),
                     ],
@@ -424,7 +423,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   height: 1,
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 25.w),
+                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
                   child: _buildDrawerItem(
                     icon: FontAwesomeIcons.rightFromBracket,
                     title: 'Logout'.tr,

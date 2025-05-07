@@ -86,6 +86,11 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       appBar: AppBar(
         title: Text(
           'Notifications'.tr,
+          style: GoogleFonts.raleway(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.whiteColor,
+          ),
         ),
         leading: IconButton(
           icon: Icon(
@@ -100,7 +105,7 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         iconTheme: const IconThemeData(color: AppColors.whiteColor),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, size: 70.sp),
+            icon: Icon(Icons.filter_list, size: 24),
             onPressed: _showFilterDialog,
           ),
         ],
@@ -117,35 +122,51 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
   }
 
   Widget _buildFilterChips() {
-    final filters = ['all'.tr, 'appointments'.tr, 'messages'.tr, 'prescriptions'.tr];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
-        children: filters.map((filter) {
-          return Padding(
-            padding: EdgeInsets.only(right: 8.w),
-            child: FilterChip(
-              label: Text(
-                filter,
-                style: GoogleFonts.raleway(fontSize: 50.sp),
-              ),
-              selected: _selectedFilter == filter,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedFilter = selected ? filter : 'all'.tr;
-                });
-              },
-              selectedColor: AppColors.primaryColor.withOpacity(0.2),
-              checkmarkColor: AppColors.primaryColor,
-              labelStyle: GoogleFonts.raleway(
-                fontSize: 14.sp,
-                color: _selectedFilter == filter ? AppColors.primaryColor : Colors.grey[600],
-              ),
-            ),
-          );
-        }).toList(),
+        children: [
+          _buildFilterChip('all'.tr, 'all'.tr),
+          SizedBox(width: 10.w),
+          _buildFilterChip('appointments'.tr, 'appointments'.tr),
+          SizedBox(width: 10.w),
+          _buildFilterChip('messages'.tr, 'messages'.tr),
+          SizedBox(width: 10.w),
+          _buildFilterChip('prescriptions'.tr, 'prescriptions'.tr),
+        ],
       ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _selectedFilter == value;
+    return FilterChip(
+      label: Text(
+        label,
+        style: GoogleFonts.raleway(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: isSelected ? Colors.white : Colors.grey[700],
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (bool selected) {
+        if (selected) {
+          setState(() {
+            _selectedFilter = value;
+          });
+        }
+      },
+      selectedColor: AppColors.primaryColor,
+      backgroundColor: Colors.grey[100],
+      checkmarkColor: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      elevation: 0,
+      shadowColor: Colors.transparent,
     );
   }
 
@@ -159,12 +180,12 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_off, size: 50.sp, color: Colors.grey[400]),
-            SizedBox(height: 16.h),
+            Icon(Icons.notifications_off, size: 48, color: Colors.grey[400]),
+            SizedBox(height: 16),
             Text(
               'no_notifications'.tr,
               style: GoogleFonts.raleway(
-                fontSize: 50.sp,
+                fontSize: 14,
                 color: Colors.grey[600],
               ),
             ),
@@ -188,14 +209,14 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       key: Key(notification['id']),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: Colors.red[400],
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(15),
         ),
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20.w),
-        child: const Icon(Icons.delete, color: Colors.white),
+        padding: EdgeInsets.only(right: 20),
+        child: Icon(Icons.delete, color: Colors.white, size: 24),
       ),
       confirmDismiss: (direction) async {
         return await showDialog(
@@ -244,134 +265,189 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
   }
 
   Widget _buildNotificationCard(Map<String, dynamic> notification) {
-    final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     final isUnread = !notification['read'];
+    final priorityColor = _getPriorityColor(notification['priority']);
 
     return Card(
-      margin: EdgeInsets.only(bottom: 16.h),
+      margin: EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(15),
       ),
-      elevation: 1,
-      color: AppColors.whiteColor,
+      elevation: 2,
+      shadowColor: Colors.black12,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(15),
         onTap: () {
           setState(() {
             notification['read'] = true;
           });
           _handleNotificationTap(notification);
         },
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: _getPriorityColor(notification['priority']).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      notification['icon'],
-                      color: _getPriorityColor(notification['priority']),
-                      size: 20.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Text(
-                      notification['title'],
-                      style: GoogleFonts.raleway(
-                        fontSize: 16.sp,
-                        fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ),
-                  if (isUnread)
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: priorityColor,
+                width: 5,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Medical-style icon with priority color
                     Container(
-                      width: 10.w,
-                      height: 10.h,
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        shape: BoxShape.circle,
+                        color: priorityColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      child: _getMedicalIcon(notification),
                     ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                notification['message'],
-                style: GoogleFonts.raleway(
-                  fontSize: 50.sp,
-                  color: Colors.grey[700],
-                ),
-              ),
-              SizedBox(height: 8.h),
-              if (notification['date'] != null)
-                Padding(
-                  padding: EdgeInsets.only(top: 4.h),
-                  child: Row(
-                    children: [
-                      Icon(Icons.access_time, size: 50.sp, color: Colors.grey[500]),
-                      SizedBox(width: 4.w),
-                      Text(
-                        dateFormat.format(notification['date']),
-                        style: GoogleFonts.raleway(
-                          fontSize: 50.sp,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              SizedBox(height: 8.h),
-              Text(
-                notification['time'],
-                style: GoogleFonts.raleway(
-                  fontSize: 45.sp,
-                  color: Colors.grey[500],
-                ),
-              ),
-              if (notification['type'] == 'appointment_request' || notification['type'] == 'cancellation')
-                Padding(
-                  padding: EdgeInsets.only(top: 12.h),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RendezVousMedecin(),
+                    SizedBox(width: 12),
+
+                    // Title and subtitle
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notification['title'],
+                            style: GoogleFonts.raleway(
+                              fontSize: 16,
+                              fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                              color: Colors.grey[800],
+                            ),
                           ),
-                        );
-                      },
-                      child: Text(
-                        notification['type'] == 'appointment_request' ? 'review_appointment'.tr : 'view_appointments'.tr,
-                        style: GoogleFonts.raleway(
-                          fontSize: 50.sp,
-                          color: AppColors.whiteColor,
+                          SizedBox(height: 6),
+                          Text(
+                            notification['message'],
+                            style: GoogleFonts.raleway(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Unread indicator and timestamp
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (isUnread)
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: priorityColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        SizedBox(height: 6),
+                        Text(
+                          notification['time'],
+                          style: GoogleFonts.raleway(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Date information if available
+                if (notification['date'] != null)
+                  Padding(
+                    padding: EdgeInsets.only(top: 12, left: 38),
+                    child: Row(
+                      children: [
+                        Icon(Icons.event, size: 16, color: Colors.grey[600]),
+                        SizedBox(width: 8),
+                        Text(
+                          DateFormat('dd/MM/yyyy HH:mm').format(notification['date']),
+                          style: GoogleFonts.raleway(
+                            fontSize: 13,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Action button for appointment requests and cancellations
+                if (notification['type'] == 'appointment_request' || notification['type'] == 'cancellation')
+                  Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RendezVousMedecin(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          notification['type'] == 'appointment_request' ? 'review_appointment'.tr : 'view_appointments'.tr,
+                          style: GoogleFonts.raleway(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.whiteColor,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _getMedicalIcon(Map<String, dynamic> notification) {
+    IconData iconData;
+    Color color = _getPriorityColor(notification['priority']);
+
+    switch(notification['type']) {
+      case 'appointment_request':
+      case 'cancellation':
+      case 'appointment_reminder':
+        iconData = Icons.calendar_month;
+        break;
+      case 'message':
+        iconData = Icons.message;
+        break;
+      case 'prescription':
+        iconData = Icons.description;
+        break;
+      default:
+        iconData = notification['icon'] ?? Icons.notifications;
+    }
+
+    return Icon(
+      iconData,
+      color: color,
+      size: 20,
     );
   }
 
@@ -382,9 +458,9 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       case 'medium':
         return AppColors.primaryColor;
       case 'low':
-        return Colors.blue;
+        return Colors.green;
       default:
-        return Colors.grey;
+        return AppColors.primaryColor;
     }
   }
 
@@ -393,15 +469,29 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('filter_notifications'.tr, style: GoogleFonts.raleway(fontSize: 50.sp)),
+          title: Text(
+              'filter_notifications'.tr,
+              style: GoogleFonts.raleway(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              )
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ...['all'.tr, 'appointments'.tr, 'messages'.tr, 'prescriptions'.tr].map((filter) {
-                return RadioListTile(
-                  title: Text(filter, style: GoogleFonts.raleway(fontSize: 50.sp)),
+                return RadioListTile<String>(
+                  title: Text(
+                      filter,
+                      style: GoogleFonts.raleway(
+                        fontSize: 16,
+                        color: Colors.grey[700],
+                      )
+                  ),
                   value: filter,
                   groupValue: _selectedFilter,
+                  activeColor: AppColors.primaryColor,
                   onChanged: (value) {
                     setState(() {
                       _selectedFilter = value.toString();
@@ -412,6 +502,10 @@ class _NotificationsMedecinState extends State<NotificationsMedecin> {
               }).toList(),
             ],
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         );
       },
     );

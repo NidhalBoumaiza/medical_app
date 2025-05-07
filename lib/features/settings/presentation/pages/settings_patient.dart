@@ -5,6 +5,8 @@ import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/widgets/theme_cubit_switch.dart';
 import 'package:medical_app/i18n/app_translation.dart';
 
+import '../../../authentication/presentation/pages/login_screen.dart';
+
 class SettingsPatient extends StatefulWidget {
   const SettingsPatient({super.key});
 
@@ -56,6 +58,11 @@ class _SettingsPatientState extends State<SettingsPatient> {
             _buildSectionTitle("notifications".tr),
             const SizedBox(height: 8),
             _buildNotificationSettings(),
+
+            const SizedBox(height: 24),
+            _buildSectionTitle("account".tr),
+            const SizedBox(height: 8),
+            _buildAccountSettings(),
             
             const SizedBox(height: 24),
             _buildSectionTitle("about".tr),
@@ -197,7 +204,63 @@ class _SettingsPatientState extends State<SettingsPatient> {
       ),
     );
   }
-  
+  Widget _buildAccountSettings() {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.person, color: AppColors.primaryColor),
+            title: Text(
+              "edit_profile".tr,
+              style: GoogleFonts.raleway(fontSize: 14),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () {
+              // Navigate to profile edit
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.lock, color: AppColors.primaryColor),
+            title: Text(
+              "change_password".tr,
+              style: GoogleFonts.raleway(fontSize: 14),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () {
+              // Navigate to password change
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: Text(
+              "logout".tr,
+              style: GoogleFonts.raleway(
+                fontSize: 14,
+                color: Colors.red,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () {
+              // Logique de déconnexion
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("logout_success".tr)),
+              );
+              // Rediriger vers la page de connexion
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+            },
+          ),
+        ],
+      ),
+    );
+  }
   Widget _buildAboutCard() {
     return Card(
       elevation: 1,
@@ -230,3 +293,5 @@ class _SettingsPatientState extends State<SettingsPatient> {
     );
   }
 }
+
+
