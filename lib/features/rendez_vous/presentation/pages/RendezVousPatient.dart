@@ -13,6 +13,7 @@ import 'package:medical_app/features/authentication/data/data%20sources/auth_loc
 import '../../../../core/specialties.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import 'available_doctor_screen.dart';
+import 'package:intl/intl.dart';
 
 class RendezVousPatient extends StatefulWidget {
   final String? selectedSpecialty;
@@ -27,6 +28,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
   final TextEditingController dateTimeController = TextEditingController();
   String? selectedSpecialty;
   DateTime? selectedDateTime;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -98,8 +100,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
             pickedTime.hour,
             pickedTime.minute,
           );
-          dateTimeController.text =
-          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year} ${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}";
+          dateTimeController.text = DateFormat('dd/MM/yyyy à HH:mm').format(selectedDateTime!);
         });
       }
     }
@@ -109,14 +110,23 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: AppColors.whiteColor,
+        backgroundColor: Colors.grey[50],
         appBar: AppBar(
-          title: const Text("Rechercher une consultation"),
-          backgroundColor: const Color(0xFF2FA7BB),
+          title: Text(
+            "Rechercher une consultation",
+            style: GoogleFonts.raleway(
+              fontWeight: FontWeight.bold,
+              fontSize: 18.sp,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: AppColors.primaryColor,
+          elevation: 2,
           leading: IconButton(
             icon: const Icon(
               Icons.chevron_left,
-              size: 30,
+              size: 28,
+              color: Colors.white,
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -128,157 +138,324 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(50.w, 20.h, 50.w, 0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(height: 40.h),
-                  Image.asset(
-                    'assets/images/Consultation.png',
-                    height: 1000.h,
-                    width: 900.w,
-                  ),
-                  SizedBox(height: 100.h),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xfffafcfc),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                        borderSide: const BorderSide(
-                          color: Color(0xfff3f6f9),
-                          width: 3,
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                        borderSide: const BorderSide(
-                          color: Color(0xfff3f6f9),
-                          width: 3,
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                        borderSide: BorderSide(
-                          color: AppColors.primaryColor,
-                          width: 3,
-                        ),
-                      ),
-                      hintText: "Sélectionner une spécialité",
-                      hintStyle: GoogleFonts.raleway(
-                        color: Colors.grey,
-                        fontSize: 45.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    value: selectedSpecialty,
-                    items: specialties
-                        .map((specialty) => DropdownMenuItem(
-                      value: specialty,
-                      child: Text(
-                        specialty,
-                        style: GoogleFonts.raleway(
-                          fontSize: 45.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedSpecialty = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Veuillez sélectionner une spécialité";
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20.h),
-                  GestureDetector(
-                    onTap: () => _selectDateTime(context),
-                    child: AbsorbPointer(
-                      child: ReusableTextFieldWidget(
-                        fillColor: const Color(0xfffafcfc),
-                        borderSide: const BorderSide(
-                          color: Color(0xfff3f6f9),
-                          width: 3,
-                          style: BorderStyle.solid,
-                        ),
-                        hintText: "Sélectionner la date et l'heure",
-                        controller: dateTimeController,
-                        keyboardType: TextInputType.datetime,
-                        errorMessage: "La date et l'heure sont obligatoires",
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 70.h),
-                  BlocBuilder<RendezVousBloc, RendezVousState>(
-                    builder: (context, state) {
-                      return SizedBox(
-                        width: double.infinity,
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
+                    
+                    // Header image
+                    Center(
+                      child: Image.asset(
+                        'assets/images/Consultation.png',
                         height: 200.h,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r),
+                        width: 200.w,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 30.h),
+                    
+                    // Title
+                    Text(
+                      "Trouver votre médecin",
+                      style: GoogleFonts.raleway(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 10.h),
+                    
+                    // Subtitle
+                    Text(
+                      "Sélectionnez une spécialité et une date pour votre consultation",
+                      style: GoogleFonts.raleway(
+                        fontSize: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    
+                    SizedBox(height: 30.h),
+                    
+                    // Specialty selection
+                    Text(
+                      "Spécialité médicale",
+                      style: GoogleFonts.raleway(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 10.h),
+                    
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16.r),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 16.h,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: BorderSide(
+                              color: AppColors.primaryColor,
+                              width: 1,
                             ),
                           ),
-                          onPressed: state is RendezVousLoading
-                              ? null
-                              : () async {
-                            if (selectedSpecialty != null &&
-                                dateTimeController.text.isNotEmpty) {
-                              if (selectedDateTime != null) {
-                                final authLocalDataSource =
-                                sl<AuthLocalDataSource>();
-                                final user =
-                                await authLocalDataSource.getUser();
-                                final patientName =
-                                '${user.name} ${user.lastName}'.trim();
-
-                                navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-                                  context,
-                                  AvailableDoctorsScreen(
-                                    specialty: selectedSpecialty!,
-                                    startTime: selectedDateTime!,
-                                    patientId: user.id!,
-                                    patientName: patientName,
-                                  ),
-                                );
-                              } else {
-                                showErrorSnackBar(context,
-                                    "Format de date et heure invalide");
-                              }
-                            } else {
-                              showErrorSnackBar(context,
-                                  "Veuillez remplir tous les champs");
-                            }
-                          },
-                          child: state is RendezVousLoading
-                              ? const CircularProgressIndicator(
-                            color: AppColors.whiteColor,
-                          )
-                              : ReusableTextWidget(
-                            text: "Rechercher des médecins",
-                            textSize: 55,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.whiteColor,
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          hintText: "Choisir une spécialité",
+                          hintStyle: GoogleFonts.raleway(
+                            color: Colors.grey[400],
+                            fontSize: 15.sp,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.medical_services_outlined,
+                            color: AppColors.primaryColor,
+                            size: 22.sp,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 80.h),
-                ],
+                        icon: Icon(
+                          Icons.arrow_drop_down,
+                          color: AppColors.primaryColor,
+                        ),
+                        value: selectedSpecialty,
+                        items: specialties
+                            .map((specialty) => DropdownMenuItem(
+                                  value: specialty,
+                                  child: Text(
+                                    specialty,
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 15.sp,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedSpecialty = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez sélectionner une spécialité";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    
+                    SizedBox(height: 24.h),
+                    
+                    // Date and time selection
+                    Text(
+                      "Date et heure souhaitées",
+                      style: GoogleFonts.raleway(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    
+                    SizedBox(height: 10.h),
+                    
+                    GestureDetector(
+                      onTap: () => _selectDateTime(context),
+                      child: AbsorbPointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: dateTimeController,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "Sélectionner la date et l'heure",
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.calendar_today,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Veuillez sélectionner une date et une heure";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    SizedBox(height: 40.h),
+                    
+                    // Search button
+                    BlocBuilder<RendezVousBloc, RendezVousState>(
+                      builder: (context, state) {
+                        final isLoading = state is RendezVousLoading;
+                        
+                        return Container(
+                          width: double.infinity,
+                          height: 55.h,
+                          margin: EdgeInsets.only(bottom: 30.h),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              elevation: 2,
+                            ),
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      if (selectedDateTime != null) {
+                                        final authLocalDataSource =
+                                            sl<AuthLocalDataSource>();
+                                        final user =
+                                            await authLocalDataSource.getUser();
+                                        final patientName =
+                                            '${user.name} ${user.lastName}'
+                                                .trim();
+
+                                        navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
+                                          context,
+                                          AvailableDoctorsScreen(
+                                            specialty: selectedSpecialty!,
+                                            startTime: selectedDateTime!,
+                                            patientId: user.id!,
+                                            patientName: patientName,
+                                          ),
+                                        );
+                                      } else {
+                                        showErrorSnackBar(context, 
+                                          "Veuillez sélectionner une date et une heure valides"
+                                        );
+                                      }
+                                    }
+                                  },
+                            child: isLoading
+                                ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 3,
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.search,
+                                        size: 22.sp,
+                                      ),
+                                      SizedBox(width: 10.w),
+                                      Text(
+                                        "Rechercher un médecin",
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

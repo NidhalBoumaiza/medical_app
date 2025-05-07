@@ -48,109 +48,270 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(50.w, 20.h, 50.w, 0),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Title
                   Center(
-                    child: ReusableTextWidget(
-                      text: "sign_in".tr,
-                      textSize: 100,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.primaryColor,
+                    child: Text(
+                      "sign_in".tr,
+                      style: GoogleFonts.raleway(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryColor,
+                      ),
                     ),
                   ),
-                  SizedBox(height: 40.h),
-                  Image.asset(
-                    'assets/images/Login.png',
-                    height: 1000.h,
-                    width: 900.w,
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Header image
+                  Center(
+                    child: Image.asset(
+                      'assets/images/Login.png',
+                      height: 200.h,
+                      width: 200.w,
+                    ),
                   ),
-                  SizedBox(height: 100.h),
-                  // Wrap input fields in a Form widget
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Form fields
                   Form(
                     key: _formKey,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Champ de texte pour l'email
-                        ReusableTextFieldWidget(
-                          fillColor: const Color(0xfffafcfc),
-                          borderSide: const BorderSide(
-                            color: Color(0xfff3f6f9),
-                            width: 3,
-                            style: BorderStyle.solid,
+                        // Email label
+                        Text(
+                          "Email",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
                           ),
-                          hintText: "email".tr,
-                          controller: emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          validatorFunction: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "L'email est obligatoire".tr;
-                            }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value)) {
-                              return "Veuillez entrer un email valide".tr;
-                            }
-                            return null;
-                          },
                         ),
-                        SizedBox(height: 20.h),
-                        // Champ de texte pour le mot de passe
-                        ReusableTextFieldWidget(
-                          fillColor: const Color(0xfffafcfc),
-                          borderSide: const BorderSide(
-                            color: Color(0xfff3f6f9),
-                            width: 3,
-                            style: BorderStyle.solid,
+                        
+                        SizedBox(height: 10.h),
+                        
+                        // Email field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
-                          onPressedSuffixIcon: () {
-                            setState(() {
-                              _isObsecureText = !_isObsecureText;
-                            });
-                          },
-                          obsecureText: _isObsecureText,
-                          hintText: "password".tr,
-                          controller: passwordController,
-                          keyboardType: TextInputType.text,
-                          validatorFunction: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Le mot de passe est obligatoire".tr;
-                            }
-                            if (value.length < 6) {
-                              return "Le mot de passe doit contenir au moins 6 caractères"
-                                  .tr;
-                            }
-                            return null;
-                          },
+                          child: TextFormField(
+                            controller: emailController,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "email".tr,
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.email_outlined,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "L'email est obligatoire".tr;
+                              }
+                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                  .hasMatch(value)) {
+                                return "Veuillez entrer un email valide".tr;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        
+                        SizedBox(height: 24.h),
+                        
+                        // Password label
+                        Text(
+                          "Mot de passe",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        
+                        SizedBox(height: 10.h),
+                        
+                        // Password field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: passwordController,
+                            obscureText: _isObsecureText,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "password".tr,
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_outline,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObsecureText
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObsecureText = !_isObsecureText;
+                                  });
+                                },
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Le mot de passe est obligatoire".tr;
+                              }
+                              if (value.length < 6) {
+                                return "Le mot de passe doit contenir au moins 6 caractères"
+                                    .tr;
+                              }
+                              return null;
+                            },
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.h),
-                  // Texte "Mot de passe oublié"
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ForgotPasswordScreen()),
-                          );
-                        },
-                        child: ReusableTextWidget(
-                          text: "forgot_password".tr,
-                          textSize: 40,
-                          fontWeight: FontWeight.w800,
+                  
+                  // Forgot password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ForgotPasswordScreen()),
+                        );
+                      },
+                      child: Text(
+                        "forgot_password".tr,
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.primaryColor,
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                  SizedBox(height: 70.h),
-                  // Bouton de connexion avec Bloc
+                  
+                  SizedBox(height: 24.h),
+                  // Login button
                   BlocConsumer<LoginBloc, LoginState>(
                     listener: (context, state) async {
                       if (state is LoginSuccess) {
@@ -168,57 +329,66 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       } else if (state is LoginError) {
                         showErrorSnackBar(context, state.message);
-
                       }
                     },
                     builder: (context, state) {
-                      return SizedBox(
+                      final isLoading = state is LoginLoading;
+                      return Container(
                         width: double.infinity,
-                        height: 200.h,
+                        height: 55.h,
+                        margin: EdgeInsets.only(top: 10.h),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
+                            elevation: 2,
                           ),
-                          onPressed: state is LoginLoading
+                          onPressed: isLoading
                               ? null
                               : () {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<LoginBloc>().add(
-                                LoginWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: passwordController.text,
-                                ),
-                              );
-                            }
-                          },
-                          child: state is LoginLoading
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<LoginBloc>().add(
+                                      LoginWithEmailAndPassword(
+                                        email: emailController.text,
+                                        password: passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: isLoading
                               ? CircularProgressIndicator(
-                              color: AppColors.whiteColor)
-                              : ReusableTextWidget(
-                            text: "connect_button_text".tr,
-                            textSize: 55,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.whiteColor,
-                          ),
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Text(
+                                  "connect_button_text".tr,
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       );
                     },
                   ),
-                  SizedBox(height: 60.h),
-                  // Texte "Pas encore de compte ?"
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // No account row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ReusableTextWidget(
-                        text: "no_account".tr,
-                        textSize: 45,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.grey,
+                      Text(
+                        "no_account".tr,
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                      SizedBox(width: 15.w),
+                      SizedBox(width: 10.w),
                       GestureDetector(
                         onTap: () {
                           navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
@@ -228,40 +398,43 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           "sign_up".tr,
-                          style: TextStyle(
+                          style: GoogleFonts.raleway(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
                             color: AppColors.primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 45.sp,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 80.h),
-                  // Ou se connecter avec Google
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Or login with divider
                   Row(
                     children: [
                       Expanded(
-                        child: Divider(color: Colors.grey, thickness: 1),
+                        child: Divider(color: Colors.grey[300], thickness: 1),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: Text(
-                          "Or".tr,
+                          "or_login_with".tr,
                           style: GoogleFonts.raleway(
-                            color: Colors.grey,
-                            fontSize: 45.sp,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 14.sp,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ),
                       Expanded(
-                        child: Divider(color: Colors.grey, thickness: 1),
+                        child: Divider(color: Colors.grey[300], thickness: 1),
                       ),
                     ],
                   ),
-                  SizedBox(height: 60.h),
-                  // Bouton de connexion avec Google avec Bloc
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Google login button
                   BlocConsumer<LoginBloc, LoginState>(
                     listener: (context, state) async {
                       if (state is LoginSuccess) {
@@ -277,48 +450,42 @@ class _LoginScreenState extends State<LoginScreen> {
                            const HomePatient(),
                          );
                        }
-
                       } else if (state is LoginError) {
                         showErrorSnackBar(context, "invalid_credentials".tr);
                       }
                     },
                     builder: (context, state) {
-                      return SizedBox(
+                      final isLoading = state is LoginLoading;
+                      return Container(
                         width: double.infinity,
-                        height: 200.h,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r),
+                        height: 55.h,
+                        margin: EdgeInsets.only(bottom: 30.h),
+                        child: ElevatedButton.icon(
+                          icon: Icon(
+                            FontAwesomeIcons.google,
+                            size: 18.sp,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            "continue_with_google".tr,
+                            style: GoogleFonts.raleway(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          onPressed: state is LoginLoading
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: isLoading
                               ? null
                               : () {
-                            context.read<LoginBloc>().add(LoginWithGoogle());
-                          },
-                          child: state is LoginLoading
-                              ? CircularProgressIndicator(
-                              color: AppColors.whiteColor)
-                              : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                FontAwesomeIcons.google,
-                                color: AppColors.whiteColor,
-                              ),
-                              SizedBox(width: 40.w),
-                              Text(
-                                "continue_with_google".tr,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 55.sp,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.whiteColor,
-                                ),
-                              ),
-                            ],
-                          ),
+                                  context.read<LoginBloc>().add(LoginWithGoogle());
+                                },
                         ),
                       );
                     },

@@ -41,185 +41,342 @@ class _PasswordScreenState extends State<PasswordScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(120.h),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            centerTitle: true,
-            title: Text(
-              'Mot de passe',
-              style: TextStyle(
-                fontSize: 80.sp,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primaryColor,
-              ),
-            ),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryColor),
-              onPressed: () {
-                Get.back();
-              },
-            ),
-          ),
-        ),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 50.h, vertical: 40.h),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Mot de passe :",
-                      style: TextStyle(
-                        fontSize: 50.sp,
-                        fontWeight: FontWeight.w700,
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Center(
+                    child: Text(
+                      "Créer un mot de passe",
+                      style: GoogleFonts.raleway(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryColor,
                       ),
                     ),
-                    ReusableTextFieldWidget(
-                      obsecureText: _isObscurePassword,
-                      controller: passwordController,
-                      fillColor: const Color(0xfffafcfc),
-                      borderSide: const BorderSide(
-                        color: Color(0xfff3f6f9),
-                        width: 3,
-                        style: BorderStyle.solid,
-                      ),
-                      hintText: "Mot de passe".tr,
-                      keyboardType: TextInputType.text,
-                      errorMessage: "Mot de passe est obligatoire".tr,
-                      validatorFunction: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Mot de passe est obligatoire".tr;
-                        }
-                        if (value.length < 8) {
-                          return "Le mot de passe doit contenir au moins 8 caractères".tr;
-                        }
-                        return null;
-                      },
-                      onPressedSuffixIcon: () {
-                        setState(() {
-                          _isObscurePassword = !_isObscurePassword;
-                        });
-                      },
+                  ),
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Header image
+                  Center(
+                    child: Image.asset(
+                      'assets/images/password.png',
+                      height: 200.h,
+                      width: 200.w,
                     ),
-                    SizedBox(height: 30.h),
-                    Text(
-                      "Confirmer le mot de passe :",
-                      style: TextStyle(
-                        fontSize: 50.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    ReusableTextFieldWidget(
-                      obsecureText: _isObscureConfirmPassword,
-                      controller: confirmPasswordController,
-                      fillColor: const Color(0xfffafcfc),
-                      borderSide: const BorderSide(
-                        color: Color(0xfff3f6f9),
-                        width: 3,
-                        style: BorderStyle.solid,
-                      ),
-                      hintText: "Confirmer le mot de passe".tr,
-                      keyboardType: TextInputType.text,
-                      errorMessage: "Confirmation du mot de passe est obligatoire".tr,
-                      validatorFunction: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Confirmation du mot de passe est obligatoire".tr;
-                        }
-                        if (value != passwordController.text) {
-                          return "Les mots de passe ne correspondent pas".tr;
-                        }
-                        return null;
-                      },
-                      onPressedSuffixIcon: () {
-                        setState(() {
-                          _isObscureConfirmPassword = !_isObscureConfirmPassword;
-                        });
-                      },
-                    ),
-                    SizedBox(height: 100.h),
-                    BlocConsumer<SignupBloc, SignupState>(
-                      listener: (context, state) {
-                        if (state is SignupSuccess) {
-                          showSuccessSnackBar(context, "Inscription réussie".tr);
-                          context.read<ForgotPasswordBloc>().add(
-                            SendVerificationCode(
-                              email: widget.entity.email,
-                              codeType: VerificationCodeType.activationDeCompte,
+                  ),
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Form fields
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Password label
+                        Text(
+                          "Mot de passe",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        
+                        SizedBox(height: 10.h),
+                        
+                        // Password field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: passwordController,
+                            obscureText: _isObscurePassword,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
                             ),
-                          );
-                        } else if (state is SignupError) {
-                          showErrorSnackBar(context, state.message.tr);
-                        }
-                      },
-                      builder: (context, state) {
-                        return BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
-                          listener: (context, forgotState) {
-                            if (forgotState is ForgotPasswordSuccess) {
-                              navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
-                                context,
-                                VerifyCodeScreen(
-                                  email: widget.entity.email,
-                                  isAccountCreation: true,
-                                ),
-                              );
-                            } else if (forgotState is ForgotPasswordError) {
-                              showErrorSnackBar(context, forgotState.message.tr);
-                            }
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 200.h,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.r),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
                                 ),
                               ),
-                              onPressed: state is SignupLoading
-                                  ? null
-                                  : () {
-                                if (_formKey.currentState!.validate()) {
-                                  if (passwordController.text != confirmPasswordController.text) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text("Les mots de passe ne correspondent pas".tr),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  context.read<SignupBloc>().add(
-                                    SignupWithUserEntity(
-                                      user: widget.entity,
-                                      password: passwordController.text,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: state is SignupLoading
-                                  ? CircularProgressIndicator(color: AppColors.whiteColor)
-                                  : Text(
-                                "S'inscrire".tr,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 60.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.whiteColor,
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
                                 ),
                               ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "Entrez votre mot de passe",
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_outline,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscurePassword = !_isObscurePassword;
+                                  });
+                                },
+                              ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Le mot de passe est obligatoire";
+                              }
+                              if (value.length < 6) {
+                                return "Le mot de passe doit contenir au moins 6 caractères";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        
+                        SizedBox(height: 24.h),
+                        
+                        // Confirm Password label
+                        Text(
+                          "Confirmer le mot de passe",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        
+                        SizedBox(height: 10.h),
+                        
+                        // Confirm Password field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: TextFormField(
+                            controller: confirmPasswordController,
+                            obscureText: _isObscureConfirmPassword,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "Confirmez votre mot de passe",
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.lock_outline,
+                                color: AppColors.primaryColor,
+                                size: 22.sp,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscureConfirmPassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.primaryColor,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscureConfirmPassword = !_isObscureConfirmPassword;
+                                  });
+                                },
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "La confirmation du mot de passe est obligatoire";
+                              }
+                              if (value != passwordController.text) {
+                                return "Les mots de passe ne correspondent pas";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Submit button
+                  BlocConsumer<SignupBloc, SignupState>(
+                    listener: (context, state) {
+                      if (state is SignupSuccess) {
+                        showSuccessSnackBar(context, "Inscription réussie");
+                        context.read<ForgotPasswordBloc>().add(
+                          SendVerificationCode(
+                            email: widget.entity.email,
+                            codeType: VerificationCodeType.activationDeCompte,
                           ),
                         );
+                      } else if (state is SignupError) {
+                        showErrorSnackBar(context, state.message);
+                      }
+                    },
+                    builder: (context, state) {
+                      final isLoading = state is SignupLoading;
+                      return Container(
+                        width: double.infinity,
+                        height: 55.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.r),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<SignupBloc>().add(
+                                      SignupWithUserEntity(
+                                        user: widget.entity,
+                                        password: passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: isLoading
+                              ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                )
+                              : Text(
+                                  "Créer le compte",
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Back button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
                       },
+                      child: Text(
+                        "Retour",
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

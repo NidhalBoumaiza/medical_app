@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
+import '../../../../core/specialties.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
@@ -26,21 +27,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   ];
 
   // Data for "Spécialités" section (using asset images)
-  final List<Map<String, dynamic>> specialties = [
-    {'image': 'assets/images/dentiste.png', 'text': 'Dentiste'},
-    {'image': 'assets/images/bebe.png', 'text': 'Pédiatre'},
-    {'image': 'assets/images/generaliste.png', 'text': 'Généraliste'},
-    {'image': 'assets/images/pnmeulogue.png', 'text': 'Pneumologue'},
-    {'image': 'assets/images/dermatologue.png', 'text': 'Dermatologue'},
-    {'image': 'assets/images/diet.png', 'text': 'Nutritionniste'},
-    {'image': 'assets/images/cardio.png', 'text': 'Cardiologue'},
-    {'image': 'assets/images/psy.png', 'text': 'Psychologue'},
-    {'image': 'assets/images/neurologue.png', 'text': 'Neurologue'},
-    {'image': 'assets/images/orthopediste.png', 'text': 'Orthopédique'},
-    {'image': 'assets/images/gyneco.png', 'text': 'Gynécologue'},
-    {'image': 'assets/images/ophtalmo.png', 'text': 'Ophtalmologue'},
-    {'image': 'assets/images/botox.png', 'text': 'Médecin esthétique'},
-  ];
+
 
   // Data for "Vidéos éducatives de premiers secours" section
   final List<Map<String, dynamic>> firstAidVideos = [
@@ -122,7 +109,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AllSpecialtiesPage(specialties: specialties),
+                                    builder: (context) => AllSpecialtiesPage(specialties: specialtiesWithImages),
                                   ),
                                 );
                                 break;
@@ -194,7 +181,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AllSpecialtiesPage(specialties: specialties),
+                          builder: (context) => AllSpecialtiesPage(specialties: specialtiesWithImages),
                         ),
                       );
                     },
@@ -210,13 +197,13 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                 height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: specialties.length,
+                  itemCount: specialtiesWithImages.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
                         navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
                           context,
-                          RendezVousPatient(selectedSpecialty: specialties[index]['text']),
+                          RendezVousPatient(selectedSpecialty: specialtiesWithImages[index]['text']),
                         );
                       },
                       child: Padding(
@@ -241,7 +228,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                     BlendMode.srcATop,
                                   ),
                                   child: Image.asset(
-                                    specialties[index]['image']!,
+                                    specialtiesWithImages[index]['image']!,
                                     width: 50,
                                     height: 50,
                                     fit: BoxFit.contain,
@@ -253,7 +240,7 @@ class _DashboardpatientState extends State<Dashboardpatient> {
                                 const SizedBox(height: 10),
                                 //nom du spécialité
                                 Text(
-                                  specialties[index]['text']!,
+                                  specialtiesWithImages[index]['text']!,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 12,

@@ -21,101 +21,205 @@ class _SignupPatientScreenState extends State<SignupPatientScreen> {
   final TextEditingController antecedentsController = TextEditingController();
 
   @override
+  void dispose() {
+    antecedentsController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColors.whiteColor,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(120.h),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            centerTitle: true,
-            title: Text(
-              'Inscription Patient',
-              style: TextStyle(
-                fontSize: 80.sp,
-                fontWeight: FontWeight.w800,
-                color: AppColors.primaryColor,
-              ),
-            ),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryColor),
-              onPressed: () {
-                Get.back();
-              },
-            ),
-          ),
-        ),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
           },
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 50.h, vertical: 40.h),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Antécédents médicaux :",
-                      style: TextStyle(
-                        fontSize: 50.sp,
-                        fontWeight: FontWeight.w700,
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Center(
+                    child: Text(
+                      "Antécédents médicaux",
+                      style: GoogleFonts.raleway(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryColor,
                       ),
                     ),
-                    ReusableTextFieldWidget(
-                      controller: antecedentsController,
-                      fillColor: const Color(0xfffafcfc),
-                      maxLines: 5,
-                      minLines: 5,
-                      borderSide: const BorderSide(
-                        color: Color(0xfff3f6f9),
-                        width: 3,
-                        style: BorderStyle.solid,
-                      ),
-                      hintText: "Antécédents médicaux".tr,
-                      errorMessage: "Antécédents médicaux sont obligatoires".tr,
-                    ),
-                    SizedBox(height: 100.h),
-                    SizedBox(
-                      width: double.infinity,
+                  ),
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Header image
+                  Center(
+                    child: Image.asset(
+                      'assets/images/patient.png',
                       height: 200.h,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.r),
+                      width: 200.w,
+                    ),
+                  ),
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Form fields
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Antécédents label
+                        Text(
+                          "Antécédents médicaux",
+                          style: GoogleFonts.raleway(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
                           ),
                         ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            final updatedPatientEntity = PatientEntity(
-                              name: widget.patientEntity.name,
-                              lastName: widget.patientEntity.lastName,
-                              email: widget.patientEntity.email,
-                              role: widget.patientEntity.role,
-                              gender: widget.patientEntity.gender,
-                              phoneNumber: widget.patientEntity.phoneNumber,
-                              dateOfBirth: widget.patientEntity.dateOfBirth,
-                              antecedent: antecedentsController.text,
-                            );
-                            Get.to(() => PasswordScreen(entity: updatedPatientEntity));
-                          }
-                        },
-                        child: Text(
-                          "Suivant".tr,
-                          style: GoogleFonts.raleway(
-                            fontSize: 60.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.whiteColor,
+                        
+                        SizedBox(height: 10.h),
+                        
+                        // Antécédents field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
+                          child: TextFormField(
+                            controller: antecedentsController,
+                            style: GoogleFonts.raleway(
+                              fontSize: 15.sp,
+                              color: Colors.black87,
+                            ),
+                            maxLines: 5,
+                            minLines: 5,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 16.h,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: BorderSide(
+                                  color: AppColors.primaryColor,
+                                  width: 1,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                                borderSide: const BorderSide(
+                                  color: Colors.red,
+                                  width: 1,
+                                ),
+                              ),
+                              hintText: "Entrez vos antécédents médicaux",
+                              hintStyle: GoogleFonts.raleway(
+                                color: Colors.grey[400],
+                                fontSize: 15.sp,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Les antécédents médicaux sont obligatoires";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  SizedBox(height: 30.h),
+                  
+                  // Submit button
+                  Container(
+                    width: double.infinity,
+                    height: 55.h,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                        elevation: 2,
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          final updatedPatientEntity = PatientEntity(
+                            name: widget.patientEntity.name,
+                            lastName: widget.patientEntity.lastName,
+                            email: widget.patientEntity.email,
+                            role: widget.patientEntity.role,
+                            gender: widget.patientEntity.gender,
+                            phoneNumber: widget.patientEntity.phoneNumber,
+                            dateOfBirth: widget.patientEntity.dateOfBirth,
+                            antecedent: antecedentsController.text,
+                          );
+                          Get.to(() => PasswordScreen(entity: updatedPatientEntity));
+                        }
+                      },
+                      child: Text(
+                        "Suivant",
+                        style: GoogleFonts.raleway(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Back button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Retour",
+                        style: GoogleFonts.raleway(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
