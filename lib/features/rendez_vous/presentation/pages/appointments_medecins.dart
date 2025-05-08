@@ -7,15 +7,18 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../features/authentication/data/models/user_model.dart';
 import '../../../../features/authentication/data/models/medecin_model.dart';
 import '../../../../features/authentication/domain/entities/medecin_entity.dart';
+import '../../../../features/authentication/domain/entities/patient_entity.dart';
 import '../../../../injection_container.dart' as di;
 import '../../domain/entities/rendez_vous_entity.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import 'appointment_details_page.dart';
+import '../../../rendez_vous/presentation/pages/patient_profile_page.dart';
 
 class AppointmentsMedecins extends StatefulWidget {
   final DateTime? initialSelectedDate;
@@ -41,6 +44,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
   String? updatingAppointmentId;
   DateTime? selectedDate;
   String? statusFilter;
+  bool isCalendarVisible = false;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -64,7 +69,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
     if (userJson != null) {
       try {
         final userMap = jsonDecode(userJson) as Map<String, dynamic>;
-        setState(() {
+    setState(() {
           currentUser = UserModel.fromJson(userMap);
         });
         
@@ -75,8 +80,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       } catch (e) {
         setState(() {
           isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               "Erreur lors du chargement des données de l'utilisateur",
@@ -119,7 +124,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
         final matches = appointment.status == statusFilter;
         print('Checking appointment ${appointment.id}: status=${appointment.status}, filter=$statusFilter, matches=$matches');
         return matches;
-      }).toList();
+    }).toList();
       
       print('After status filter: ${filteredAppointments.length} appointments');
     }
@@ -133,7 +138,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
       filteredAppointments = List.from(appointments);
     });
   }
-  
+
   void _applyStatusFilter(String status) {
     setState(() {
       statusFilter = status;
@@ -235,6 +240,116 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
     }
   }
 
+  // Fetch patient info from Firestore
+  Future<PatientEntity?> _fetchPatientInfo(String patientId) async {
+    try {
+      final patientDoc = await _firestore.collection('patients').doc(patientId).get();
+      
+      if (patientDoc.exists) {
+        Map<String, dynamic> patientData = patientDoc.data() as Map<String, dynamic>;
+        return PatientEntity(
+          id: patientId,
+          name: patientData['name'] ?? '',
+          lastName: patientData['lastName'] ?? '',
+          email: patientData['email'] ?? '',
+          role: 'patient',
+          gender: patientData['gender'] ?? 'unknown',
+          phoneNumber: patientData['phoneNumber'] ?? '',
+          dateOfBirth: patientData['dateOfBirth'] != null
+              ? (patientData['dateOfBirth'] is Timestamp)
+                  ? (patientData['dateOfBirth'] as Timestamp).toDate()
+                  : DateTime.tryParse(patientData['dateOfBirth'])
+              : null,
+          antecedent: patientData['antecedent'] as String? ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching patient info: $e');
+      return null;
+    }
+  }
+
+  // Navigate to patient profile
+  void _navigateToPatientProfile(RendezVousEntity appointment) async {
+    if (appointment.patientId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Information du patient non disponible",
+            style: GoogleFonts.raleway(),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+    
+    try {
+      // Try to fetch patient from Firestore
+      PatientEntity? patientEntity = await _fetchPatientInfo(appointment.patientId!);
+      
+      // Dismiss loading indicator
+      Navigator.pop(context);
+      
+      // If fetch failed, create a basic patient entity with available info
+      if (patientEntity == null) {
+        final nameArray = appointment.patientName?.split(' ') ?? ['Patient', 'Inconnu'];
+        final firstName = nameArray.isNotEmpty ? nameArray[0] : '';
+        final lastName = nameArray.length > 1 ? nameArray[1] : '';
+        
+        patientEntity = PatientEntity(
+          id: appointment.patientId!,
+          name: firstName,
+          lastName: lastName,
+          email: "patient@medical-app.com",
+          role: 'patient',
+          gender: 'unknown',
+          phoneNumber: "",
+          dateOfBirth: null,
+          antecedent: "",
+        );
+      }
+      
+      // Navigate to patient profile page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PatientProfilePage(
+            patient: patientEntity!,
+          ),
+        ),
+      );
+    } catch (e) {
+      // Handle any errors
+      Navigator.pop(context); // Dismiss loading indicator if error occurs
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erreur lors du chargement du profil: $e",
+            style: GoogleFonts.raleway(),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -244,7 +359,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
           style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+              color: Colors.white,
           ),
         ),
         backgroundColor: AppColors.primaryColor,
@@ -257,39 +372,10 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
           // Calendar button for date selection
           IconButton(
             icon: Icon(Icons.calendar_today, color: Colors.white),
-            onPressed: () async {
-              final DateTime? picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate ?? DateTime.now(),
-                firstDate: DateTime(2023),
-                lastDate: DateTime(2025),
-                builder: (context, child) {
-                  return Theme(
-                    data: ThemeData.light().copyWith(
-                      colorScheme: ColorScheme.light(
-                        primary: AppColors.primaryColor,
-                        onPrimary: Colors.white,
-                      ),
-                    ),
-                    child: child!,
-                  );
-                },
-              );
-              if (picked != null) {
-                setState(() {
-                  selectedDate = picked;
-                  _applyDateFilter();
-                });
-              }
-            },
-          ),
-          // Refresh button
-          IconButton(
-            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
-              if (currentUser != null && currentUser!.id != null) {
-                _rendezVousBloc.add(FetchRendezVous(doctorId: currentUser!.id));
-              }
+              setState(() {
+                isCalendarVisible = !isCalendarVisible;
+              });
             },
           ),
         ],
@@ -364,6 +450,171 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
           builder: (context, state) {
             return Column(
               children: [
+                // Animated Calendar Container
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  height: isCalendarVisible ? 350.h : 0,
+                  child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isCalendarVisible)
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 1,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                // Calendar header
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                                      "Sélectionner une date",
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        if (selectedDate != null)
+                                          TextButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                selectedDate = null;
+                                                isCalendarVisible = false;
+                                              });
+                                              _applyDateFilter();
+                                            },
+                                            child: Text(
+                                              "Effacer",
+                                              style: GoogleFonts.raleway(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        IconButton(
+                                          icon: Icon(Icons.close),
+                                          onPressed: () {
+                                            setState(() {
+                                              isCalendarVisible = false;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                
+                                // The Calendar
+                                TableCalendar(
+                                  firstDay: DateTime.now().subtract(Duration(days: 365)),
+                                  lastDay: DateTime.now().add(Duration(days: 365)),
+                                  focusedDay: selectedDate ?? DateTime.now(),
+                                  calendarFormat: _calendarFormat,
+                                  onFormatChanged: (format) {
+                                    setState(() {
+                                      _calendarFormat = format;
+                                    });
+                                  },
+                                  selectedDayPredicate: (day) {
+                                    return selectedDate != null && isSameDay(selectedDate!, day);
+                                  },
+                                  onDaySelected: (selectedDay, focusedDay) {
+                                    setState(() {
+                                      selectedDate = selectedDay;
+                                      isCalendarVisible = false;
+                                    });
+                                    _applyDateFilter();
+                                  },
+                                  // Event indicators with count
+                                  calendarBuilders: CalendarBuilders(
+                                    markerBuilder: (context, date, events) {
+                                      // Count appointments on this day
+                                      final appointmentsOnDay = appointments.where((appointment) {
+                                        return isSameDay(appointment.startTime, date);
+                                      }).toList();
+                                      
+                                      if (appointmentsOnDay.isEmpty) {
+                                        return null;
+                                      }
+                                      
+                                      return Positioned(
+                                        bottom: 1,
+                                        right: 1,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.primaryColor,
+                                          ),
+                                          width: 16.w,
+                                          height: 16.h,
+                                          child: Center(
+                                            child: Text(
+                                              '${appointmentsOnDay.length}',
+                  style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10.sp,
+                    fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  calendarStyle: CalendarStyle(
+                                    todayDecoration: BoxDecoration(
+                                      color: AppColors.primaryColor.withOpacity(0.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    selectedDecoration: BoxDecoration(
+                                      color: AppColors.primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  headerStyle: HeaderStyle(
+                                    formatButtonTextStyle: GoogleFonts.raleway(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                    color: AppColors.primaryColor,
+                                    ),
+                                    titleTextStyle: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    leftChevronIcon: Icon(Icons.chevron_left, color: AppColors.primaryColor),
+                                    rightChevronIcon: Icon(Icons.chevron_right, color: AppColors.primaryColor),
+                                    formatButtonVisible: true,
+                                    titleCentered: true,
+                                  ),
+                                  availableCalendarFormats: const {
+                                    CalendarFormat.month: 'Mois',
+                                    CalendarFormat.twoWeeks: '2 Semaines',
+                                    CalendarFormat.week: 'Semaine',
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                
                 if (selectedDate != null || statusFilter != null)
                   Container(
                     width: double.infinity,
@@ -397,7 +648,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                           onTap: _resetFilter,
                           child: Icon(
                             Icons.close,
-                            color: AppColors.primaryColor,
+                    color: AppColors.primaryColor,
                             size: 20.sp,
                           ),
                         ),
@@ -432,8 +683,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CircularProgressIndicator(
-                              color: AppColors.primaryColor,
-                            ),
+                                  color: AppColors.primaryColor,
+                                ),
                             SizedBox(height: 16.h),
                             Text(
                               "Chargement des rendez-vous...",
@@ -485,52 +736,9 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              if (selectedDate != null || statusFilter != null)
-                                Padding(
-                                  padding: EdgeInsets.only(top: 24.h),
-                                  child: ElevatedButton.icon(
-                                    onPressed: _resetFilter,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryColor,
-                                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    ),
-                                    icon: Icon(Icons.filter_alt_off, size: 20.sp),
-                                    label: Text(
-                                      "Supprimer les filtres",
-                                      style: GoogleFonts.raleway(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 16.h),
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    if (currentUser != null && currentUser!.id != null) {
-                                      _rendezVousBloc.add(FetchRendezVous(doctorId: currentUser!.id));
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[200],
-                                    foregroundColor: Colors.grey[800],
-                                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
-                                  icon: Icon(Icons.refresh, size: 20.sp),
-                                  label: Text(
-                                    "Actualiser",
-                                    style: GoogleFonts.raleway(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+
+                          ],
+                        ),
                         )
                       : RefreshIndicator(
                           onRefresh: () async {
@@ -581,10 +789,14 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                 color: AppColors.primaryColor,
                                                 borderRadius: BorderRadius.circular(10.r),
                                               ),
-                                              child: Icon(
-                                                Icons.person,
-                                                color: Colors.white,
-                                                size: 30.sp,
+                                              child: InkWell(
+                                                onTap: () => _navigateToPatientProfile(appointment),
+                                                borderRadius: BorderRadius.circular(10.r),
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: Colors.white,
+                                                  size: 30.sp,
+                                                ),
                                               ),
                                             ),
                                             SizedBox(width: 16.w),
@@ -592,15 +804,18 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(
-                                                    appointment.patientName ?? "Patient inconnu",
-                                                    style: GoogleFonts.raleway(
-                                                      fontSize: 16.sp,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black87,
+                                                  InkWell(
+                                                    onTap: () => _navigateToPatientProfile(appointment),
+                                                    child: Text(
+                                                      appointment.patientName ?? "Patient inconnu",
+                                                      style: GoogleFonts.raleway(
+                                                        fontSize: 16.sp,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.black87,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
                                                     ),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                   SizedBox(height: 4.h),
                                                   Text(
@@ -612,7 +827,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                   ),
                                                   SizedBox(height: 8.h),
                                                   Row(
-                                                    children: [
+                  children: [
                                                       Container(
                                                         padding: EdgeInsets.symmetric(
                                                           horizontal: 10.w,
@@ -651,13 +866,13 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                                 color: Colors.blue,
                                                               ),
                                                             ),
-                                                          ),
-                                                        ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
                                           ],
                                         ),
                                         if (appointment.status == "pending")
@@ -755,11 +970,11 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
                                                   ),
                                                 ),
                                               ],
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
                                 ),
                               );
                             },

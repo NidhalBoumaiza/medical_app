@@ -88,7 +88,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
       backgroundColor: Colors.grey.shade100,
       body: isLoading
           ? Center(
-              child: Column(
+            child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: AppColors.primaryColor),
@@ -237,15 +237,15 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                   'Statistiques',
                   style: GoogleFonts.poppins(
                     fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
+              ),
                 SizedBox(height: 12.h),
                 
                 GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2,
                   childAspectRatio: 1.18,
                   crossAxisSpacing: 12.w,
@@ -269,8 +269,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                       icon: Icons.calendar_month,
                       iconColor: Colors.purple,
                       onTap: () {
-                        Navigator.push(
-                          context,
+                            Navigator.push(
+                              context,
                           MaterialPageRoute(builder: (context) => const AppointmentsMedecins()),
                         );
                       },
@@ -281,8 +281,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                       icon: Icons.schedule,
                       iconColor: Colors.orange,
                       onTap: () {
-                        Navigator.push(
-                          context,
+                            Navigator.push(
+                              context,
                           MaterialPageRoute(
                             builder: (context) => const AppointmentsMedecins(
                               initialFilter: 'pending',
@@ -297,8 +297,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                       icon: Icons.check_circle,
                       iconColor: Colors.green,
                       onTap: () {
-                        Navigator.push(
-                          context,
+                            Navigator.push(
+                              context,
                           MaterialPageRoute(
                             builder: (context) => const AppointmentsMedecins(
                               initialFilter: 'completed',
@@ -379,8 +379,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
+                            Navigator.push(
+                              context,
                           MaterialPageRoute(builder: (context) => const AppointmentsMedecins()),
                         );
                       },
@@ -454,7 +454,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                                 "Actualiser",
                                 style: GoogleFonts.raleway(
                                   fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -485,79 +485,9 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                 
                 SizedBox(height: 24.h),
 
-                // Patients section - Navigate to patients list when clicked
-                Container(
-                  margin: EdgeInsets.only(bottom: 12.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Mes Patients',
-                        style: GoogleFonts.raleway(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DoctorPatientsPage(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Text(
-                              'Voir tous',
-                              style: GoogleFonts.raleway(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.primaryColor,
-                              ),
-                            ),
-                            SizedBox(width: 4.w),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 12.sp,
-                              color: AppColors.primaryColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
                 
-                // Patient stat card
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DoctorPatientsPage(),
-                      ),
-                    );
-                  },
-                  child: DashboardStatCard(
-                    title: 'Total Patients',
-                    value: totalPatients.toString(),
-                    icon: Icons.people,
-                    iconColor: Colors.blue,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DoctorPatientsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                
-                SizedBox(height: 24.h),
+             //   SizedBox(height: 24.h),
               ],
             );
           },
@@ -578,19 +508,23 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: color,
-        padding: EdgeInsets.symmetric(vertical: 16.h),
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8.w,
+        runSpacing: 8.h,
         children: [
           Icon(icon, color: Colors.white),
-          SizedBox(width: 8.w),
           Text(
             title,
             style: GoogleFonts.raleway(
               color: Colors.white,
               fontWeight: FontWeight.w600,
+              fontSize: 13.sp,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -698,34 +632,45 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                       ),
                     ),
                     SizedBox(height: 8.h),
-                    Row(
+                    Wrap(
+                      spacing: 12.w,
+                      runSpacing: 8.h,
                       children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16.sp,
-                          color: Colors.grey[600],
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16.sp,
+                              color: Colors.grey[600],
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14.sp,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          formattedDate,
-                          style: GoogleFonts.raleway(
-                            fontSize: 14.sp,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Icon(
-                          Icons.access_time,
-                          size: 16.sp,
-                          color: Colors.grey[600],
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          formattedTime,
-                          style: GoogleFonts.raleway(
-                            fontSize: 14.sp,
-                            color: Colors.grey[600],
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16.sp,
+                              color: Colors.grey[600],
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              formattedTime,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14.sp,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -743,7 +688,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                 child: Text(
                   appointment.status.toUpperCase(),
                   style: GoogleFonts.raleway(
-                    fontSize: 12.sp,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                     color: statusColor,
                   ),

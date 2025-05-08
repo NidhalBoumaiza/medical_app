@@ -52,23 +52,35 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       throw ServerException('Either patientId or doctorId must be provided');
     }
     try {
+      print('RendezVousRemoteDataSource: Fetching appointments for patientId=$patientId, doctorId=$doctorId');
+      
       Query<Map<String, dynamic>> query = firestore.collection('rendez_vous');
       if (patientId != null) {
         query = query.where('patientId', isEqualTo: patientId);
       }
       if (doctorId != null) {
         query = query.where('doctorId', isEqualTo: doctorId);
-        query = query.where('status', isEqualTo: 'pending');
       }
+      
       final snapshot = await query.get();
+      print('RendezVousRemoteDataSource: Found ${snapshot.docs.length} appointments');
+      
       final rendezVous = snapshot.docs
-          .map((doc) => RendezVousModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id; // Ensure the ID is set correctly
+            print('RendezVousRemoteDataSource: Processing appointment ${doc.id}: status=${data['status']}');
+            return RendezVousModel.fromJson(data);
+          })
           .toList();
+      
       await localDataSource.cacheRendezVous(rendezVous);
       return rendezVous;
     } on FirebaseException catch (e) {
+      print('RendezVousRemoteDataSource: Firestore error: ${e.message}');
       throw ServerException('Firestore error: ${e.message}');
     } catch (e) {
+      print('RendezVousRemoteDataSource: Unexpected error: $e');
       throw ServerException('Unexpected error: $e');
     }
   }

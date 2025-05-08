@@ -268,12 +268,12 @@ class _HomeMedecinState extends State<HomeMedecin> {
                   ),
                 )
               : ReusableTextWidget(
-                  text: "MediLink",
-                  textSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.whiteColor,
-                  letterSpacing: 1.2,
-                ),
+              text: "MediLink",
+              textSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.whiteColor,
+              letterSpacing: 1.2,
+            ),
             backgroundColor: AppColors.primaryColor,
             actions: [
               if (selectedItem == 1) ...[

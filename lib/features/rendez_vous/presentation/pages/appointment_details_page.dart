@@ -24,10 +24,12 @@ import 'patient_profile_page.dart';
 
 class AppointmentDetailsPage extends StatefulWidget {
   final RendezVousEntity appointment;
+  final bool isDoctor;
 
   const AppointmentDetailsPage({
     Key? key,
     required this.appointment,
+    this.isDoctor = false,
   }) : super(key: key);
 
   @override
@@ -45,6 +47,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
   bool hasRatedAppointment = false;
   bool isAppointmentPast = false;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Variables to store appointment rating data
+  bool _isLoadingRating = false;
+  DoctorRatingEntity? _appointmentRating;
 
   @override
   void initState() {
@@ -87,6 +93,13 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             currentUser?.role == 'patient' &&
             widget.appointment.status == 'completed') {
           _checkIfRatedAppointment();
+        }
+        
+        // If this is a doctor viewing a completed appointment, fetch its rating
+        if (widget.appointment.id != null && 
+            currentUser?.role == 'doctor' &&
+            widget.appointment.status == 'completed') {
+          _fetchAppointmentRating();
         }
       } catch (e) {
         setState(() {
@@ -448,6 +461,47 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     // If prescription was created successfully, refresh the appointment status
     if (result == true && widget.appointment.id != null) {
       _rendezVousBloc.add(FetchRendezVous(patientId: widget.appointment.patientId));
+    }
+  }
+
+  // Fetch appointment rating and comment
+  Future<void> _fetchAppointmentRating() async {
+    if (widget.appointment.id == null) return;
+    
+    setState(() {
+      _isLoadingRating = true;
+    });
+    
+    try {
+      final ratingDoc = await _firestore
+          .collection('ratings')
+          .where('rendezVousId', isEqualTo: widget.appointment.id)
+          .limit(1)
+          .get();
+      
+      if (ratingDoc.docs.isNotEmpty) {
+        final data = ratingDoc.docs.first.data();
+        setState(() {
+          _appointmentRating = DoctorRatingEntity(
+            id: ratingDoc.docs.first.id,
+            doctorId: data['doctorId'] ?? '',
+            patientId: data['patientId'] ?? '',
+            patientName: data['patientName'],
+            rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
+            comment: data['comment'],
+            createdAt: (data['createdAt'] is Timestamp) 
+                ? (data['createdAt'] as Timestamp).toDate() 
+                : DateTime.now(),
+            rendezVousId: data['rendezVousId'] ?? '',
+          );
+        });
+      }
+    } catch (e) {
+      print('Error fetching appointment rating: $e');
+    } finally {
+      setState(() {
+        _isLoadingRating = false;
+      });
     }
   }
 
@@ -869,174 +923,299 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                           ),
                         ),
                         
-                        // Rating section (only show if appointment is in the past and status is accepted)
-                        if (isAppointmentPast && widget.appointment.status == "accepted")
-                          Padding(
-                            padding: EdgeInsets.only(top: 24.h),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 4,
-                              child: Padding(
-                                padding: EdgeInsets.all(20.w),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          hasRatedAppointment ? Icons.star : Icons.star_border,
-                                          color: Colors.amber,
-                                          size: 28.sp,
-                                        ),
-                                        SizedBox(width: 12.w),
-                                        Text(
-                                          hasRatedAppointment
-                                              ? "Votre évaluation a été soumise"
-                                              : "Évaluer votre médecin",
-                                          style: GoogleFonts.raleway(
-                                            fontSize: 18.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 16.h),
-                                    
-                                    if (!hasRatedAppointment) ...[
-                                      Text(
-                                        "Comment s'est passé votre rendez-vous avec Dr. ${widget.appointment.doctorName}?",
-                                        style: GoogleFonts.raleway(
-                                          fontSize: 14.sp,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                      SizedBox(height: 16.h),
-                                      Center(
-                                        child: RatingBar.builder(
-                                          initialRating: 3,
-                                          minRating: 1,
-                                          direction: Axis.horizontal,
-                                          allowHalfRating: true,
-                                          itemCount: 5,
-                                          itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                                          itemBuilder: (context, _) => Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                          ),
-                                          onRatingUpdate: (rating) {
-                                            setState(() {
-                                              _rating = rating;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(height: 20.h),
-                                      
-                                      TextField(
-                                        controller: _commentController,
-                                        maxLines: 3,
-                                        decoration: InputDecoration(
-                                          hintText: "Commentaire (optionnel)",
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: AppColors.primaryColor),
-                                          ),
-                                          fillColor: Colors.grey[50],
-                                          filled: true,
-                                          contentPadding: EdgeInsets.all(16),
-                                        ),
-                                      ),
-                                      SizedBox(height: 20.h),
-                                      
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: BlocBuilder<RatingBloc, RatingState>(
-                                          builder: (context, state) {
-                                            final isSubmitting = state is RatingLoading;
-                                            
-                                            return ElevatedButton(
-                                              onPressed: isSubmitting ? null : _submitRating,
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: AppColors.primaryColor,
-                                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                elevation: 2,
-                                              ),
-                                              child: isSubmitting
-                                                  ? SizedBox(
-                                                      height: 20.sp,
-                                                      width: 20.sp,
-                                                      child: CircularProgressIndicator(
-                                                        color: Colors.white,
-                                                        strokeWidth: 2.w,
-                                                      ),
-                                                    )
-                                                  : Text(
-                                                      "Soumettre l'évaluation",
-                                                      style: GoogleFonts.raleway(
-                                                        color: Colors.white,
-                                                        fontSize: 16.sp,
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
-                                                    ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ] else ...[
-                                      Center(
-                                        child: Column(
-                                          children: [
-                                            Icon(
-                                              Icons.check_circle,
-                                              color: Colors.green[600],
-                                              size: 60.sp,
-                                            ),
-                                            SizedBox(height: 16.h),
-                                            Text(
-                                              "Merci pour votre évaluation!",
-                                              style: GoogleFonts.raleway(
-                                                fontSize: 16.sp,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey.shade700,
-                                              ),
-                                            ),
-                                            SizedBox(height: 8.h),
-                                            Text(
-                                              "Votre retour nous aide à améliorer nos services.",
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.raleway(
-                                                fontSize: 14.sp,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+                        // Only show rating section when it's not a doctor view and appointment is completed
+                        if (!widget.isDoctor && 
+                            widget.appointment.status == 'completed' && 
+                            isAppointmentPast && 
+                            currentUser?.role == 'patient')
+                          _buildRatingSection(),
+                          
+                        // Show rating from patient when doctor is viewing a completed appointment
+                        if (widget.isDoctor && 
+                            widget.appointment.status == 'completed' && 
+                            isAppointmentPast && 
+                            currentUser?.role == 'doctor')
+                          _buildDoctorViewRatingSection(),
                       ],
                     ),
                   ),
                 ),
         ),
+      ),
+    );
+  }
+
+  // Extract rating section to a separate method
+  Widget _buildRatingSection() {
+    return Container(
+      // Rating container implementation
+      margin: EdgeInsets.only(top: 24.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Évaluer le médecin",
+            style: GoogleFonts.raleway(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Center(
+            child: RatingBar.builder(
+              initialRating: _rating,
+              minRating: 1,
+              direction: Axis.horizontal,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemSize: 36.sp,
+              itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
+              itemBuilder: (context, _) => Icon(
+                Icons.star,
+                color: Colors.amber,
+              ),
+              onRatingUpdate: (rating) {
+                setState(() {
+                  _rating = rating;
+                });
+              },
+            ),
+          ),
+          SizedBox(height: 16.h),
+          TextField(
+            controller: _commentController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Ajoutez un commentaire (optionnel)',
+              hintStyle: GoogleFonts.raleway(color: Colors.grey),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: AppColors.primaryColor),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Center(
+            child: ElevatedButton(
+              onPressed: hasRatedAppointment ? null : _submitRating,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hasRatedAppointment ? Colors.grey : AppColors.primaryColor,
+                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text(
+                hasRatedAppointment ? "Déjà évalué" : "Soumettre l'évaluation",
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Section for doctors to view ratings left by patients
+  Widget _buildDoctorViewRatingSection() {
+    if (_isLoadingRating) {
+      return Container(
+        margin: EdgeInsets.only(top: 24.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryColor),
+              SizedBox(height: 12.h),
+              Text(
+                "Chargement de l'évaluation...",
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    return Container(
+      margin: EdgeInsets.only(top: 24.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Évaluation du patient",
+            style: GoogleFonts.raleway(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          
+          if (_appointmentRating != null) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.person,
+                  size: 18.sp,
+                  color: Colors.grey[600],
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  _appointmentRating!.patientName ?? "Patient",
+                  style: GoogleFonts.raleway(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                ...List.generate(5, (index) {
+                  return Icon(
+                    index < _appointmentRating!.rating.floor() 
+                        ? Icons.star 
+                        : (index < _appointmentRating!.rating 
+                            ? Icons.star_half 
+                            : Icons.star_border),
+                    color: Colors.amber,
+                    size: 24.sp,
+                  );
+                }),
+                SizedBox(width: 8.w),
+                Text(
+                  _appointmentRating!.rating.toString(),
+                  style: GoogleFonts.raleway(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            if (_appointmentRating!.comment != null && _appointmentRating!.comment!.isNotEmpty) ...[
+              SizedBox(height: 16.h),
+              Text(
+                "Commentaire:",
+                style: GoogleFonts.raleway(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Text(
+                  _appointmentRating!.comment!,
+                  style: GoogleFonts.raleway(
+                    fontSize: 14.sp,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+            SizedBox(height: 8.h),
+            Text(
+              "Évalué le ${DateFormat('dd/MM/yyyy').format(_appointmentRating!.createdAt)}",
+              style: GoogleFonts.raleway(
+                fontSize: 12.sp,
+                color: Colors.grey[600],
+              ),
+            ),
+          ] else ...[
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.star_border,
+                    size: 48.sp,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    "Pas encore d'évaluation",
+                    style: GoogleFonts.raleway(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Le patient n'a pas encore évalué ce rendez-vous",
+                    style: GoogleFonts.raleway(
+                      fontSize: 14.sp,
+                      color: Colors.grey[500],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

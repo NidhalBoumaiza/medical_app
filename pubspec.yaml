@@ -47,6 +47,7 @@ dependencies:
   geolocator: ^14.0.0
   flutter_rating_bar: ^4.0.1
   uuid: ^4.5.1
+  table_calendar: ^3.0.9
 #  permission_handler: ^11.3.1
 #  device_info_plus: ^10.1.2
 
