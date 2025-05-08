@@ -27,6 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _antecedentController;
   late TextEditingController _specialityController;
   late TextEditingController _numLicenceController;
+  late TextEditingController _appointmentDurationController;
 
   @override
   void initState() {
@@ -40,12 +41,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         text: widget.user.dateOfBirth != null
             ? DateFormat('yyyy-MM-dd').format(widget.user.dateOfBirth!)
             : '');
-    _antecedentController =
-        TextEditingController(text: widget.user is PatientEntity ? (widget.user as PatientEntity).antecedent : '');
-    _specialityController =
-        TextEditingController(text: widget.user is MedecinEntity ? (widget.user as MedecinEntity).speciality : '');
-    _numLicenceController =
-        TextEditingController(text: widget.user is MedecinEntity ? (widget.user as MedecinEntity).numLicence : '');
+
+    if (widget.user is PatientEntity) {
+      final patientEntity = widget.user as PatientEntity;
+      _antecedentController = TextEditingController(text: patientEntity.antecedent);
+      // Initialize unused controllers with empty values
+      _specialityController = TextEditingController();
+      _numLicenceController = TextEditingController();
+      _appointmentDurationController = TextEditingController();
+    } else if (widget.user is MedecinEntity) {
+      final medecinEntity = widget.user as MedecinEntity;
+      _specialityController = TextEditingController(text: medecinEntity.speciality);
+      _numLicenceController = TextEditingController(text: medecinEntity.numLicence);
+      _appointmentDurationController = TextEditingController(text: medecinEntity.appointmentDuration.toString());
+      // Initialize unused controllers with empty values
+      _antecedentController = TextEditingController();
+    } else {
+      // Initialize unused controllers with empty values
+      _specialityController = TextEditingController();
+      _numLicenceController = TextEditingController();
+      _antecedentController = TextEditingController();
+      _appointmentDurationController = TextEditingController();
+    }
   }
 
   @override
@@ -59,6 +76,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _antecedentController.dispose();
     _specialityController.dispose();
     _numLicenceController.dispose();
+    _appointmentDurationController.dispose();
     super.dispose();
   }
 
@@ -93,6 +111,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               : null,
           speciality: _specialityController.text,
           numLicence: _numLicenceController.text,
+          appointmentDuration: _appointmentDurationController.text.isNotEmpty
+              ? int.parse(_appointmentDurationController.text)
+              : 30,
         );
       }
       Navigator.pop(context, updatedUser);
@@ -234,6 +255,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           label: 'num_licence'.tr,
                           icon: Icons.badge,
                           validator: (value) => value!.isEmpty ? 'num_licence_required'.tr : null,
+                        ),
+                        SizedBox(height: 24.h),
+                        _buildTextField(
+                          controller: _appointmentDurationController,
+                          label: 'appointment_duration'.tr,
+                          icon: Icons.access_time,
+                          keyboardType: TextInputType.number,
+                          validator: (value) => value!.isEmpty ? 'appointment_duration_required'.tr : null,
                         ),
                       ],
                       SizedBox(height: 24.h),

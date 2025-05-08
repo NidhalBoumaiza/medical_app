@@ -27,6 +27,7 @@ import 'features/messagerie/presentation/blocs/messageries%20BLoC/messagerie_blo
 import 'features/profile/presentation/pages/blocs/BLoC update profile/update_user_bloc.dart';
 import 'i18n/app_translation.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'features/dashboard/presentation/blocs/dashboard BLoC/dashboard_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,6 +89,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<ConversationsBloc>()),
         BlocProvider(create: (_) => di.sl<MessagerieBloc>()),
         BlocProvider(create: (_) => di.sl<RatingBloc>()),
+        BlocProvider(create: (_) => di.sl<DashboardBloc>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {

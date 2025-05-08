@@ -9,6 +9,7 @@ class RendezVousModel extends RendezVousEntity {
     String? doctorName,
     String? speciality,
     required DateTime startTime,
+    DateTime? endTime,
     required String status,
   }) : super(
     id: id,
@@ -18,6 +19,7 @@ class RendezVousModel extends RendezVousEntity {
     doctorName: doctorName,
     speciality: speciality,
     startTime: startTime,
+    endTime: endTime,
     status: status,
   );
 
@@ -30,6 +32,9 @@ class RendezVousModel extends RendezVousEntity {
       doctorName: json['doctorName'] as String?,
       speciality: json['speciality'] as String?,
       startTime: DateTime.parse(json['startTime'] as String),
+      endTime: json['endTime'] != null
+          ? DateTime.parse(json['endTime'] as String)
+          : null,
       status: json['status'] as String,
     );
   }
@@ -44,6 +49,7 @@ class RendezVousModel extends RendezVousEntity {
       if (doctorName != null) 'doctorName': doctorName,
       if (speciality != null) 'speciality': speciality,
       'startTime': startTime.toIso8601String(),
+      if (endTime != null) 'endTime': endTime!.toIso8601String(),
       'status': status,
     };
   }

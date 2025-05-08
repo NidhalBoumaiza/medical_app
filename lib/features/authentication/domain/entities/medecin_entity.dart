@@ -3,6 +3,7 @@ import 'package:medical_app/features/authentication/domain/entities/user_entity.
 class MedecinEntity extends UserEntity {
   final String? speciality;
   final String? numLicence;
+  final int appointmentDuration; // Duration in minutes for each appointment (default 30 minutes)
 
   MedecinEntity({
     String? id,
@@ -15,6 +16,7 @@ class MedecinEntity extends UserEntity {
     DateTime? dateOfBirth,
     this.speciality,
     this.numLicence = '',
+    this.appointmentDuration = 30, // Default 30 minutes
     bool? accountStatus,
     int? verificationCode,
     DateTime? validationCodeExpiresAt,
@@ -43,6 +45,7 @@ class MedecinEntity extends UserEntity {
     DateTime? dateOfBirth,
     String? speciality,
     String? numLicence = '',
+    int appointmentDuration = 30, // Default 30 minutes
     bool? accountStatus,
     int? verificationCode,
     DateTime? validationCodeExpiresAt,
@@ -58,6 +61,7 @@ class MedecinEntity extends UserEntity {
       dateOfBirth: dateOfBirth,
       speciality: speciality,
       numLicence: numLicence,
+      appointmentDuration: appointmentDuration,
       accountStatus: accountStatus,
       verificationCode: verificationCode,
       validationCodeExpiresAt: validationCodeExpiresAt,
@@ -69,5 +73,6 @@ class MedecinEntity extends UserEntity {
     ...super.props,
     speciality,
     numLicence,
+    appointmentDuration,
   ];
 }

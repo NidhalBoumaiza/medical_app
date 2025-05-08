@@ -4,6 +4,7 @@ import './user_model.dart';
 class MedecinModel extends UserModel {
   final String speciality;
   final String numLicence;
+  final int appointmentDuration; // Duration in minutes for each appointment
 
   MedecinModel({
     String? id,
@@ -18,6 +19,7 @@ class MedecinModel extends UserModel {
     int? verificationCode,
     required this.speciality,
     required this.numLicence,
+    this.appointmentDuration = 30, // Default 30 minutes
     DateTime? validationCodeExpiresAt,
   }) : super(
     id: id,
@@ -47,6 +49,9 @@ class MedecinModel extends UserModel {
           : null,
       speciality: json['speciality'] as String,
       numLicence: json['numLicence'] as String,
+      appointmentDuration: json['appointmentDuration'] != null
+          ? json['appointmentDuration'] as int
+          : 30, // Default 30 minutes
       accountStatus: json['accountStatus'] as bool?,
       verificationCode: json['verificationCode'] as int?,
       validationCodeExpiresAt: json['validationCodeExpiresAt'] != null
@@ -60,6 +65,7 @@ class MedecinModel extends UserModel {
     final Map<String, dynamic> data = super.toJson();
     data['speciality'] = speciality;
     data['numLicence'] = numLicence;
+    data['appointmentDuration'] = appointmentDuration;
 
     return data;
   }
@@ -76,6 +82,7 @@ class MedecinModel extends UserModel {
       dateOfBirth: dateOfBirth,
       speciality: speciality,
       numLicence: numLicence,
+      appointmentDuration: appointmentDuration,
       accountStatus: accountStatus,
       verificationCode: verificationCode,
       validationCodeExpiresAt: validationCodeExpiresAt,

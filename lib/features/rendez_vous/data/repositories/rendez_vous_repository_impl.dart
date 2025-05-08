@@ -40,6 +40,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           doctorName: model.doctorName,
           speciality: model.speciality,
           startTime: model.startTime,
+          endTime: model.endTime,
           status: model.status,
         ))
             .toList();
@@ -63,6 +64,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           doctorName: model.doctorName,
           speciality: model.speciality,
           startTime: model.startTime,
+          endTime: model.endTime,
           status: model.status,
         ))
             .toList();
@@ -118,6 +120,7 @@ class RendezVousRepositoryImpl implements RendezVousRepository {
           doctorName: rendezVous.doctorName,
           speciality: rendezVous.speciality,
           startTime: rendezVous.startTime,
+          endTime: rendezVous.endTime,
           status: rendezVous.status,
         );
         await remoteDataSource.createRendezVous(rendezVousModel);

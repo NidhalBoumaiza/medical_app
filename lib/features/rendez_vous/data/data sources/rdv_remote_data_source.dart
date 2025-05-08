@@ -121,10 +121,39 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
     }
   }
 
+  // New helper method to fetch doctor's appointment duration
+  Future<int> fetchDoctorAppointmentDuration(String? doctorId) async {
+    if (doctorId == null) {
+      return 30; // Default duration if no doctor is assigned yet
+    }
+    
+    try {
+      final doctorDoc = await firestore.collection('medecins').doc(doctorId).get();
+      if (doctorDoc.exists) {
+        final data = doctorDoc.data() as Map<String, dynamic>;
+        return data['appointmentDuration'] as int? ?? 30;
+      }
+      return 30; // Default if doctor not found
+    } catch (e) {
+      print('Error fetching doctor appointment duration: $e');
+      return 30; // Default in case of error
+    }
+  }
+
   @override
   Future<void> createRendezVous(RendezVousModel rendezVous) async {
     try {
       final docRef = firestore.collection('rendez_vous').doc();
+      
+      // Calculate endTime based on doctor's appointmentDuration
+      DateTime? endTime = rendezVous.endTime;
+      
+      // If endTime is not provided, calculate it based on doctor's appointment duration
+      if (endTime == null && rendezVous.doctorId != null) {
+        final appointmentDuration = await fetchDoctorAppointmentDuration(rendezVous.doctorId);
+        endTime = rendezVous.startTime.add(Duration(minutes: appointmentDuration));
+      }
+      
       final rendezVousWithId = RendezVousModel(
         id: docRef.id,
         patientId: rendezVous.patientId,
@@ -133,6 +162,7 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
         doctorName: rendezVous.doctorName,
         speciality: rendezVous.speciality,
         startTime: rendezVous.startTime,
+        endTime: endTime,
         status: rendezVous.status,
       );
       await docRef.set(rendezVousWithId.toJson());
@@ -184,10 +214,36 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       String doctorName,
       ) async {
     try {
+      // First, get the current appointment data to access the startTime
+      final appointmentDoc = await firestore.collection('rendez_vous').doc(rendezVousId).get();
+      if (!appointmentDoc.exists) {
+        throw ServerMessageException('Rendezvous not found');
+      }
+      
+      final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
+      DateTime startTime;
+      
+      // Parse startTime from the document
+      if (appointmentData['startTime'] is Timestamp) {
+        startTime = (appointmentData['startTime'] as Timestamp).toDate();
+      } else if (appointmentData['startTime'] is String) {
+        startTime = DateTime.parse(appointmentData['startTime'] as String);
+      } else {
+        throw ServerException('Invalid startTime format in appointment');
+      }
+      
+      // Get the doctor's appointment duration
+      final appointmentDuration = await fetchDoctorAppointmentDuration(doctorId);
+      
+      // Calculate endTime based on startTime and appointmentDuration
+      final endTime = startTime.add(Duration(minutes: appointmentDuration));
+      
+      // Update the appointment with doctor info and calculated endTime
       await firestore.collection('rendez_vous').doc(rendezVousId).update({
         'doctorId': doctorId,
         'doctorName': doctorName,
         'status': 'pending',
+        'endTime': endTime.toIso8601String(),
       });
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {

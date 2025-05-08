@@ -328,6 +328,59 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           : user is MedecinModel
           ? 'medecins'
           : 'users';
+      
+      // Check if appointmentDuration has changed (for doctors)
+      if (user is MedecinModel) {
+        try {
+          final existingDoctor = await firestore.collection('medecins').doc(user.id).get();
+          if (existingDoctor.exists) {
+            final existingData = existingDoctor.data();
+            final existingDuration = existingData?['appointmentDuration'] as int? ?? 30;
+            
+            // If duration has changed, we'll need to update appointments
+            if (existingDuration != user.appointmentDuration) {
+              print('updateUser: Detected change in appointmentDuration from $existingDuration to ${user.appointmentDuration}');
+              
+              // First update the doctor record
+              final updatedUser = MedecinModel(
+                id: user.id,
+                name: user.name,
+                lastName: user.lastName,
+                email: normalizedEmail,
+                role: user.role,
+                gender: user.gender,
+                phoneNumber: user.phoneNumber,
+                dateOfBirth: user.dateOfBirth,
+                speciality: user.speciality,
+                numLicence: user.numLicence,
+                appointmentDuration: user.appointmentDuration,
+                accountStatus: user.accountStatus,
+                verificationCode: user.verificationCode,
+                validationCodeExpiresAt: user.validationCodeExpiresAt,
+              );
+              
+              print('updateUser: Updating doctor record with new duration');
+              await firestore.collection(collection).doc(user.id).set(updatedUser.toJson());
+              
+              // Then update future appointments
+              print('updateUser: Updating future appointments');
+              await _updateFutureAppointmentsEndTime(user.id!, user.appointmentDuration);
+              
+              // Cache updated user
+              print('updateUser: Caching updated user locally');
+              await localDataSource.cacheUser(updatedUser);
+              
+              print('updateUser: Completed with appointment updates');
+              return unit;
+            }
+          }
+        } catch (e) {
+          print('updateUser: Error checking appointment duration: $e');
+          // Continue with normal update flow if this part fails
+        }
+      }
+      
+      // Normal update flow
       final updatedUser = user is PatientModel
           ? PatientModel(
         id: user.id,
@@ -355,6 +408,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         dateOfBirth: user.dateOfBirth,
         speciality: user.speciality,
         numLicence: user.numLicence,
+        appointmentDuration: user.appointmentDuration,
         accountStatus: user.accountStatus,
         verificationCode: user.verificationCode,
         validationCodeExpiresAt: user.validationCodeExpiresAt,
@@ -620,6 +674,59 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       print('changePassword: Unexpected error: $e');
       throw ServerException('Unexpected error: $e');
+    }
+  }
+
+  // Helper method to update future appointments' endTime when a doctor's appointmentDuration changes
+  Future<void> _updateFutureAppointmentsEndTime(String doctorId, int appointmentDuration) async {
+    try {
+      print('_updateFutureAppointmentsEndTime: Starting for doctorId=$doctorId with duration=$appointmentDuration');
+      
+      // Get current date/time
+      final now = DateTime.now();
+      
+      // Query all future appointments for this doctor with status "pending" or "accepted"
+      final appointmentsQuery = await firestore.collection('rendez_vous')
+          .where('doctorId', isEqualTo: doctorId)
+          .where('startTime', isGreaterThanOrEqualTo: now.toIso8601String())
+          .get();
+      
+      print('_updateFutureAppointmentsEndTime: Found ${appointmentsQuery.docs.length} future appointments');
+      
+      // Update each appointment's endTime
+      for (final doc in appointmentsQuery.docs) {
+        try {
+          // Parse the startTime
+          DateTime startTime;
+          if (doc.data()['startTime'] is String) {
+            startTime = DateTime.parse(doc.data()['startTime'] as String);
+          } else if (doc.data()['startTime'] is Timestamp) {
+            startTime = (doc.data()['startTime'] as Timestamp).toDate();
+          } else {
+            print('_updateFutureAppointmentsEndTime: Skipping appointment with invalid startTime format');
+            continue;
+          }
+          
+          // Calculate new endTime
+          final endTime = startTime.add(Duration(minutes: appointmentDuration));
+          
+          // Update the appointment
+          await firestore.collection('rendez_vous').doc(doc.id).update({
+            'endTime': endTime.toIso8601String(),
+          });
+          
+          print('_updateFutureAppointmentsEndTime: Updated appointment ${doc.id}');
+        } catch (e) {
+          print('_updateFutureAppointmentsEndTime: Error updating appointment ${doc.id}: $e');
+          // Continue with other appointments even if one fails
+          continue;
+        }
+      }
+      
+      print('_updateFutureAppointmentsEndTime: Completed');
+    } catch (e) {
+      print('_updateFutureAppointmentsEndTime: Error: $e');
+      // Don't throw exception, as this is an enhancement, not a critical operation
     }
   }
 }

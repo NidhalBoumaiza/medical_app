@@ -12,12 +12,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../features/authentication/data/models/user_model.dart';
 import '../../../../features/authentication/domain/entities/medecin_entity.dart';
+import '../../../../features/authentication/domain/entities/patient_entity.dart';
 import '../../../../injection_container.dart' as di;
+import '../../../ordonnance/presentation/pages/create_prescription_page.dart';
 import '../../../ratings/domain/entities/doctor_rating_entity.dart';
 import '../../../ratings/presentation/bloc/rating_bloc.dart';
 import '../../domain/entities/rendez_vous_entity.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import 'doctor_profile_page.dart';
+import 'patient_profile_page.dart';
 
 class AppointmentDetailsPage extends StatefulWidget {
   final RendezVousEntity appointment;
@@ -65,40 +68,48 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           isLoading = false;
         });
         
-        // Check if appointment is in the past (consider it past if current time > appointment time + 1 hour)
-        final appointmentEndTime = widget.appointment.startTime.add(const Duration(hours: 1));
-        isAppointmentPast = DateTime.now().isAfter(appointmentEndTime);
+        // Check if appointment is in the past based on endTime if available
+        DateTime appointmentEndTime;
+        if (widget.appointment.endTime != null) {
+          appointmentEndTime = widget.appointment.endTime!;
+        } else {
+          // Fallback to estimated duration if endTime not available
+          appointmentEndTime = widget.appointment.startTime.add(const Duration(minutes: 30));
+        }
         
-        // Check if user has already rated this appointment
-        if (isAppointmentPast && 
-            currentUser != null && 
-            currentUser!.id != null && 
-            widget.appointment.id != null) {
-          _ratingBloc.add(CheckPatientRatedAppointment(
-            patientId: currentUser!.id!,
-            rendezVousId: widget.appointment.id!,
-          ));
+        setState(() {
+          isAppointmentPast = DateTime.now().isAfter(appointmentEndTime);
+        });
+        
+        // Load if user has already rated this appointment
+        if (widget.appointment.id != null && 
+            currentUser?.id != null && 
+            currentUser?.role == 'patient' &&
+            widget.appointment.status == 'completed') {
+          _checkIfRatedAppointment();
         }
       } catch (e) {
         setState(() {
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Erreur lors du chargement des données de l'utilisateur",
-              style: GoogleFonts.raleway(),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
+        print('Error loading user: $e');
       }
     } else {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  void _checkIfRatedAppointment() {
+    if (widget.appointment.id != null && 
+        currentUser?.id != null && 
+        currentUser?.role == 'patient' &&
+        widget.appointment.status == 'completed') {
+      _ratingBloc.add(CheckPatientRatedAppointment(
+        patientId: currentUser!.id!,
+        rendezVousId: widget.appointment.id!,
+      ));
     }
   }
 
@@ -225,6 +236,28 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     }
   }
 
+  // Calculate appointment duration in minutes
+  String _getAppointmentDuration() {
+    if (widget.appointment.endTime != null) {
+      final duration = widget.appointment.endTime!.difference(widget.appointment.startTime);
+      final minutes = duration.inMinutes;
+      if (minutes >= 60) {
+        final hours = minutes ~/ 60;
+        final remainingMinutes = minutes % 60;
+        if (remainingMinutes == 0) {
+          return "$hours heure${hours > 1 ? 's' : ''}";
+        } else {
+          return "$hours heure${hours > 1 ? 's' : ''} $remainingMinutes minute${remainingMinutes > 1 ? 's' : ''}";
+        }
+      } else {
+        return "$minutes minute${minutes > 1 ? 's' : ''}";
+      }
+    } else {
+      // Default duration if endTime not available
+      return "30 minutes";
+    }
+  }
+
   // Fetch doctor info from Firestore
   Future<MedecinEntity?> _fetchDoctorInfo(String doctorId) async {
     try {
@@ -241,6 +274,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           role: doctorData['role'] ?? 'doctor',
           gender: doctorData['gender'] ?? 'unknown',
           phoneNumber: doctorData['phoneNumber'] ?? '',
+          appointmentDuration: doctorData['appointmentDuration'] as int? ?? 30,
         );
       }
       return null;
@@ -272,12 +306,15 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     
     // If fetch failed, create a basic doctor entity with available info
     if (doctorEntity == null) {
+      final doctorName = widget.appointment.doctorName ?? '';
+      final nameArray = doctorName.split(' ');
+      final firstName = nameArray.isNotEmpty ? nameArray[0] : '';
+      final lastName = nameArray.length > 1 ? nameArray[1] : '';
+      
       doctorEntity = MedecinEntity(
         id: widget.appointment.doctorId!,
-        name: widget.appointment.doctorName?.split(' ')[0] ?? "",
-        lastName: (widget.appointment.doctorName?.split(' ')?.length ?? 0) > 1
-            ? widget.appointment.doctorName?.split(' ')[1] ?? ""
-            : "",
+        name: firstName,
+        lastName: lastName, 
         email: "docteur@medical-app.com",
         speciality: widget.appointment.speciality,
         role: 'doctor',
@@ -286,6 +323,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
       );
     }
     
+    // Now doctorEntity is guaranteed to be non-null
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -295,6 +333,122 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         ),
       ),
     );
+  }
+
+  // Fetch patient info from Firestore
+  Future<PatientEntity?> _fetchPatientInfo(String patientId) async {
+    try {
+      final patientDoc = await _firestore.collection('patients').doc(patientId).get();
+      
+      if (patientDoc.exists) {
+        Map<String, dynamic> patientData = patientDoc.data() as Map<String, dynamic>;
+        return PatientEntity(
+          id: patientId,
+          name: patientData['name'] ?? '',
+          lastName: patientData['lastName'] ?? '',
+          email: patientData['email'] ?? '',
+          role: patientData['role'] ?? 'patient',
+          gender: patientData['gender'] ?? 'unknown',
+          phoneNumber: patientData['phoneNumber'] ?? '',
+          dateOfBirth: patientData['dateOfBirth'] != null
+              ? (patientData['dateOfBirth'] is Timestamp)
+                  ? (patientData['dateOfBirth'] as Timestamp).toDate()
+                  : DateTime.parse(patientData['dateOfBirth'])
+              : null,
+          antecedent: patientData['antecedent'] ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching patient info: $e');
+      return null;
+    }
+  }
+
+  void _navigateToPatientProfile() async {
+    if (widget.appointment.patientId == null) return;
+    
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+    
+    // Try to fetch patient from Firestore
+    PatientEntity? patientEntity = await _fetchPatientInfo(widget.appointment.patientId!);
+    
+    // Dismiss loading indicator
+    Navigator.pop(context);
+    
+    // If fetch failed, create a basic patient entity with available info
+    if (patientEntity == null) {
+      final patientName = widget.appointment.patientName ?? '';
+      final nameArray = patientName.split(' ');
+      final firstName = nameArray.isNotEmpty ? nameArray[0] : '';
+      final lastName = nameArray.length > 1 ? nameArray[1] : '';
+      
+      patientEntity = PatientEntity(
+        id: widget.appointment.patientId!,
+        name: firstName,
+        lastName: lastName, 
+        email: "patient@medical-app.com",
+        role: 'patient',
+        gender: 'unknown',
+        phoneNumber: "+212 600000000",
+        antecedent: "",
+      );
+    }
+    
+    // Now patientEntity is guaranteed to be non-null
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PatientProfilePage(
+          patient: patientEntity!,
+        ),
+      ),
+    );
+  }
+  
+  void _createPrescription() async {
+    if (widget.appointment.patientId == null) return;
+    
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primaryColor,
+        ),
+      ),
+    );
+    
+    // Try to fetch patient from Firestore for medical history
+    PatientEntity? patientEntity = await _fetchPatientInfo(widget.appointment.patientId!);
+    
+    // Dismiss loading indicator
+    Navigator.pop(context);
+    
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreatePrescriptionPage(
+          appointment: widget.appointment,
+          patient: patientEntity,
+        ),
+      ),
+    );
+    
+    // If prescription was created successfully, refresh the appointment status
+    if (result == true && widget.appointment.id != null) {
+      _rendezVousBloc.add(FetchRendezVous(patientId: widget.appointment.patientId));
+    }
   }
 
   @override
@@ -448,8 +602,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                         _getStatusText(widget.appointment.status),
                                         style: GoogleFonts.raleway(
                                           fontSize: 14.sp,
+                                          fontWeight: FontWeight.bold,
                                           color: Colors.white,
-                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ),
@@ -527,6 +681,53 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                 
                                 Divider(height: 30.h, thickness: 1),
                                 
+                                // Patient info (shown only for doctors)
+                                if (currentUser?.role == 'doctor')
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            "Patient:",
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[700],
+                                            ),
+                                          ),
+                                          TextButton.icon(
+                                            onPressed: _navigateToPatientProfile,
+                                            icon: Icon(
+                                              Icons.person,
+                                              size: 18.sp,
+                                              color: AppColors.primaryColor,
+                                            ),
+                                            label: Text(
+                                              "Voir profil",
+                                              style: GoogleFonts.raleway(
+                                                fontSize: 14.sp,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.primaryColor,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8.h),
+                                      Text(
+                                        widget.appointment.patientName ?? "Patient inconnu",
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 18.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      SizedBox(height: 16.h),
+                                    ],
+                                  ),
+                                
                                 // Date and time information with better layout
                                 Text(
                                   "Informations du rendez-vous:",
@@ -600,8 +801,17 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                               Text(
                                                 DateFormat('HH:mm').format(widget.appointment.startTime),
                                                 style: GoogleFonts.raleway(
+                                                  fontWeight: FontWeight.bold,
                                                   fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              SizedBox(height: 4.h),
+                                              Text(
+                                                "Durée: ${_getAppointmentDuration()}",
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 14.sp,
+                                                  color: Colors.black54,
                                                 ),
                                               ),
                                             ],

@@ -56,6 +56,14 @@ import 'package:medical_app/features/ratings/presentation/bloc/rating_bloc.dart'
 import 'package:medical_app/features/ratings/domain/usecases/get_doctor_ratings_use_case.dart';
 import 'package:medical_app/features/ratings/domain/usecases/get_doctor_average_rating_use_case.dart';
 
+// Dashboard feature imports
+import 'package:medical_app/features/dashboard/data/datasources/dashboard_remote_datasource.dart';
+import 'package:medical_app/features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import 'package:medical_app/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:medical_app/features/dashboard/domain/usecases/get_doctor_dashboard_stats_use_case.dart';
+import 'package:medical_app/features/dashboard/domain/usecases/get_upcoming_appointments_use_case.dart';
+import 'package:medical_app/features/dashboard/presentation/blocs/dashboard%20BLoC/dashboard_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -81,6 +89,12 @@ Future<void> init() async {
     getMessagesUseCase: sl(),
     getMessagesStreamUseCase: sl(),
   ));
+  
+  // Dashboard BLoC
+  sl.registerFactory(() => DashboardBloc(
+    getDoctorDashboardStatsUseCase: sl(),
+    getUpcomingAppointmentsUseCase: sl(),
+  ));
 
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -98,6 +112,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetMessagesUseCase(sl()));
   sl.registerLazySingleton(() => GetMessagesStreamUseCase(sl()));
   sl.registerLazySingleton(() => SendVerificationCodeUseCase(sl()));
+  
+  // Dashboard Use Cases
+  sl.registerLazySingleton(() => GetDoctorDashboardStatsUseCase(sl()));
+  sl.registerLazySingleton(() => GetUpcomingAppointmentsUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -115,6 +133,14 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessagingRepository>(
         () => MessagingRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+  
+  // Dashboard Repository
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
     ),
@@ -149,6 +175,13 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<MessagingLocalDataSource>(
         () => MessagingLocalDataSourceImpl(),
+  );
+  
+  // Dashboard DataSource
+  sl.registerLazySingleton<DashboardRemoteDataSource>(
+    () => DashboardRemoteDataSourceImpl(
+      firestore: sl(),
+    ),
   );
 
   // Core

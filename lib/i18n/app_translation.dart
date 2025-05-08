@@ -174,6 +174,8 @@ class AppTranslations extends Translations {
       'messages': 'Messages',
       'prescriptions': 'Ordonnances',
       'copyright': '© 2023 Medical App. Tous droits réservés.',
+      'appointment_duration': 'Durée de consultation (min)',
+      'appointment_duration_required': 'La durée de consultation est obligatoire',
     },
     'en_US': {
       'title': 'Medical App',
@@ -270,6 +272,8 @@ class AppTranslations extends Translations {
       'messages': 'Messages',
       'prescriptions': 'Prescriptions',
       'copyright': '© 2023 Medical App. All rights reserved.',
+      'appointment_duration': 'Appointment Duration (min)',
+      'appointment_duration_required': 'Appointment duration is required',
     },
     'ar_AR': {
       'title': 'تطبيق طبي',
@@ -366,6 +370,8 @@ class AppTranslations extends Translations {
       'messages': 'الرسائل',
       'prescriptions': 'الوصفات الطبية',
       'copyright': '© 2023 تطبيق طبي. جميع الحقوق محفوظة.',
+      'appointment_duration': 'مدة الموعد (دقيقة)',
+      'appointment_duration_required': 'مدة الموعد مطلوبة',
     },
   };
 }

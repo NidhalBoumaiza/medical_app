@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/cubit/theme_cubit/theme_cubit.dart';
@@ -35,6 +36,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
   String userId = '';
   String doctorName = 'Dr. Unknown';
   String email = 'doctor@example.com';
+  DateTime? selectedAppointmentDate;
 
   @override
   void initState() {
@@ -80,10 +82,61 @@ class _HomeMedecinState extends State<HomeMedecin> {
 
   late List<Widget> pages = [
     const DashboardMedecin(),
-    const AppointmentsMedecins(),
+    AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
     ConversationsScreen(),
     const ProfilMedecin(),
   ];
+
+  // Function to display date picker
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedAppointmentDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null) {
+      setState(() {
+        selectedAppointmentDate = picked;
+        // Update the appointments page with the new selected date
+        _updatePages();
+      });
+    }
+  }
+
+  // Reset selected date
+  void _resetDateFilter() {
+    setState(() {
+      selectedAppointmentDate = null;
+      _updatePages();
+    });
+  }
+
+  // Update pages with current selections
+  void _updatePages() {
+    setState(() {
+      pages = [
+        const DashboardMedecin(),
+        AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
+        ConversationsScreen(),
+        const ProfilMedecin(),
+      ];
+    });
+  }
 
   void _onNotificationTapped() {
     navigateToAnotherScreenWithSlideTransitionFromRightToLeft(
@@ -196,7 +249,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
               userId = state.user.id ?? '';
               pages = [
                 DashboardMedecin(),
-                const AppointmentsMedecins(),
+                AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
                 ConversationsScreen(),
                 const ProfilMedecin(),
               ];
@@ -205,15 +258,39 @@ class _HomeMedecinState extends State<HomeMedecin> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: ReusableTextWidget(
-              text: "MediLink",
-              textSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.whiteColor,
-              letterSpacing: 1.2,
-            ),
+            title: selectedItem == 1 && selectedAppointmentDate != null
+              ? Text(
+                  "RDV: ${DateFormat('dd/MM/yyyy').format(selectedAppointmentDate!)}",
+                  style: GoogleFonts.raleway(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.whiteColor,
+                  ),
+                )
+              : ReusableTextWidget(
+                  text: "MediLink",
+                  textSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.whiteColor,
+                  letterSpacing: 1.2,
+                ),
             backgroundColor: AppColors.primaryColor,
             actions: [
+              if (selectedItem == 1) ...[
+                // Calendar icon for appointment date selection
+                IconButton(
+                  icon: Icon(Icons.calendar_today_outlined, size: 24.sp, color: AppColors.whiteColor),
+                  onPressed: () => _selectDate(context),
+                  tooltip: "Filtrer par date",
+                ),
+                // Clear filter icon when a date is selected
+                if (selectedAppointmentDate != null)
+                  IconButton(
+                    icon: Icon(Icons.clear, size: 24.sp, color: AppColors.whiteColor),
+                    onPressed: _resetDateFilter,
+                    tooltip: "Réinitialiser le filtre",
+                  ),
+              ],
               IconButton(
                 icon: Icon(Icons.notifications_none, size: 24.sp, color: AppColors.whiteColor),
                 onPressed: _onNotificationTapped,
@@ -256,6 +333,11 @@ class _HomeMedecinState extends State<HomeMedecin> {
                 onTap: (index) {
                   setState(() {
                     selectedItem = index;
+                    // Refresh the pages in case of data updates (like date selection)
+                    if (index == 1) {
+                      // Ensure appointments tab has the latest date selection
+                      _updatePages();
+                    }
                   });
                 },
               ),

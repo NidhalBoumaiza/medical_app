@@ -8,6 +8,7 @@ class RendezVousEntity extends Equatable {
   final String? doctorName; // Optional doctor name
   final String? speciality; // Optional speciality
   final DateTime startTime; // Required start time
+  final DateTime? endTime; // End time based on doctor's appointment duration
   final String status; // Required status: 'pending', 'accepted', 'refused'
 
   const RendezVousEntity({
@@ -18,6 +19,7 @@ class RendezVousEntity extends Equatable {
     this.doctorName,
     this.speciality,
     required this.startTime,
+    this.endTime,
     required this.status,
   });
 
@@ -29,6 +31,7 @@ class RendezVousEntity extends Equatable {
     String? doctorName,
     String? speciality,
     required DateTime startTime,
+    DateTime? endTime,
     required String status,
   }) {
     return RendezVousEntity(
@@ -39,6 +42,7 @@ class RendezVousEntity extends Equatable {
       doctorName: doctorName,
       speciality: speciality,
       startTime: startTime,
+      endTime: endTime,
       status: status,
     );
   }
@@ -52,6 +56,7 @@ class RendezVousEntity extends Equatable {
     doctorName,
     speciality,
     startTime,
+    endTime,
     status,
   ];
 }
