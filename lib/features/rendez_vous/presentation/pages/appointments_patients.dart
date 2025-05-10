@@ -20,7 +20,12 @@ import 'appointment_details_page.dart';
 import 'doctor_profile_page.dart';
 
 class AppointmentsPatients extends StatefulWidget {
-  const AppointmentsPatients({Key? key}) : super(key: key);
+  final bool showAppBar;
+  
+  const AppointmentsPatients({
+    Key? key, 
+    this.showAppBar = true
+  }) : super(key: key);
 
   @override
   _AppointmentsPatientsState createState() => _AppointmentsPatientsState();
@@ -366,7 +371,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
-      appBar: AppBar(
+      appBar: widget.showAppBar
+        ? AppBar(
         title: Text(
           "Mes rendez-vous",
           style: GoogleFonts.poppins(
@@ -398,7 +404,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
             },
           ),
         ],
-      ),
+          )
+        : null,
       body: BlocProvider.value(
         value: _rendezVousBloc,
       child: BlocListener<RendezVousBloc, RendezVousState>(

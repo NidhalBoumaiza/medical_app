@@ -82,17 +82,17 @@ class _HomeMedecinState extends State<HomeMedecin> {
 
   late List<Widget> pages = [
     const DashboardMedecin(),
-    AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
-    ConversationsScreen(),
+    AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate, showAppBar: false),
+    const ConversationsScreen(showAppBar: false),
     const ProfilMedecin(),
   ];
 
   // Function to display date picker
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: selectedAppointmentDate ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)), // Allow past year
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
@@ -109,32 +109,31 @@ class _HomeMedecinState extends State<HomeMedecin> {
       },
     );
     
-    if (picked != null) {
+    if (picked != null && picked != selectedAppointmentDate) {
       setState(() {
         selectedAppointmentDate = picked;
-        // Update the appointments page with the new selected date
         _updatePages();
       });
     }
   }
 
-  // Reset selected date
-  void _resetDateFilter() {
-    setState(() {
-      selectedAppointmentDate = null;
-      _updatePages();
-    });
-  }
-
-  // Update pages with current selections
+  // Update pages with the new selected date
   void _updatePages() {
     setState(() {
       pages = [
         const DashboardMedecin(),
-        AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
-        ConversationsScreen(),
+        AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate, showAppBar: false),
+        const ConversationsScreen(showAppBar: false),
         const ProfilMedecin(),
       ];
+    });
+  }
+
+  // Reset the date filter
+  void _resetDateFilter() {
+    setState(() {
+      selectedAppointmentDate = null;
+      _updatePages();
     });
   }
 
@@ -249,7 +248,7 @@ class _HomeMedecinState extends State<HomeMedecin> {
               userId = state.user.id ?? '';
               pages = [
                 DashboardMedecin(),
-                AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate),
+                AppointmentsMedecins(initialSelectedDate: selectedAppointmentDate, showAppBar: false),
                 ConversationsScreen(),
                 const ProfilMedecin(),
               ];
@@ -258,21 +257,13 @@ class _HomeMedecinState extends State<HomeMedecin> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: selectedItem == 1 && selectedAppointmentDate != null
-              ? Text(
-                  "RDV: ${DateFormat('dd/MM/yyyy').format(selectedAppointmentDate!)}",
-                  style: GoogleFonts.raleway(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.whiteColor,
-                  ),
-                )
-              : ReusableTextWidget(
-              text: "MediLink",
-              textSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.whiteColor,
-              letterSpacing: 1.2,
+            title: Text(
+              selectedItem == 1 ? 'Mes rendez-vous' : 'MediLink', 
+              style: GoogleFonts.raleway(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.whiteColor,
+              ),
             ),
             backgroundColor: AppColors.primaryColor,
             actions: [

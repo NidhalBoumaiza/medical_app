@@ -14,7 +14,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_screen.dart';
 
 class ConversationsScreen extends StatefulWidget {
-  const ConversationsScreen({super.key});
+  final bool showAppBar;
+  
+  const ConversationsScreen({
+    super.key,
+    this.showAppBar = true
+  });
 
   @override
   State<ConversationsScreen> createState() => _ConversationsScreenState();
@@ -107,7 +112,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
     if (_errorMessage.isNotEmpty) {
       return Scaffold(
-        appBar: AppBar(
+        appBar: widget.showAppBar ? AppBar(
           title: Text(
             _t('messages'),
             style: GoogleFonts.raleway(
@@ -118,52 +123,52 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           ),
           backgroundColor: AppColors.primaryColor,
           elevation: 2,
-        ),
+        ) : null,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Icon(
                 Icons.error_outline,
                 size: 72.sp,
                 color: Colors.red.withOpacity(0.7),
               ),
-              SizedBox(height: 16.h),
-              Text(
+                SizedBox(height: 16.h),
+                Text(
                 _t('error') + _errorMessage,
-                textAlign: TextAlign.center,
+                  textAlign: TextAlign.center,
                 style: GoogleFonts.raleway(
                   fontSize: 16.sp,
                   color: Colors.red.shade700,
                 ),
               ),
               SizedBox(height: 24.h),
-              ElevatedButton(
+                ElevatedButton(
                 onPressed: _loadUserData,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
                   padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24.r),
                   ),
-                ),
-                child: Text(
+                  ),
+                  child: Text(
                   _t('retry'),
                   style: GoogleFonts.raleway(
                     fontSize: 16.sp,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
+                  ),
                 ),
-              ),
-            ],
+              ],
           ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         title: Text(
           _t('messages'),
           style: GoogleFonts.raleway(
@@ -174,7 +179,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         ),
         backgroundColor: AppColors.primaryColor,
         elevation: 2,
-      ),
+      ) : null,
       body: SafeArea(
         child: Column(
           children: [
@@ -283,16 +288,16 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                           shape: BoxShape.circle,
                                         ),
                                         child: Center(
-                                          child: Text(
-                                            displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                                            style: GoogleFonts.raleway(
+                            child: Text(
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                              style: GoogleFonts.raleway(
                                               fontSize: 24.sp,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
                                             ),
-                                          ),
-                                        ),
-                                      ),
+                              ),
+                            ),
+                          ),
                                       // Unread indicator
                                       if (!conversation.lastMessageRead && !_isDoctor)
                                         Positioned(
@@ -305,8 +310,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                               color: Colors.red,
                                               shape: BoxShape.circle,
                                               border: Border.all(color: Colors.white, width: 2),
-                                            ),
-                                          ),
+                            ),
+                          ),
                                         ),
                                     ],
                                   ),
@@ -317,9 +322,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                       children: [
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
+                            children: [
+                              Expanded(
+                                child: Text(
                                                 displayName.isNotEmpty 
                                                   ? _isDoctor ? displayName : 'Dr. $displayName' 
                                                   : 'Unknown',
@@ -330,10 +335,10 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                                     : FontWeight.w600,
                                                   color: Colors.black87,
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                                             if (formattedTime.isNotEmpty)
                                               Text(
                                                 formattedTime,
@@ -350,7 +355,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                           ],
                                         ),
                                         SizedBox(height: 6.h),
-                                        Text(
+                                Text(
                                           conversation.lastMessage.isNotEmpty 
                                               ? conversation.lastMessage 
                                               : 'No message',
@@ -378,51 +383,51 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                     );
                   } else if (state is ConversationsError) {
                     return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                           Icon(
                             Icons.error_outline,
                             size: 64.sp,
                             color: Colors.red.withOpacity(0.7),
                           ),
-                          SizedBox(height: 16.h),
-                          Text(
+                            SizedBox(height: 16.h),
+                            Text(
                             state.message,
-                            textAlign: TextAlign.center,
+                              textAlign: TextAlign.center,
                             style: GoogleFonts.raleway(
                               fontSize: 16.sp,
                               color: Colors.red.shade700,
                             ),
                           ),
                           SizedBox(height: 24.h),
-                          ElevatedButton(
-                            onPressed: () {
+                            ElevatedButton(
+                              onPressed: () {
                               if (_userId.isNotEmpty) {
                                 context.read<ConversationsBloc>().add(FetchConversationsEvent(
                                   userId: _userId,
                                   isDoctor: _isDoctor,
                                 ));
                               }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryColor,
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryColor,
                               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24.r),
                               ),
-                            ),
-                            child: Text(
-                              _t('retry'),
+                              ),
+                              child: Text(
+                                _t('retry'),
                               style: GoogleFonts.raleway(
                                 fontSize: 16.sp,
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     );
                   } else {
                     return Center(

@@ -37,6 +37,7 @@ class _HomePatientState extends State<HomePatient> {
   String userId = '';
   String patientName = 'John Doe';
   String email = 'johndoe@example.com';
+  DateTime? _selectedAppointmentDate;
 
   @override
   void initState() {
@@ -56,6 +57,56 @@ class _HomePatientState extends State<HomePatient> {
         email = userMap['email'] as String? ?? 'johndoe@example.com';
       });
     }
+  }
+
+  // Function to select a date for appointments
+  Future<void> _selectAppointmentDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedAppointmentDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (picked != null && picked != _selectedAppointmentDate) {
+      setState(() {
+        _selectedAppointmentDate = picked;
+        _updatePages();
+      });
+    }
+  }
+  
+  // Reset appointment date filter
+  void _resetAppointmentDateFilter() {
+    setState(() {
+      _selectedAppointmentDate = null;
+      _updatePages();
+    });
+  }
+  
+  // Update pages list with current state
+  void _updatePages() {
+    setState(() {
+      _pages = [
+        const Dashboardpatient(),
+        AppointmentsPatients(showAppBar: false),
+        const ConversationsScreen(showAppBar: false),
+        const ProfilePatient(),
+      ];
+    });
   }
 
   List<BottomNavigationBarItem> get _navItems => [
@@ -83,8 +134,8 @@ class _HomePatientState extends State<HomePatient> {
 
   late List<Widget> _pages = [
     const Dashboardpatient(),
-    const AppointmentsPatients(),
-    ConversationsScreen(),
+    AppointmentsPatients(showAppBar: false),
+    const ConversationsScreen(showAppBar: false),
     const ProfilePatient(),
   ];
 
@@ -222,8 +273,8 @@ class _HomePatientState extends State<HomePatient> {
               userId = state.user.id ?? '';
               _pages = [
                 const Dashboardpatient(),
-                const RendezVousPatient(),
-                ConversationsScreen(),
+                AppointmentsPatients(showAppBar: false),
+                const ConversationsScreen(showAppBar: false),
                 const ProfilePatient(),
               ];
             });
@@ -233,7 +284,7 @@ class _HomePatientState extends State<HomePatient> {
           backgroundColor: AppColors.whiteColor,
           appBar: AppBar(
             title: Text(
-              'MediLink',
+              _selectedIndex == 1 ? 'Mes rendez-vous' : 'MediLink',
               style: GoogleFonts.raleway(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -244,6 +295,19 @@ class _HomePatientState extends State<HomePatient> {
             backgroundColor: AppColors.primaryColor,
             elevation: 0,
             actions: [
+              if (_selectedIndex == 1) ...[
+                IconButton(
+                  icon: Icon(Icons.calendar_today, color: AppColors.whiteColor),
+                  onPressed: () => _selectAppointmentDate(context),
+                  tooltip: "Filtrer par date",
+                ),
+                if (_selectedAppointmentDate != null)
+                  IconButton(
+                    icon: Icon(Icons.clear, color: AppColors.whiteColor),
+                    onPressed: _resetAppointmentDateFilter,
+                    tooltip: "Réinitialiser le filtre",
+                  ),
+              ],
               IconButton(
                 icon: Icon(Icons.notifications_none, size: 24, color: AppColors.whiteColor),
                 onPressed: _onNotificationTapped,

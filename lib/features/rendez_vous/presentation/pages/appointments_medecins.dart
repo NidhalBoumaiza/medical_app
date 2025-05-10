@@ -23,11 +23,13 @@ import '../../../rendez_vous/presentation/pages/patient_profile_page.dart';
 class AppointmentsMedecins extends StatefulWidget {
   final DateTime? initialSelectedDate;
   final String? initialFilter;
+  final bool showAppBar;
 
   const AppointmentsMedecins({
     Key? key, 
     this.initialSelectedDate,
     this.initialFilter,
+    this.showAppBar = true,
   }) : super(key: key);
 
   @override
@@ -360,7 +362,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         title: Text(
           "Rendez-vous",
           style: GoogleFonts.poppins(
@@ -386,7 +388,7 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
             },
           ),
         ],
-      ),
+      ) : null,
       body: BlocProvider(
         create: (context) => _rendezVousBloc,
         child: BlocConsumer<RendezVousBloc, RendezVousState>(

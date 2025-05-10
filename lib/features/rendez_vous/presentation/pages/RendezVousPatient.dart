@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:medical_app/core/utils/app_colors.dart';
 import 'package:medical_app/core/utils/custom_snack_bar.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
@@ -9,16 +10,22 @@ import 'package:medical_app/core/widgets/reusable_text_field_widget.dart';
 import 'package:medical_app/injection_container.dart';
 import 'package:medical_app/widgets/reusable_text_widget.dart';
 import 'package:medical_app/features/authentication/data/data%20sources/auth_local_data_source.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '../../../../core/specialties.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import 'available_doctor_screen.dart';
-import 'package:intl/intl.dart';
 
 class RendezVousPatient extends StatefulWidget {
   final String? selectedSpecialty;
+  final bool showAppBar; // Whether to show the app bar (true when navigating directly, false from bottom nav)
 
-  const RendezVousPatient({super.key, this.selectedSpecialty});
+  const RendezVousPatient({
+    super.key, 
+    this.selectedSpecialty, 
+    this.showAppBar = true
+  });
 
   @override
   State<RendezVousPatient> createState() => _RendezVousPatientState();
@@ -29,10 +36,16 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
   String? selectedSpecialty;
   DateTime? selectedDateTime;
   final _formKey = GlobalKey<FormState>();
+  
+  // Calendar variables
+  bool isCalendarVisible = false;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  DateTime _focusedDay = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting();
     if (widget.selectedSpecialty != null &&
         specialties.contains(widget.selectedSpecialty)) {
       selectedSpecialty = widget.selectedSpecialty;
@@ -45,34 +58,28 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
     super.dispose();
   }
 
-  Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primaryColor,
-              onPrimary: AppColors.whiteColor,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryColor,
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
+  void _toggleCalendar() {
+    setState(() {
+      isCalendarVisible = !isCalendarVisible;
+    });
+  }
 
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
+  Future<void> _selectDateTime(BuildContext context) async {
+    _toggleCalendar();
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _focusedDay = focusedDay;
+      // Show time picker after selecting a date
+      _showTimePicker(selectedDay);
+    });
+  }
+
+  void _showTimePicker(DateTime date) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
         builder: (context, child) {
           return Theme(
             data: ThemeData.light().copyWith(
@@ -94,15 +101,15 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
       if (pickedTime != null) {
         setState(() {
           selectedDateTime = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
+          date.year,
+          date.month,
+          date.day,
             pickedTime.hour,
             pickedTime.minute,
           );
           dateTimeController.text = DateFormat('dd/MM/yyyy à HH:mm').format(selectedDateTime!);
+        isCalendarVisible = false; // Hide calendar after selection
         });
-      }
     }
   }
 
@@ -113,7 +120,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
           title: Text(
-            "Rechercher une consultation",
+            "MediLink",
             style: GoogleFonts.raleway(
               fontWeight: FontWeight.bold,
               fontSize: 18.sp,
@@ -122,7 +129,7 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
           ),
           backgroundColor: AppColors.primaryColor,
           elevation: 2,
-          leading: IconButton(
+          leading: widget.showAppBar ? IconButton(
             icon: const Icon(
               Icons.chevron_left,
               size: 28,
@@ -131,12 +138,133 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
             onPressed: () {
               Navigator.pop(context);
             },
-          ),
+          ) : null,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.calendar_today, color: Colors.white),
+              onPressed: _toggleCalendar,
+              tooltip: "Sélectionner une date",
+            ),
+          ],
         ),
         body: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
+            if (isCalendarVisible) {
+              setState(() {
+                isCalendarVisible = false;
+              });
+            }
           },
+          child: Column(
+            children: [
+              // Calendar view
+              AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                height: isCalendarVisible ? 350.h : 0,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isCalendarVisible)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              // Calendar header
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Sélectionner une date",
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.close),
+                                    onPressed: () {
+                                      setState(() {
+                                        isCalendarVisible = false;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              
+                              // The Calendar
+                              TableCalendar(
+                                firstDay: DateTime.now(),
+                                lastDay: DateTime.now().add(Duration(days: 365)),
+                                focusedDay: _focusedDay,
+                                calendarFormat: _calendarFormat,
+                                onFormatChanged: (format) {
+                                  setState(() {
+                                    _calendarFormat = format;
+                                  });
+                                },
+                                selectedDayPredicate: (day) {
+                                  return selectedDateTime != null && 
+                                    day.year == selectedDateTime!.year &&
+                                    day.month == selectedDateTime!.month &&
+                                    day.day == selectedDateTime!.day;
+                                },
+                                onDaySelected: _onDaySelected,
+                                calendarStyle: CalendarStyle(
+                                  todayDecoration: BoxDecoration(
+                                    color: AppColors.primaryColor.withOpacity(0.5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  selectedDecoration: BoxDecoration(
+                                    color: AppColors.primaryColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                headerStyle: HeaderStyle(
+                                  formatButtonTextStyle: GoogleFonts.raleway(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                  titleTextStyle: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  leftChevronIcon: Icon(Icons.chevron_left, color: AppColors.primaryColor),
+                                  rightChevronIcon: Icon(Icons.chevron_right, color: AppColors.primaryColor),
+                                  formatButtonVisible: true,
+                                  titleCentered: true,
+                                ),
+                                availableCalendarFormats: const {
+                                  CalendarFormat.month: 'Mois',
+                                  CalendarFormat.twoWeeks: '2 Semaines',
+                                  CalendarFormat.week: 'Semaine',
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Main content
+              Expanded(
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
@@ -458,6 +586,9 @@ class _RendezVousPatientState extends State<RendezVousPatient> {
                 ),
               ),
             ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
