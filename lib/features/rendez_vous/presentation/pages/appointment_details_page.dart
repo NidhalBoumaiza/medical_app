@@ -21,6 +21,9 @@ import '../../domain/entities/rendez_vous_entity.dart';
 import '../blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import 'doctor_profile_page.dart';
 import 'patient_profile_page.dart';
+import '../../../ordonnance/domain/entities/prescription_entity.dart';
+import '../../../ordonnance/presentation/bloc/prescription_bloc.dart';
+import '../../../ordonnance/presentation/pages/prescription_details_page.dart';
 
 class AppointmentDetailsPage extends StatefulWidget {
   final RendezVousEntity appointment;
@@ -39,6 +42,7 @@ class AppointmentDetailsPage extends StatefulWidget {
 class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
   late RendezVousBloc _rendezVousBloc;
   late RatingBloc _ratingBloc;
+  late PrescriptionBloc _prescriptionBloc;
   UserModel? currentUser;
   bool isLoading = true;
   bool isCancelling = false;
@@ -51,6 +55,10 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
   // Variables to store appointment rating data
   bool _isLoadingRating = false;
   DoctorRatingEntity? _appointmentRating;
+  
+  // Add these variables for prescription
+  bool _isLoadingPrescription = false;
+  PrescriptionEntity? _appointmentPrescription;
 
   @override
   void initState() {
@@ -59,6 +67,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     
     _rendezVousBloc = di.sl<RendezVousBloc>();
     _ratingBloc = di.sl<RatingBloc>();
+    _prescriptionBloc = di.sl<PrescriptionBloc>();
     _loadUser();
   }
 
@@ -73,6 +82,14 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
           currentUser = UserModel.fromJson(userMap);
           isLoading = false;
         });
+        
+        // Check and update past appointments
+        if (currentUser?.id != null) {
+          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
+            userId: currentUser!.id!,
+            userRole: currentUser!.role,
+          ));
+        }
         
         // Check if appointment is in the past based on endTime if available
         DateTime appointmentEndTime;
@@ -97,9 +114,14 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         
         // If this is a doctor viewing a completed appointment, fetch its rating
         if (widget.appointment.id != null && 
-            currentUser?.role == 'doctor' &&
+            currentUser?.role == 'medecin' &&
             widget.appointment.status == 'completed') {
           _fetchAppointmentRating();
+        }
+        
+        // Check if appointment has prescription
+        if (widget.appointment.id != null) {
+          _fetchAppointmentPrescription();
         }
       } catch (e) {
         setState(() {
@@ -231,6 +253,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         return "En attente";
       case "cancelled":
         return "Annulé";
+      case "completed":
+        return "Terminé";
       default:
         return "Inconnu";
     }
@@ -244,6 +268,8 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         return Colors.orange;
       case "cancelled":
         return Colors.red;
+      case "completed":
+        return Colors.blue;
       default:
         return Colors.grey;
     }
@@ -505,6 +531,19 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
     }
   }
 
+  // Add this method to fetch prescription
+  void _fetchAppointmentPrescription() {
+    if (widget.appointment.id == null) return;
+    
+    setState(() {
+      _isLoadingPrescription = true;
+    });
+    
+    _prescriptionBloc.add(GetPrescriptionByAppointmentId(
+      appointmentId: widget.appointment.id!,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -514,6 +553,9 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
         ),
         BlocProvider<RatingBloc>(
           create: (context) => _ratingBloc,
+        ),
+        BlocProvider<PrescriptionBloc>(
+          create: (context) => _prescriptionBloc,
         ),
       ],
       child: MultiBlocListener(
@@ -590,6 +632,37 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
               }
             },
           ),
+          // Add PrescriptionBloc listener
+          BlocListener<PrescriptionBloc, PrescriptionState>(
+            listener: (context, state) {
+              if (state is PrescriptionLoaded) {
+                setState(() {
+                  _appointmentPrescription = state.prescription;
+                  _isLoadingPrescription = false;
+                });
+              } else if (state is PrescriptionNotFound) {
+                setState(() {
+                  _appointmentPrescription = null;
+                  _isLoadingPrescription = false;
+                });
+              } else if (state is PrescriptionError) {
+                setState(() {
+                  _isLoadingPrescription = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.message,
+                      style: GoogleFonts.raleway(),
+                    ),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                );
+              }
+            },
+          ),
         ],
         child: Scaffold(
           appBar: AppBar(
@@ -608,6 +681,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
+          floatingActionButton: null,
           body: isLoading
               ? Center(
                   child: CircularProgressIndicator(
@@ -736,7 +810,7 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                                 Divider(height: 30.h, thickness: 1),
                                 
                                 // Patient info (shown only for doctors)
-                                if (currentUser?.role == 'doctor')
+                                if (currentUser?.role == 'medecin')
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -923,6 +997,12 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                           ),
                         ),
                         
+                        // Always show prescription section for doctors, or show only for completed/past appointments for patients
+                        if (currentUser?.role == 'medecin' || 
+                            widget.appointment.status == 'completed' || 
+                            (widget.appointment.status == 'accepted' && isAppointmentPast))
+                          _buildPrescriptionSection(),
+                        
                         // Only show rating section when it's not a doctor view and appointment is completed
                         if (!widget.isDoctor && 
                             widget.appointment.status == 'completed' && 
@@ -934,8 +1014,11 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
                         if (widget.isDoctor && 
                             widget.appointment.status == 'completed' && 
                             isAppointmentPast && 
-                            currentUser?.role == 'doctor')
+                            currentUser?.role == 'medecin')
                           _buildDoctorViewRatingSection(),
+
+                        // Add a prominent Add Prescription button for doctors
+                        _buildAddPrescriptionButton(),
                       ],
                     ),
                   ),
@@ -1216,6 +1299,234 @@ class _AppointmentDetailsPageState extends State<AppointmentDetailsPage> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  // Add the prescription section widget
+  Widget _buildPrescriptionSection() {
+    return Container(
+      margin: EdgeInsets.only(top: 24.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Ordonnance",
+                style: GoogleFonts.raleway(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          
+          if (_isLoadingPrescription)
+            Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(color: AppColors.primaryColor),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Chargement...",
+                    style: GoogleFonts.raleway(
+                      fontSize: 14.sp,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_appointmentPrescription != null)
+            // Prescription exists
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider<PrescriptionBloc>.value(
+                            value: _prescriptionBloc,
+                            child: PrescriptionDetailsPage(
+                              prescription: _appointmentPrescription!,
+                              isDoctor: currentUser?.role == 'medecin',
+                            ),
+                          ),
+                        ),
+                      ).then((_) {
+                        // Refresh prescription data when returning
+                        _fetchAppointmentPrescription();
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.medical_services,
+                                color: AppColors.primaryColor,
+                                size: 24.sp,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Text(
+                                  'Ordonnance du ${DateFormat('dd/MM/yyyy').format(_appointmentPrescription!.date)}',
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.medication,
+                                color: Colors.grey[600],
+                                size: 16.sp,
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                '${_appointmentPrescription!.medications.length} médicament${_appointmentPrescription!.medications.length > 1 ? 's' : ''}',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(height: 16.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Voir détails',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14.sp,
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right,
+                                color: AppColors.primaryColor,
+                                size: 20.sp,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // No prescription
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.medical_information_outlined,
+                    size: 48.sp,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    currentUser?.role == 'medecin'
+                        ? "Aucune ordonnance créée pour ce rendez-vous"
+                        : "Aucune ordonnance disponible pour ce rendez-vous",
+                    style: GoogleFonts.raleway(
+                      fontSize: 14.sp,
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Add a prominent Add Prescription button for doctors
+  Widget _buildAddPrescriptionButton() {
+    if (currentUser?.role != 'medecin') {
+      return SizedBox.shrink();
+    }
+    
+    return Container(
+      margin: EdgeInsets.only(top: 24.h, bottom: 24.h),
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _appointmentPrescription == null
+            ? _createPrescription
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreatePrescriptionPage(
+                      appointment: widget.appointment,
+                      existingPrescription: _appointmentPrescription,
+                    ),
+                  ),
+                ).then((result) {
+                  if (result == true) {
+                    _fetchAppointmentPrescription();
+                  }
+                });
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryColor,
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          elevation: 2,
+        ),
+        icon: Icon(
+          _appointmentPrescription == null ? Icons.add : Icons.edit,
+          color: Colors.white,
+          size: 24.sp,
+        ),
+        label: Text(
+          _appointmentPrescription == null ? "Créer une ordonnance" : "Modifier l'ordonnance",
+          style: GoogleFonts.raleway(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

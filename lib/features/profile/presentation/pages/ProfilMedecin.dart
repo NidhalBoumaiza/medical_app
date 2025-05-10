@@ -12,6 +12,7 @@ import 'package:medical_app/features/authentication/domain/entities/medecin_enti
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../authentication/presentation/pages/login_screen.dart';
 import 'blocs/BLoC update profile/update_user_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilMedecin extends StatefulWidget {
   const ProfilMedecin({Key? key}) : super(key: key);
@@ -62,6 +63,7 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
           validationCodeExpiresAt: userMap['validationCodeExpiresAt'] != null
               ? DateTime.parse(userMap['validationCodeExpiresAt'] as String)
               : null,
+          appointmentDuration: userMap['appointmentDuration'] as int,
         );
       });
     }
@@ -123,6 +125,140 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
 
   void _changeProfilePicture() {
     Get.snackbar('info'.tr, 'change_profile_picture_message'.tr);
+  }
+
+  void _showAppointmentDurationDialog() {
+    int selectedDuration = _medecin?.appointmentDuration ?? 30;
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Durée de consultation',
+                style: GoogleFonts.raleway(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.sp,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Choisissez la durée standard de vos consultations:',
+                    style: GoogleFonts.raleway(
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Durée: ',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      DropdownButton<int>(
+                        value: selectedDuration,
+                        items: [15, 20, 30, 45, 60, 90, 120].map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(
+                              '$value minutes',
+                              style: GoogleFonts.raleway(
+                                fontSize: 16.sp,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              selectedDuration = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'Annuler',
+                    style: GoogleFonts.raleway(
+                      color: Colors.grey,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      if (_medecin?.id != null) {
+                        // Update Firestore
+                        final FirebaseFirestore firestore = FirebaseFirestore.instance;
+                        await firestore.collection('medecins').doc(_medecin!.id).update({
+                          'appointmentDuration': selectedDuration,
+                        });
+                        
+                        // Update local state
+                        setState(() {
+                          _medecin = MedecinEntity(
+                            id: _medecin!.id,
+                            name: _medecin!.name,
+                            lastName: _medecin!.lastName,
+                            email: _medecin!.email,
+                            role: _medecin!.role,
+                            gender: _medecin!.gender,
+                            phoneNumber: _medecin!.phoneNumber,
+                            dateOfBirth: _medecin!.dateOfBirth,
+                            speciality: _medecin!.speciality,
+                            numLicence: _medecin!.numLicence,
+                            appointmentDuration: selectedDuration,
+                          );
+                        });
+                        
+                        // Show success message
+                        showSuccessSnackBar(
+                          context, 
+                          'Durée de consultation mise à jour'
+                        );
+                      }
+                    } catch (e) {
+                      // Show error message
+                      showErrorSnackBar(
+                        context, 
+                        'Erreur lors de la mise à jour: $e'
+                      );
+                    }
+                    // Close dialog
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'Confirmer',
+                    style: GoogleFonts.raleway(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
   }
 
   @override
@@ -269,6 +405,39 @@ class _ProfilMedecinState extends State<ProfilMedecin> {
                   SizedBox(height: 12.h),
                   _buildInfoTile('speciality'.tr, _medecin!.speciality ?? 'Non spécifiée'),
                   _buildInfoTile('license_number'.tr, _medecin!.numLicence ?? 'Non spécifié'),
+                  _buildInfoTile('Durée de consultation', '${_medecin!.appointmentDuration} minutes'),
+                  
+                  SizedBox(height: 8.h),
+                  Card(
+                    elevation: 2,
+                    margin: EdgeInsets.only(bottom: 10.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: InkWell(
+                      onTap: _showAppointmentDurationDialog,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Modifier la durée de consultation',
+                              style: GoogleFonts.raleway(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                            Icon(
+                              Icons.edit,
+                              color: AppColors.primaryColor,
+                              size: 20.sp,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );

@@ -64,6 +64,18 @@ import 'package:medical_app/features/dashboard/domain/usecases/get_doctor_dashbo
 import 'package:medical_app/features/dashboard/domain/usecases/get_upcoming_appointments_use_case.dart';
 import 'package:medical_app/features/dashboard/presentation/blocs/dashboard%20BLoC/dashboard_bloc.dart';
 
+// Add prescription feature imports
+import 'package:medical_app/features/ordonnance/data/datasources/prescription_remote_datasource.dart';
+import 'package:medical_app/features/ordonnance/data/repositories/prescription_repository_impl.dart';
+import 'package:medical_app/features/ordonnance/domain/repositories/prescription_repository.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/create_prescription_use_case.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/edit_prescription_use_case.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/get_doctor_prescriptions_use_case.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/get_patient_prescriptions_use_case.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/get_prescription_by_appointment_id_use_case.dart';
+import 'package:medical_app/features/ordonnance/domain/usecases/get_prescription_by_id_use_case.dart';
+import 'package:medical_app/features/ordonnance/presentation/bloc/prescription_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -96,6 +108,16 @@ Future<void> init() async {
     getUpcomingAppointmentsUseCase: sl(),
   ));
 
+  // Prescription BLoC
+  sl.registerFactory(() => PrescriptionBloc(
+    createPrescriptionUseCase: sl(),
+    editPrescriptionUseCase: sl(),
+    getPatientPrescriptionsUseCase: sl(),
+    getDoctorPrescriptionsUseCase: sl(),
+    getPrescriptionByIdUseCase: sl(),
+    getPrescriptionByAppointmentIdUseCase: sl(),
+  ));
+
   // Use Cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => CreateAccountUseCase(sl()));
@@ -116,6 +138,14 @@ Future<void> init() async {
   // Dashboard Use Cases
   sl.registerLazySingleton(() => GetDoctorDashboardStatsUseCase(sl()));
   sl.registerLazySingleton(() => GetUpcomingAppointmentsUseCase(sl()));
+
+  // Prescription Use Cases
+  sl.registerLazySingleton(() => CreatePrescriptionUseCase(sl()));
+  sl.registerLazySingleton(() => EditPrescriptionUseCase(sl()));
+  sl.registerLazySingleton(() => GetPatientPrescriptionsUseCase(sl()));
+  sl.registerLazySingleton(() => GetDoctorPrescriptionsUseCase(sl()));
+  sl.registerLazySingleton(() => GetPrescriptionByIdUseCase(sl()));
+  sl.registerLazySingleton(() => GetPrescriptionByAppointmentIdUseCase(sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -141,6 +171,14 @@ Future<void> init() async {
   // Dashboard Repository
   sl.registerLazySingleton<DashboardRepository>(
     () => DashboardRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  // Prescription Repository
+  sl.registerLazySingleton<PrescriptionRepository>(
+    () => PrescriptionRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
     ),
@@ -180,6 +218,13 @@ Future<void> init() async {
   // Dashboard DataSource
   sl.registerLazySingleton<DashboardRemoteDataSource>(
     () => DashboardRemoteDataSourceImpl(
+      firestore: sl(),
+    ),
+  );
+
+  // Prescription DataSource
+  sl.registerLazySingleton<PrescriptionRemoteDataSource>(
+    () => PrescriptionRemoteDataSourceImpl(
       firestore: sl(),
     ),
   );

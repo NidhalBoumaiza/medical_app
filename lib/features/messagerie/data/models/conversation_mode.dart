@@ -11,6 +11,7 @@ class ConversationModel extends ConversationEntity {
     required String lastMessageType,
     required DateTime lastMessageTime,
     String? lastMessageUrl,
+    bool lastMessageRead = true,
   }) : super(
     id: id,
     patientId: patientId,
@@ -21,6 +22,7 @@ class ConversationModel extends ConversationEntity {
     lastMessageType: lastMessageType,
     lastMessageTime: lastMessageTime,
     lastMessageUrl: lastMessageUrl,
+    lastMessageRead: lastMessageRead,
   );
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class ConversationModel extends ConversationEntity {
       lastMessageType: json['lastMessageType'] as String? ?? 'text',
       lastMessageTime: parseDateTime(json['lastMessageTime'] as String?),
       lastMessageUrl: json['lastMessageUrl'] as String?,
+      lastMessageRead: json['lastMessageRead'] as bool? ?? true,
     );
   }
 

@@ -54,3 +54,14 @@ class RendezVousCreated extends RendezVousState {
 }
 
 class RendezVousDoctorAssigned extends RendezVousState {}
+
+class PastAppointmentsChecked extends RendezVousState {
+  final int updatedCount;
+  
+  const PastAppointmentsChecked({
+    required this.updatedCount,
+  });
+  
+  @override
+  List<Object> get props => [updatedCount];
+}

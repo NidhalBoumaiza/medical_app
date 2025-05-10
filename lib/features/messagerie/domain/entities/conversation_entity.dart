@@ -10,6 +10,7 @@ class ConversationEntity extends Equatable {
   final String lastMessageType;
   final DateTime lastMessageTime;
   final String? lastMessageUrl;
+  final bool lastMessageRead;
 
   const ConversationEntity({
     this.id,
@@ -21,6 +22,7 @@ class ConversationEntity extends Equatable {
     required this.lastMessageType,
     required this.lastMessageTime,
     this.lastMessageUrl,
+    this.lastMessageRead = true,
   });
 
   factory ConversationEntity.create({
@@ -33,6 +35,7 @@ class ConversationEntity extends Equatable {
     required String lastMessageType,
     required DateTime lastMessageTime,
     String? lastMessageUrl,
+    bool lastMessageRead = true,
   }) {
     return ConversationEntity(
       id: id,
@@ -44,6 +47,7 @@ class ConversationEntity extends Equatable {
       lastMessageType: lastMessageType,
       lastMessageTime: lastMessageTime,
       lastMessageUrl: lastMessageUrl,
+      lastMessageRead: lastMessageRead,
     );
   }
 
@@ -58,5 +62,6 @@ class ConversationEntity extends Equatable {
     lastMessageType,
     lastMessageTime,
     lastMessageUrl,
+    lastMessageRead,
   ];
 }

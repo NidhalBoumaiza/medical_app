@@ -78,6 +78,14 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
         // Fetch appointments using the patient ID
         if (currentUser != null && currentUser!.id != null) {
           print('AppointmentsPatients: Fetching appointments for patient ID: ${currentUser!.id}');
+          
+          // Check for past appointments that need to be updated to completed
+          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
+            userId: currentUser!.id!,
+            userRole: 'patient',
+          ));
+          
+          // Then fetch the appointments (which will now have updated statuses)
           _rendezVousBloc.add(FetchRendezVous(patientId: currentUser!.id));
         } else {
           print('AppointmentsPatients: Current user or ID is null');
@@ -740,7 +748,7 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                         fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
-                                  ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -791,11 +799,11 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                       appointment.doctorId,
                                                       appointment.doctorName ?? "Médecin",
                                                       appointment.speciality,
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    color: Colors.white,
-                                                    size: 24.sp,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      color: Colors.white,
+                                                      size: 24.sp,
                                                     ),
                                                   ),
                                                 ),
@@ -811,13 +819,13 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
                                                           appointment.speciality,
                                                         ),
                                                         child: Text(
-                                                        appointment.doctorName != null
-                                                            ? "Dr. ${appointment.doctorName?.split(" ").last ?? ''}"
-                                                            : "Médecin à assigner",
-                                                        style: GoogleFonts.raleway(
-                                                          fontSize: 15.sp,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: Colors.black87,
+                                                          appointment.doctorName != null
+                                                              ? "Dr. ${appointment.doctorName?.split(" ").last ?? ''}"
+                                                              : "Médecin à assigner",
+                                                          style: GoogleFonts.raleway(
+                                                            fontSize: 15.sp,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.black87,
                                                           ),
                                                         ),
                                                       ),
@@ -958,6 +966,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
         return Colors.orange;
       case "cancelled":
         return Colors.red;
+      case "completed":
+        return Colors.blue;
       default:
         return Colors.grey;
     }
@@ -971,6 +981,8 @@ class _AppointmentsPatientsState extends State<AppointmentsPatients> {
         return "En attente";
       case "cancelled":
         return "Annulé";
+      case "completed":
+        return "Terminé";
       default:
         return "Inconnu";
     }

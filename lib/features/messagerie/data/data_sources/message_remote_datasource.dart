@@ -48,6 +48,7 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
           lastMessageType: data['lastMessageType'] as String? ?? 'text',
           lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?),
           lastMessageUrl: data['lastMessageUrl'] as String?,
+          lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
         );
       }).toList();
     } catch (e) {
@@ -82,6 +83,7 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
             lastMessageType: data['lastMessageType'] as String? ?? 'text',
             lastMessageTime: ConversationModel.parseDateTime(data['lastMessageTime'] as String?),
             lastMessageUrl: data['lastMessageUrl'] as String?,
+            lastMessageRead: _isMessageReadByUser(data, userId, isDoctor),
           );
         }).toList();
       }).handleError((error) {
@@ -92,6 +94,19 @@ class MessagingRemoteDataSourceImpl implements MessagingRemoteDataSource {
       print('Error initializing conversation stream: $e');
       throw ServerException('Failed to initialize stream: $e');
     }
+  }
+
+  // Helper method to determine if the last message is read by the current user
+  bool _isMessageReadByUser(Map<String, dynamic> data, String userId, bool isDoctor) {
+    // If the current user is the sender of the last message, it's considered read
+    final String lastMessageSenderId = data['lastMessageSenderId'] as String? ?? '';
+    if (lastMessageSenderId == userId) {
+      return true;
+    }
+    
+    // Otherwise, check if the user is in the 'readBy' list of the last message
+    final List<String> readBy = List<String>.from(data['lastMessageReadBy'] ?? []);
+    return readBy.contains(userId);
   }
 
   @override

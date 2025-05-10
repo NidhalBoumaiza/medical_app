@@ -1,14 +1,19 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medical_app/core/utils/navigation_with_transition.dart';
 import 'package:medical_app/features/secours/presentation/pages/secours_screen.dart';
 import 'package:medical_app/features/settings/presentation/pages/settings_patient.dart';
 import '../../../../core/specialties.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../injection_container.dart' as di;
+import '../../../authentication/data/models/user_model.dart';
 import '../../../localisation/presentation/pages/pharmacie_page.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousPatient.dart';
+import '../../../rendez_vous/presentation/blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import '../../../specialite/presentation/pages/AllSpecialtiesPage.dart';
 
 class Dashboardpatient extends StatefulWidget {
@@ -19,6 +24,9 @@ class Dashboardpatient extends StatefulWidget {
 }
 
 class _DashboardpatientState extends State<Dashboardpatient> {
+  late RendezVousBloc _rendezVousBloc;
+  UserModel? currentUser;
+  
   // Data for "Que cherchez-vous ?" section (using Icons)
   final List<Map<String, dynamic>> searchItems = [
     {'icon': FontAwesomeIcons.userDoctor, 'text': 'Médecins', 'color': AppColors.primaryColor},
@@ -44,6 +52,8 @@ class _DashboardpatientState extends State<Dashboardpatient> {
   @override
   void initState() {
     super.initState();
+    _rendezVousBloc = di.sl<RendezVousBloc>();
+    
     _pageController.addListener(() {
       setState(() {
         _currentPage = _pageController.page?.round() ?? 0;
@@ -62,6 +72,34 @@ class _DashboardpatientState extends State<Dashboardpatient> {
         curve: Curves.easeInOut,
       );
     });
+    
+    _loadUser();
+  }
+  
+  Future<void> _loadUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userJson = prefs.getString('CACHED_USER');
+      
+      if (userJson != null) {
+        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+        final user = UserModel.fromJson(userMap);
+        
+        setState(() {
+          currentUser = user;
+        });
+        
+        if (user.id != null) {
+          // Check and update past appointments
+          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
+            userId: user.id!,
+            userRole: 'patient',
+          ));
+        }
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+    }
   }
 
   @override

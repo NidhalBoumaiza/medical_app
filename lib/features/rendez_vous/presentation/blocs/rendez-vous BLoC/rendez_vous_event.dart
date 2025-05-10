@@ -78,3 +78,16 @@ class AssignDoctorToRendezVous extends RendezVousEvent {
   @override
   List<Object> get props => [rendezVousId, doctorId, doctorName];
 }
+
+class CheckAndUpdatePastAppointments extends RendezVousEvent {
+  final String userId;
+  final String userRole;
+
+  const CheckAndUpdatePastAppointments({
+    required this.userId,
+    required this.userRole,
+  });
+
+  @override
+  List<Object> get props => [userId, userRole];
+}

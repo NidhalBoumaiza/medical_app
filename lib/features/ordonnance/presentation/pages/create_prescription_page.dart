@@ -6,40 +6,22 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/custom_snack_bar.dart';
 import '../../../authentication/domain/entities/patient_entity.dart';
 import '../../../rendez_vous/domain/entities/rendez_vous_entity.dart';
-
-class Medication {
-  String id;
-  String name;
-  String dosage;
-  String instructions;
-
-  Medication({
-    required this.id,
-    required this.name,
-    required this.dosage,
-    required this.instructions,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'dosage': dosage,
-      'instructions': instructions,
-    };
-  }
-}
+import '../../domain/entities/prescription_entity.dart';
+import '../../data/models/medication_model.dart';
 
 class CreatePrescriptionPage extends StatefulWidget {
   final RendezVousEntity appointment;
   final PatientEntity? patient;
+  final PrescriptionEntity? existingPrescription;
 
   const CreatePrescriptionPage({
     Key? key,
     required this.appointment,
     this.patient,
+    this.existingPrescription,
   }) : super(key: key);
 
   @override
@@ -52,9 +34,32 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
   final _dosageController = TextEditingController();
   final _instructionsController = TextEditingController();
   final _noteController = TextEditingController();
-  final List<Medication> _medications = [];
+  final List<MedicationModel> _medications = [];
   bool _isSaving = false;
+  bool _isEditing = false;
+  String? _prescriptionId;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingPrescription();
+  }
+  
+  void _loadExistingPrescription() {
+    if (widget.existingPrescription != null) {
+      setState(() {
+        _isEditing = true;
+        _prescriptionId = widget.existingPrescription!.id;
+        _noteController.text = widget.existingPrescription!.note ?? '';
+        
+        // Load medications from existing prescription
+        for (var med in widget.existingPrescription!.medications) {
+          _medications.add(MedicationModel.fromEntity(med));
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -69,21 +74,16 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     if (_medicationNameController.text.isEmpty ||
         _dosageController.text.isEmpty ||
         _instructionsController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Veuillez remplir tous les champs pour le médicament',
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      showWarningSnackBar(
+        context,
+        'Veuillez remplir tous les champs pour le médicament',
       );
       return;
     }
 
     setState(() {
       _medications.add(
-        Medication(
+        MedicationModel(
           id: const Uuid().v4(),
           name: _medicationNameController.text,
           dosage: _dosageController.text,
@@ -102,16 +102,27 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     });
   }
 
+  void _editMedication(MedicationModel medication) {
+    _medicationNameController.text = medication.name;
+    _dosageController.text = medication.dosage;
+    _instructionsController.text = medication.instructions;
+    
+    _removeMedication(medication.id);
+    
+    // Scroll to medication form
+    Future.delayed(Duration(milliseconds: 100), () {
+      Scrollable.ensureVisible(
+        _formKey.currentContext!,
+        duration: Duration(milliseconds: 300),
+      );
+    });
+  }
+
   Future<void> _savePrescription() async {
     if (_medications.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Veuillez ajouter au moins un médicament',
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      showWarningSnackBar(
+        context,
+        'Veuillez ajouter au moins un médicament',
       );
       return;
     }
@@ -121,8 +132,8 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     });
 
     try {
-      // Save the prescription to Firestore
-      final prescriptionId = const Uuid().v4();
+      // Generate ID if it's a new prescription, otherwise use existing
+      final prescriptionId = _isEditing ? _prescriptionId! : const Uuid().v4();
       final prescriptionData = {
         'id': prescriptionId,
         'appointmentId': widget.appointment.id,
@@ -130,7 +141,10 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         'patientName': widget.appointment.patientName,
         'doctorId': widget.appointment.doctorId,
         'doctorName': widget.appointment.doctorName,
-        'date': DateTime.now().toIso8601String(),
+        'date': _isEditing 
+          ? widget.existingPrescription!.date.toIso8601String() 
+          : DateTime.now().toIso8601String(),
+        'lastUpdated': DateTime.now().toIso8601String(),
         'medications': _medications.map((m) => m.toJson()).toList(),
         'note': _noteController.text,
       };
@@ -144,27 +158,19 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
         });
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Ordonnance enregistrée avec succès',
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.green,
-        ),
+      showSuccessSnackBar(
+        context,
+        _isEditing
+          ? 'Ordonnance mise à jour avec succès'
+          : 'Ordonnance enregistrée avec succès',
       );
 
       Navigator.pop(context, true);
     } catch (e) {
       print('Error saving prescription: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Erreur lors de l\'enregistrement: $e',
-            style: GoogleFonts.raleway(),
-          ),
-          backgroundColor: Colors.red,
-        ),
+      showErrorSnackBar(
+        context,
+        'Erreur lors de l\'enregistrement: $e',
       );
     } finally {
       setState(() {
@@ -178,7 +184,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Nouvelle Ordonnance",
+          _isEditing ? "Modifier l'ordonnance" : "Nouvelle Ordonnance",
           style: GoogleFonts.raleway(
             fontWeight: FontWeight.bold,
             fontSize: 18.sp,
@@ -376,7 +382,7 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
     );
   }
 
-  Widget _buildMedicationItem(Medication medication) {
+  Widget _buildMedicationItem(MedicationModel medication) {
     return Card(
       margin: EdgeInsets.only(bottom: 12.h),
       elevation: 2,
@@ -402,10 +408,20 @@ class _CreatePrescriptionPageState extends State<CreatePrescriptionPage> {
                 ),
                 IconButton(
                   icon: Icon(
+                    Icons.edit_outlined,
+                    color: AppColors.primaryColor,
+                    size: 22.sp,
+                  ),
+                  tooltip: "Modifier",
+                  onPressed: () => _editMedication(medication),
+                ),
+                IconButton(
+                  icon: Icon(
                     Icons.delete_outline,
                     color: Colors.red,
                     size: 22.sp,
                   ),
+                  tooltip: "Supprimer",
                   onPressed: () => _removeMedication(medication.id),
                 ),
               ],

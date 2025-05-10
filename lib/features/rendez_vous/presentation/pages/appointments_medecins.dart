@@ -75,6 +75,13 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
         
         // Fetch appointments using the doctor ID
         if (currentUser != null && currentUser!.id != null) {
+          // Check for past appointments that need to be updated to completed
+          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
+            userId: currentUser!.id!,
+            userRole: 'doctor',
+          ));
+          
+          // Then fetch the appointments (which will now have updated statuses)
           _rendezVousBloc.add(FetchRendezVous(doctorId: currentUser!.id));
         }
       } catch (e) {
@@ -1054,6 +1061,8 @@ class _AppointmentsMedecinsState extends State<AppointmentsMedecins> {
         return Colors.orange;
       case "cancelled":
         return Colors.red;
+      case "completed":
+        return Colors.blue;
       default:
         return Colors.grey;
     }

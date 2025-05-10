@@ -95,12 +95,38 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
       String doctorName,
       ) async {
     try {
-      await firestore
-          .collection('rendez_vous')
-          .doc(rendezVousId)
-          .update({'status': status});
-
+      // If status is 'accepted', calculate the end time based on doctor's appointment duration
       if (status == 'accepted') {
+        // First, get the current appointment data to access the startTime
+        final appointmentDoc = await firestore.collection('rendez_vous').doc(rendezVousId).get();
+        if (!appointmentDoc.exists) {
+          throw ServerMessageException('Rendezvous not found');
+        }
+        
+        final appointmentData = appointmentDoc.data() as Map<String, dynamic>;
+        DateTime startTime;
+        
+        // Parse startTime from the document
+        if (appointmentData['startTime'] is Timestamp) {
+          startTime = (appointmentData['startTime'] as Timestamp).toDate();
+        } else if (appointmentData['startTime'] is String) {
+          startTime = DateTime.parse(appointmentData['startTime'] as String);
+        } else {
+          throw ServerException('Invalid startTime format in appointment');
+        }
+        
+        // Get the doctor's appointment duration
+        final appointmentDuration = await fetchDoctorAppointmentDuration(doctorId);
+        
+        // Calculate endTime based on startTime and appointmentDuration
+        final endTime = startTime.add(Duration(minutes: appointmentDuration));
+        
+        // Update the appointment with status and calculated endTime
+        await firestore.collection('rendez_vous').doc(rendezVousId).update({
+          'status': status,
+          'endTime': endTime.toIso8601String(),
+        });
+        
         // Check if a conversation already exists
         final existingConversation = await firestore
             .collection('conversations')
@@ -122,6 +148,12 @@ class RendezVousRemoteDataSourceImpl implements RendezVousRemoteDataSource {
             'lastMessageTime': DateTime.now().toIso8601String(),
           });
         }
+      } else {
+        // For other status updates, just update the status
+        await firestore
+            .collection('rendez_vous')
+            .doc(rendezVousId)
+            .update({'status': status});
       }
     } on FirebaseException catch (e) {
       if (e.code == 'not-found') {

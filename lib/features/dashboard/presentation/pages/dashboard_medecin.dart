@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../injection_container.dart' as di;
@@ -13,6 +14,7 @@ import '../../../rendez_vous/domain/entities/rendez_vous_entity.dart';
 import '../../../rendez_vous/presentation/pages/RendezVousMedecin.dart';
 import '../../../rendez_vous/presentation/pages/appointments_medecins.dart';
 import '../../../rendez_vous/presentation/pages/appointment_details_page.dart';
+import '../../../rendez_vous/presentation/blocs/rendez-vous BLoC/rendez_vous_bloc.dart';
 import '../../domain/entities/dashboard_stats_entity.dart';
 import '../blocs/dashboard BLoC/dashboard_bloc.dart';
 import '../blocs/dashboard BLoC/dashboard_event.dart';
@@ -30,6 +32,7 @@ class DashboardMedecin extends StatefulWidget {
 
 class _DashboardMedecinState extends State<DashboardMedecin> {
   late DashboardBloc _dashboardBloc;
+  late RendezVousBloc _rendezVousBloc;
   UserModel? currentUser;
   MedecinEntity? doctorUser;
   bool isLoading = true;
@@ -38,6 +41,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
   void initState() {
     super.initState();
     _dashboardBloc = BlocProvider.of<DashboardBloc>(context);
+    _rendezVousBloc = di.sl<RendezVousBloc>();
     _loadUser();
   }
 
@@ -58,6 +62,15 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
         if (user.id != null) {
           // Fetch dashboard stats
           _dashboardBloc.add(FetchDoctorDashboardStats(doctorId: user.id!));
+          
+          // Check and update past appointments
+          _rendezVousBloc.add(CheckAndUpdatePastAppointments(
+            userId: user.id!,
+            userRole: 'doctor',
+          ));
+          
+          // Check if the doctor has appointment duration set
+          _checkAppointmentDuration(user.id!);
         }
       } else {
         setState(() {
@@ -77,9 +90,151 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+          ),
       );
     }
+  }
+
+  // Check if appointment duration is set, if not show dialog
+  Future<void> _checkAppointmentDuration(String doctorId) async {
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      final doctorDoc = await firestore.collection('medecins').doc(doctorId).get();
+      
+      if (doctorDoc.exists) {
+        final data = doctorDoc.data() as Map<String, dynamic>;
+        
+        // If appointmentDuration doesn't exist or is null, show dialog
+        if (!data.containsKey('appointmentDuration') || data['appointmentDuration'] == null) {
+          // Delay showing the dialog slightly to ensure the UI is ready
+          Future.delayed(Duration(milliseconds: 500), () {
+            _showAppointmentDurationDialog();
+          });
+        }
+      }
+    } catch (e) {
+      print('Error checking appointment duration: $e');
+    }
+  }
+  
+  // Dialog to set appointment duration
+  void _showAppointmentDurationDialog() {
+    int selectedDuration = 30; // Default duration
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User must select a duration
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Durée de consultation',
+            style: GoogleFonts.raleway(
+              fontWeight: FontWeight.bold,
+              fontSize: 20.sp,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Veuillez définir la durée de vos consultations. Cette durée sera appliquée à tous vos rendez-vous.',
+                    style: GoogleFonts.raleway(
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Durée: ',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      DropdownButton<int>(
+                        value: selectedDuration,
+                        items: [15, 20, 30, 45, 60, 90, 120].map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(
+                              '$value minutes',
+                              style: GoogleFonts.raleway(
+                                fontSize: 16.sp,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              selectedDuration = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                // Save the selected duration to Firestore
+                try {
+                  if (currentUser?.id != null) {
+                    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+                    await firestore.collection('medecins').doc(currentUser!.id).update({
+                      'appointmentDuration': selectedDuration,
+                    });
+                    
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Durée de consultation définie à $selectedDuration minutes',
+                          style: GoogleFonts.raleway(),
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  print('Error saving appointment duration: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Erreur lors de la sauvegarde: $e',
+                        style: GoogleFonts.raleway(),
+                      ),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Confirmer',
+                style: GoogleFonts.raleway(
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -272,7 +427,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                             Navigator.push(
                               context,
                           MaterialPageRoute(builder: (context) => const AppointmentsMedecins()),
-                        );
+                            );
                       },
                     ),
                     DashboardStatCard(
@@ -288,7 +443,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                               initialFilter: 'pending',
                             ),
                           ),
-                        );
+                            );
                       },
                     ),
                     DashboardStatCard(
@@ -382,7 +537,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                             Navigator.push(
                               context,
                           MaterialPageRoute(builder: (context) => const AppointmentsMedecins()),
-                        );
+                            );
                       },
                       child: Text(
                         'Voir tous',
@@ -425,7 +580,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey[600],
-                              ),
+                            ),
                             ),
                             SizedBox(height: 8.h),
                             Text(
@@ -489,9 +644,9 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                 
              //   SizedBox(height: 24.h),
               ],
-            );
-          },
-        ),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -589,7 +744,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
           );
         },
         borderRadius: BorderRadius.circular(12.r),
-        child: Padding(
+                child: Padding(
           padding: EdgeInsets.all(16.w),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,9 +767,9 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
               
               // Appointment details
               Expanded(
-                child: Column(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    children: [
                     Text(
                       appointment.patientName,
                       style: GoogleFonts.raleway(
@@ -650,7 +805,7 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                               style: GoogleFonts.raleway(
                                 fontSize: 14.sp,
                                 color: Colors.grey[600],
-                              ),
+                      ),
                             ),
                           ],
                         ),
@@ -676,8 +831,8 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                     ),
                   ],
                 ),
-              ),
-              
+                      ),
+
               // Status badge
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -685,15 +840,15 @@ class _DashboardMedecinState extends State<DashboardMedecin> {
                   color: statusColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Text(
+                          child: Text(
                   appointment.status.toUpperCase(),
                   style: GoogleFonts.raleway(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                     color: statusColor,
-                  ),
-                ),
-              ),
+                          ),
+                        ),
+                      ),
             ],
           ),
         ),
